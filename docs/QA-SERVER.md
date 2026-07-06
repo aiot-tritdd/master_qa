@@ -163,7 +163,9 @@ source_hash: <hash các symbol lúc duyệt>
 
 ### Scope đã chốt
 - **1 flow**: customer-sync (backend↔ticket) — đã trace sẵn.
-- **Test seam**: HTTP thật như user (login bằng creds test-admin đang chạy).
+- **Test seam (MVP = hybrid)**: TẠO customer bằng `rails runner` (chắc kèo, vẫn kích hoạt
+  callback→sync thật) + ASSERT qua ticket HTTP admin-api + ticket DB thật. Backend không có
+  REST create customer đơn giản + auth devise_token_auth rối → full HTTP-as-user để **Phase 2**.
 - **LLM**: local `claude` CLI (`claude -p`), bọc trong `qa/llm.py`, cache né rate-limit.
 - **Stack**: Python + FastAPI + Jinja + Tailwind. **No DB** (đọc thẳng markdown).
 - **Runtime**: local hết. Ghibli-lite (CSS, không tranh vẽ tay).
