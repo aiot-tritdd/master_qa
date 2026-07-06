@@ -167,7 +167,10 @@ source_hash: <hash các symbol lúc duyệt>
   callback→sync thật) + ASSERT qua ticket HTTP admin-api + ticket DB thật. Backend không có
   REST create customer đơn giản + auth devise_token_auth rối → full HTTP-as-user để **Phase 2**.
 - **LLM**: local `claude` CLI (`claude -p`), bọc trong `qa/llm.py`, cache né rate-limit.
-- **Stack**: Python + FastAPI + Jinja + Tailwind. **No DB** (đọc thẳng markdown).
+- **Stack**: 2 tầng — **backend Python** (pipeline `qa/` + FastAPI JSON API `api/`) +
+  **frontend Next.js 14** (App Router, TS, Tailwind, Ghibli UI) gọi API. **No DB** (đọc thẳng markdown).
+  Lý do 2 tầng: pipeline BẮT BUỘC Python (shell ra `claude`/`pytest`/`docker`/`gitnexus`);
+  Next chỉ là mặt tiền gọi API. Dev: uvicorn :8899 (API) + next dev :3001 (UI), CORS mở.
 - **Runtime**: local hết. Ghibli-lite (CSS, không tranh vẽ tay).
 
 ### Lát dọc — 5 mảnh nối đuôi
@@ -200,7 +203,8 @@ threease_qa/
 ├── knowledge/customer-sync.md      nguồn sự thật ý định (git)
 ├── qa/{llm,extractor,testgen,runner,gitnexus}.py
 ├── tests_generated/test_customer_sync.py
-├── web/{app.py, templates/, static/}   FastAPI + Jinja + Tailwind (Ghibli-lite)
+├── api/app.py                      FastAPI JSON API (bọc pipeline qa/)
+├── web/                            Next.js 14 (App Router, TS, Tailwind) — Ghibli UI
 ├── docs/QA-SERVER.md               file này
 └── .env                            creds test-admin + host các service (KHÔNG commit)
 ```
