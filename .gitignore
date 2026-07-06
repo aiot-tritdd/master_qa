@@ -1,0 +1,18 @@
+# secrets & env — NEVER commit
+.env
+.env.*
+*.secret
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# llm cache
+.qa_cache/
+
+# os
+.DS_Store
