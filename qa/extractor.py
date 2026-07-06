@@ -44,7 +44,7 @@ def extract() -> Path:
     for name, path in CODE_FILES.items():
         snippets[name] = Path(path).read_text() if Path(path).exists() else "(missing)"
     prompt = build_prompt(facts, snippets)
-    raw = llm.call(prompt, cache_key="extract_customer_sync")
+    raw = llm.call(prompt)
     body = llm.extract_block(raw, "markdown")
     src_hash = gitnexus.symbol_hash(list(snippets.values()))
     doc = knowledge.KnowledgeDoc(

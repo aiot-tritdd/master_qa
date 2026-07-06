@@ -28,7 +28,7 @@ def generate(doc_path: Path) -> Path:
         raise ValueError(f"doc not approved: {doc_path}")
     doc = knowledge.load(doc_path)
     prompt = build_prompt(doc.body)
-    raw = llm.call(prompt, cache_key="testgen_customer_sync")
+    raw = llm.call(prompt)
     code = llm.extract_block(raw, "python")
     out = settings.generated_dir / "test_customer_sync.py"
     settings.generated_dir.mkdir(exist_ok=True)
