@@ -1,6 +1,7 @@
 import hashlib
 import re
 import subprocess
+import time
 from qa.config import settings
 
 def extract_block(text: str, lang: str) -> str:
@@ -16,12 +17,16 @@ def call(prompt: str, *, cache_key: str | None = None) -> str:
     cache_file = settings.cache_dir / f"{key}.txt"
     if cache_file.exists():
         return cache_file.read_text()
-    result = subprocess.run(
-        ["claude", "-p", prompt],
-        capture_output=True, text=True, timeout=600,
-    )
-    if result.returncode != 0:
-        raise RuntimeError(f"claude CLI failed: {result.stderr[:500]}")
-    out = result.stdout.strip()
-    cache_file.write_text(out)
-    return out
+    last_err = ""
+    for attempt in range(3):  # retry: claude -p đôi khi fail thoáng qua (rate-limit)
+        result = subprocess.run(
+            ["claude", "-p", prompt],
+            capture_output=True, text=True, timeout=600,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            out = result.stdout.strip()
+            cache_file.write_text(out)
+            return out
+        last_err = result.stderr[:500] or f"empty stdout (rc={result.returncode})"
+        time.sleep(2 * (attempt + 1))
+    raise RuntimeError(f"claude CLI failed sau 3 lần: {last_err}")
