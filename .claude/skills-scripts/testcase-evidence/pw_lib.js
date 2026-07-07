@@ -31,6 +31,15 @@ const CFG = {
       pass: process.env.TK_ADMIN_PASS || 'password123',
     },
   },
+  ticket: {
+    BASE: process.env.TICKET_URL || 'https://ticket-dev.threease.com',
+    basic: null,
+    django_login: {
+      inst:  process.env.TK_INST  || 'TESTSEED001',
+      staff: process.env.TK_STAFF || 'STAFF001',
+      pw:    process.env.TK_PW    || 'password123',
+    },
+  },
 };
 
 async function getPage(target = 'pro') {
@@ -49,6 +58,19 @@ async function getPage(target = 'pro') {
       await page.fill('#id_username', c.django_admin.user);
       await page.fill('#id_password', c.django_admin.pass);
       await page.click('input[type=submit]');
+      await page.waitForTimeout(3000);
+    }
+    return { browser, context, page, BASE: c.BASE };
+  }
+
+  // Ticket-app (ticket-dev) — Django form login: institute/staff/password.
+  if (c.django_login) {
+    await page.goto(c.BASE + '/accounts/login/', { waitUntil: 'domcontentloaded' });
+    if (await page.locator('#id_institute_code').count()) {
+      await page.fill('#id_institute_code', c.django_login.inst);
+      await page.fill('#id_staff_code', c.django_login.staff);
+      await page.fill('#id_password', c.django_login.pw);
+      await page.click('button[type=submit], input[type=submit]');
       await page.waitForTimeout(3000);
     }
     return { browser, context, page, BASE: c.BASE };

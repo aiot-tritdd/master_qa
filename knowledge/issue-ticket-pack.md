@@ -22,15 +22,16 @@ ui_confirmed_at: null
 5. Thanh toán (現金) → hoàn tất.
 
 **Nơi quan sát (để verify precondition đã dựng — đối chiếu SPEC, KHÔNG phải để phán đúng/sai):**
-- Pro: Customer → số dư vé của khách.
-- ⚠️ Gói vé/使用履歴 phía ticket: **CHƯA chốt kênh.** Django admin (`ticket-dev/admin/th/`) chỉ lộ
-  model sync (customer/institute/branch/staff), **không có model pack** → khả năng phải xem ở
-  **ticket-app** (`getPage('ticket')`, TESTSEED001). Cần confirm lại trước khi approve.
+- Pro: Customer → số dư vé của khách (`getPage('pro')`).
+- ✅ Gói vé + 使用履歴 phía ticket: **ticket-app** `getPage('ticket')` → 顧客 → `/customer/<id>/`
+  (cột 保有チケット, ステータス 有効/使用済み, 枚数 X/Y, bảng 最近の使用履歴). **Không** phải Django admin.
 
 **Ghi chú vận hành:** booking KH tương lai không hiện ở calendar mặc định (hôm nay); điều hướng
 ngày trước khi thao tác. Dữ liệu test PHẢI prefix `AIOTTEST*` để `/testcase-cleanup` quét được.
 
 ## Build-time confirm log (2026-07-07)
 - GitNexus `@threease` cho flow này **thưa/lạc** (backend Rails yếu index) → UI-confirm gánh sự thật.
-- `ticket_admin` login ✅. Django admin lộ model sync, **KHÔNG** thấy pack → điểm quan sát pack cần
-  xác nhận lại ở ticket-app. → **status giữ `draft`** (gate chưa pass đủ, chưa `approved`).
+- ✅ **Kênh quan sát confirmed:** gói vé/使用履歴 ở **ticket-app** `/customer/<id>/` (vd KH3 `/customer/700006/`
+  hiện `有効 8/10 回` + 最近の使用履歴). `getPage('ticket')` + `getPage('ticket_admin')` chạy được.
+- ⚠️ **Các bước TẠO (booking→thêm vé→thanh toán→phát hành) CHƯA drive thật** → **status giữ `draft`**.
+  Để lên `approved` cần 1 lần drive tạo booking + thanh toán rồi quan sát pack xuất hiện đúng.
