@@ -4,7 +4,7 @@
 > nghĩ thế nào, mang tri thức gì, làm ra sao, và lộ trình các phase.
 > Đọc file này là hiểu trọn dự án. Đây là tài liệu **sống** — cập nhật khi có thay đổi.
 
-Ngày khởi tạo: 2026-07-06 · Trạng thái: **Phase 1 (MVP) — đang xây**
+Ngày khởi tạo: 2026-07-06 · Trạng thái: **Phase 1 (MVP) — code xong, unit test xanh** (2026-07-07)
 
 ---
 
@@ -218,7 +218,7 @@ threease_qa/
 | Phase | Tên | Gồm gì | Trạng thái |
 |---|---|---|---|
 | **0** | Nền móng | GitNexus index 5 repo · stack + data thật · trace flow customer-sync · chốt thiết kế | ✅ XONG |
-| **1** | MVP — lát dọc | extractor→review UI→testgen→runner→dashboard · claude CLI · local · Ghibli-lite · no DB | 🎯 đang xây |
+| **1** | MVP — lát dọc | extractor→review UI→testgen→runner→dashboard · claude CLI · local · Ghibli-lite · no DB | ✅ XONG (code + unit test; live smoke thủ công) |
 | **2** | Nhân rộng knowledge | nhiều flow · đủ 6 loại · cross-repo stitching (parse Rails routes) · stale-detection · (Postgres khi cần) | ⏸ |
 | **3** | Tầng WATCH | branch push/merge PR (webhook/poll) · detect_changes vs base_ref · multi-branch | ⏸ |
 | **4** | Always-on + Deploy | daemon 24/7 · Railway · xem online | ⏸ |
@@ -227,13 +227,18 @@ threease_qa/
 
 ### Chi tiết Phase 1 (cập nhật khi build)
 ```
-Phase 1 — MVP  [0/5]
-  ⬜ extractor.py    — sinh doc nháp
-  ⬜ review UI       — approve + git commit
-  ⬜ testgen.py      — sinh pytest từ doc approved
-  ⬜ runner.py       — login HTTP → tạo → flush → assert
-  ⬜ dashboard       — hiện kết quả
+Phase 1 — MVP  [5/5]  (10 task TDD, xem docs/plans/2026-07-06-phase1-mvp.md)
+  ✅ extractor.py    — sinh doc nháp (T5; live extract ra doc thật)
+  ✅ review UI       — approve + git commit (T4 approve + T8 API + T9 UI)
+  ✅ testgen.py      — sinh pytest từ doc approved, cấm đọc code (T6; +fix cache regen)
+  ✅ runner.py       — rails-create → poll ticket → flush outbox → assert (T7; branch_id=2)
+  ✅ dashboard       — FastAPI /api/* (T8) + Next.js Ghibli UI (T9)
 ```
+**Nền tảng:** FastAPI API (`api/app.py`, port 8899, CORS cho :3001) + Next.js 14 UI (`web/`).
+Toàn bộ 17 unit test xanh; `next build` sạch. **Còn thủ công:** live E2E smoke ④ (cần stack up)
+và 2 punchline demo (`docs/DEMO.md`).
+
+**Deferred sang Phase sau:** live E2E chạy tự động trong CI; đủ 5 repo; Playwright; deploy.
 
 ---
 
