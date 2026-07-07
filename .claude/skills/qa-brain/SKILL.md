@@ -72,8 +72,9 @@ pre, steps, expect, actual, note, before, after`. Để `result`/`actual`=`"未�
 Harness cơ khí ở `.claude/skills-scripts/testcase-evidence/`: `pw_lib.js` (`getPage('pro'|'ticket_admin'|'ticket')`),
 `build_evidence.py` (xlsx). Require bằng đường dẫn repo này:
 `const P='<repo>/.claude/skills-scripts/testcase-evidence/'; const {getPage}=require(P+'pw_lib');`.
-Gọi `/testcase-run <F>`: drive UI theo seam, chụp before/after **2 phía** (Pro + ticket-admin) vào
-`<F>/shots/`, điền `result`/`actual`/`before`/`after`, rồi build lại Excel.
+Gọi `/testcase-run <F>`: drive UI theo seam, chụp before/after **2 phía** (Pro + ticket-app/admin) vào
+`<F>/shots/` (**PNG rõ**, không nén JPG — chuẩn như `TestCase_No.10.1~3/shots/`), điền
+`result`/`actual`/`before`/`after`, rồi build lại Excel (3 sheet: Cover/Test Cases/Checklist).
 - `actual` bắt đầu bằng `PASS`/`FAIL`/`未実施`, mô tả **quan sát được**.
 - **FAIL:** `actual` = "spec kỳ vọng …; thao tác trên màn … kết quả …". **KHÔNG** symbol/file:line.
 - **Feature chưa build → FAIL**: quan sát "màn không có nút / behavior không xảy ra" + ảnh *absence*.
