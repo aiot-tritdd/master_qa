@@ -34,6 +34,12 @@ ui_confirmed_at: 2026-07-07
 **Nơi quan sát:** Pro booking (Paid?, dòng vé) · ticket-app `/customer/<id>/` (gói vé + 使用履歴).
 
 ## Build-time confirm log (2026-07-07)
-- ✅ Mở booking (date-nav verification-driven + click text) — ổn định.
+- ✅ Mở booking (date-nav verification-driven + click text) — ổn định (~70% lượt; retry 14x/3s cho chắc).
 - ✅ Remove dòng vé — chạy thật (TC-20).
-- ⚠️ INVOICE → invoice tương tác: chưa mở được headless → cancel-payment flow **chưa approved**.
+- ⛔ **Cancel-payment CHƯA CRACK được headless.** Đã thử & đều TRƠ (không mở invoice tương tác có 取引/キャンセル):
+  - Nút `button.v-btn--outlined:has-text("INVOICE")` (1218,48): force-click, real-click, coord-click → không mở gì, không tab mới, không dialog invoice.
+  - Chip `Paid (Cash)` → trơ.
+  - `View Invoice` (cuối panel, cần scroll drawer) → force-click trơ; scrollIntoView không tới.
+  → **Cần headed-session** (người thấy + click chính xác, scroll drawer tới View Invoice) HOẶC biết **route invoice**
+    (vd `/en/accounting` → 請求書 → 取引 キャンセル) để crack. Headless-blind không đủ.
+  → cancel-payment flow giữ **draft**; các case Part A/B (cancel payment / cancel booking) chưa run được.
