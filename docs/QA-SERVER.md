@@ -4,13 +4,15 @@
 > nghĩ thế nào, mang tri thức gì, làm ra sao, và lộ trình các phase.
 > Đọc file này là hiểu trọn dự án. Đây là tài liệu **sống** — cập nhật khi có thay đổi.
 
-Ngày khởi tạo: 2026-07-06 · Trạng thái: **Phase 1 (MVP) — code xong, unit test xanh** (2026-07-07)
+Ngày khởi tạo: 2026-07-06 · Cập nhật: 2026-07-07
+Trạng thái: **Bản skill-based (Claude Code) — chạy được, đang chuẩn hoá black-box**
 
 ---
 
 ## Phần I — WHY (tại sao nó tồn tại)
 
 ### Nỗi đau
+
 Hệ thống **ThreeSides** (đặt lịch khám bệnh, giường bệnh, vé/coupon) là 5 repo,
 4 ngôn ngữ, chạy chung qua Docker. Vấn đề:
 
@@ -20,193 +22,186 @@ Hệ thống **ThreeSides** (đặt lịch khám bệnh, giường bệnh, vé/c
 - Một chức năng thường đi **xuyên 4-5 repo** qua HTTP, không ai nắm trọn luồng.
 
 ### Nó KHÔNG phải "AI đi click website"
+
 Rất nhiều tool đã làm chuyện mở browser bấm nút. Con này khác:
-nó là một **QA senior nhân tạo HIỂU NGHIỆP VỤ** của chính hệ thống này,
-sâu tới mức xuyên cả 5 repo.
+nó là một **QA senior nhân tạo HIỂU NGHIỆP VỤ** của chính hệ thống này.
 
 ### Oracle problem — sự thật phũ, và là trái tim mọi quyết định
-Khi một hành vi thay đổi, **nhìn code không phân biệt được** đó là:
-- **BUG** (đổi ngoài ý muốn), hay
-- **FEATURE** (cố ý đổi).
 
-Vì "ý định đúng" **không nằm trong code** — nó nằm trong đầu người. Code chỉ biết
-nó *đang* làm gì, không biết nó *nên* làm gì. → Nếu test sinh ra **từ code**, nó chỉ
+Khi một hành vi thay đổi, **nhìn code không phân biệt được** đó là **BUG** (đổi ngoài ý muốn)
+hay **FEATURE** (cố ý đổi). Vì "ý định đúng" **không nằm trong code** — nó nằm trong đầu người.
+Code chỉ biết nó *đang* làm gì, không biết nó *nên* làm gì. → Nếu test sinh ra **từ code**, nó chỉ
 xác nhận "code đang làm gì" (tautology), không bao giờ bắt được lỗi so với ý định.
-Đây là lý do toàn bộ kiến trúc phải xoay quanh việc **ghi lại ý định của con người**.
+→ **Ý định đúng = SPEC** (do người viết). Toàn bộ kiến trúc xoay quanh việc lấy oracle từ SPEC,
+KHÔNG từ code.
 
 ---
 
 ## Phần II — WHAT (nó là gì)
 
-**Một câu:** một repo độc lập (repo thứ 6, đứng ngoài 5 repo ThreeSides), một dịch vụ
-kiểu QA-senior tự động, hiểu nghiệp vụ xuyên repo, **tự sinh tài liệu sống từ code**
-(người duyệt qua UI = nguồn ý định), rồi **tự sinh + chạy test đẻ từ ý định đã duyệt**.
+**Một câu:** một **skill trong Claude Code** (`qa-brain` + bộ command `testcase-*`) biến session
+này thành QA senior **thuần black-box**: từ 1 file **SPEC** (oracle) → sinh test → drive app thật
+bằng Playwright → quan sát live → chấm PASS/FAIL kèm evidence (screenshot 2 phía Pro + ticket).
+Kiến trúc **skill-based**, chạy per-folder `wtf-is-this/<TestCase>/`. **KHÔNG** phải dịch vụ Python.
+
+### Kiến trúc thực tại (đã chốt)
+
+- **QA-runtime (skill `qa-brain`)**: mù code tuyệt đối. Đọc SPEC + Living Business Doc (navigation)
+  → drive UI → quan sát live → report hành vi. Xuất `tcs.json` (schema sếp) + `.xlsx` evidence.
+- **Build-time (command `/testcase-systemdoc`)**: tầng "người vẽ bản đồ" — dùng GitNexus + system-docs
+  soạn **Living Business Doc** (`knowledge/`), bắt buộc UI-confirm + người duyệt. **Đây KHÔNG phải QA.**
+- **Harness cơ khí** (`.claude/skills-scripts/testcase-evidence/`): `pw_lib.js` (login/getPage đa hệ),
+  `build_evidence.py` (sinh Excel). Command pipeline: `/testcase-write · run · cleanup · upspecschange · retest`.
 
 ### Nó NÓI ĐƯỢC gì vs KHÔNG hứa được gì
+
 | Nói được (mô tả thực tại) | KHÔNG tự hứa (phán ý định) |
-|---|---|
-| "Flow này **đang làm** X, Y, Z" ✅ | "X **là SAI**, đáng lẽ phải là W" ❌ (máy tự phán, không người) |
+| --- | --- |
+| "Màn này **đang làm** X, Y, Z" ✅ | "X **là SAI**, đáng lẽ phải là W" — trừ khi có **SPEC** để so ❌ (máy không tự phán) |
 
-→ Lằn ranh: máy **không** tự làm quan tòa cuối cùng. **Con người gật qua UI** chính là
-"quan tòa" (oracle) mình thiếu. Cái UI không phải để đẹp — nó **trám đúng lỗ hổng oracle**.
+→ Quan tòa = **SPEC** (ý định người viết) + **quan sát live**. Máy không tự làm quan tòa cuối cùng.
 
-### Giá trị thật (gọi đúng tên để không bán nhầm)
-- ✅ **Đẻ ra tài liệu công ty chưa từng có** — giá trị tức thì.
-- ✅ **Lưới chống regression**: "hôm nay khác hôm qua" + "đổi X thì gãy đâu".
-- ❌ **KHÔNG** phải "AI tự tìm bug logic đúng-sai". Không spec/không QA → "đúng" chỉ
-  đến từ **con người gật**, không phải từ máy.
+### Giá trị thật
+
+- ✅ **Test evidence công ty chưa từng có** — screenshot 2 phía + PASS/FAIL theo spec.
+- ✅ **Lưới chống regression** khi đổi code.
+- ❌ **KHÔNG** phải "AI tự tìm bug logic đúng-sai" mà không có spec — "đúng" đến từ **SPEC**.
 
 ---
 
 ## Phần III — CÁCH NÓ NGHĨ (triết lý cốt lõi)
 
-### 1. Structural vs Semantic
-```
-STRUCTURAL (facts — sự thật, rút máy móc)     → GitNexus cho sẵn, KHÔNG bịa
-   entity, field, route, ai-gọi-ai, call graph
-        │ LLM đọc facts + code, SUY DIỄN lên
-        ▼
-SEMANTIC (ý nghĩa — LLM sinh, dễ sai)          → mình xây, BẮT BUỘC người duyệt
-   "flow này nghĩa là gì", "rule là X", "ý định"
-```
-**Nguyên tắc vàng:** structural làm móng cứng để semantic đứng lên. LLM không đọc bừa
-cả repo rồi phán — nó chỉ suy diễn *trên nền facts GitNexus đã trích*.
+### 1. Chìa khoá — tách "LÀM SAO vận hành" (HOW) khỏi "ĐÚNG/SAI" (WHAT)
 
-### 2. Test đẻ từ Ý ĐỊNH, không đẻ từ code
-Test **không** sinh từ code (tautology). Test sinh từ **tầng knowledge đã-được-người-duyệt**.
-Tại mọi thời điểm có 3 thứ, việc của con QA là phát hiện chúng **lệch nhau** rồi hỏi người:
-```
-① CODE đang làm gì        (GitNexus / hệ thống thật)
-② Ý ĐỊNH đã thống nhất     (knowledge base — người duyệt)   ← test đo theo cái này
-③ Ý ĐỊNH MỚI              (khách/mình vừa đổi)
-```
-| Tình huống | Con QA nói | Ai quyết |
-|---|---|---|
-| Code đổi, ② không đổi | "hành vi đổi mà intent không đổi — BUG?" | 👤 người |
-| Sửa ② (đổi ý), code chưa đổi | "muốn W, code vẫn X — test FAIL: code chưa theo kịp" | → ticket dev |
-| Cả 2 đổi cùng | "code khớp intent mới → test pass" ✅ | (ca đẹp) |
+Hệ thống có 2 loại tri thức, 2 tầng:
+- **HOW — vận hành:** nút ở đâu, màn nào, bấm thứ tự gì. Tầng giao diện.
+- **WHAT — hành vi:** bấm xong ra kết quả gì, đúng luật không. Tầng logic — **oracle**.
 
-→ **Anh không đuổi theo test; test đuổi theo anh.** Đổi ý = sửa bản ghi ý định trước,
-test tự chạy theo. Việc người không bỏ được: **giữ bản ghi ý định luôn tươi** — và đó
-chính là thứ đáng giá nhất.
+**Bug sống ở tầng WHAT, không ở HOW.** Dev code sai luật → sai *cái xảy ra khi bấm*, không dời nút.
+→ Navigation gần như **miễn nhiễm bug logic**. Nên Living Business Doc (chép tầng HOW) có thể derive
+từ code (build-time) mà không làm QA sai — vì **đúng/sai luôn do SPEC + quan sát live**, không do doc.
 
-### 3. Kỷ luật chống tự-lừa (bài học 2026-07-06)
-Đã từng sai vì *đoán cơ chế thay vì trace code* + *confirmation bias*. Nguyên tắc:
-- **Trace luồng bằng GitNexus TRƯỚC khi phán cơ chế.**
-- Rule LLM sinh ra mặc định `status: draft` + **bắt buộc trỏ `source_symbols`**.
-- Một quan sát mâu thuẫn > cả đống quan sát ủng hộ → đuổi theo mâu thuẫn.
+### 2. Structural vs Semantic
+
+```
+STRUCTURAL (facts — rút máy móc)          → GitNexus, chỉ ở BUILD-TIME
+SEMANTIC (ý nghĩa — LLM sinh, dễ sai)     → Living Business Doc, BẮT BUỘC UI-confirm + người duyệt
+```
+
+Semantic-doc = **navigation-only** (không đóng vai quan tòa). GitNexus chỉ là nguyên liệu build-time.
+
+### 3. Test đẻ từ Ý ĐỊNH (= SPEC), không đẻ từ code
+
+Tại mọi thời điểm có 3 thứ, việc QA là phát hiện chúng **lệch nhau**:
+
+```
+① CODE đang làm gì        (hệ thống thật — quan sát qua UI, KHÔNG đọc code)
+② SPEC = ý định đã chốt   (oracle — test đo theo cái này)
+③ Ý ĐỊNH MỚI              (spec change)
+```
+
+| Tình huống | QA nói | Ai quyết |
+| --- | --- | --- |
+| Hành vi khác spec | "spec bảo X, màn làm Y → FAIL" | → ticket dev |
+| Spec đổi, code chưa | "muốn W, màn vẫn X — FAIL: code chưa theo kịp" | → ticket dev |
+| Cả 2 khớp | "màn khớp spec → PASS" ✅ | (ca đẹp) |
+
+### 4. Precondition Protocol (dựng tình huống mà không tin code)
+
+1. **Định nghĩa** precondition từ **SPEC (ô `pre`)** — nghiệp vụ, không code.
+2. **Dựng** bằng flow CŨ đã chạy ổn (Living Business Doc) — **KHÔNG dùng feature MỚI đang test**.
+3. **Verify bằng mắt**: quan sát trạng thái thật (Pro + ticket-admin) đối chiếu spec → khớp mới chạy.
 
 ---
 
-## Phần IV — KIẾN TRÚC (5 tầng)
+## Phần IV — KIẾN TRÚC (tầng)
 
 ```
-① NGUỒN        5 repo (đọc code) + stack docker đang chạy (đánh test HTTP)
-     │ đọc code                              │ test qua HTTP
-     ▼                                       │
-② KNOWLEDGE    GitNexus (facts ✅) + living docs md+yaml (intent 🔨) + stitch HTTP 🔨
-     │ tra cứu "flow này là gì"              │
-     ▼                                       │
-③ BỘ NÃO       vòng lặp: WATCH→DETECT→UNDERSTAND→DECIDE→RUN→REPORT (WATCH: phase sau)
-     │ "chạy test cho flow X"                ▼
-④ TEST         smoke/build · API+DB (xương sống) · E2E Playwright (mỏng)
-     │
-     ▼
-⑤ DASHBOARD    người giám sát: thay đổi nào · business đổi gì · pass/fail · lý do
+① NGUỒN        5 repo + stack đang chạy trên dev (đánh test qua UI/HTTP)
+② KNOWLEDGE    SPEC (oracle, per-folder specs.md) + Living Business Doc (navigation, knowledge/)
+     │  build-time: GitNexus facts + UI-confirm → Living Business Doc (người duyệt)
+③ BỘ NÃO       skill qa-brain: ĐỌC SPEC → VIẾT CASE (mù code) → SEAM → PRECONDITION → RUN → REPORT
+④ TEST         Playwright evidence (pw_lib) — drive UI, chụp 2 phía; build Excel
+⑤ EVIDENCE     tcs.json + <Folder>.xlsx (PASS/FAIL/未実施 + ảnh + lý do hành vi)
 ```
-Cái nào CÓ: GitNexus (query/impact/context/detect_changes), stack docker, flow đã trace.
-Cái nào XÂY: living docs + intent, stitch cross-repo HTTP, test-gen/run, UI, orchestrator.
+
+CÓ: skill + command pipeline, harness Playwright, GitNexus (chỉ build-time), stack dev + data thật.
+XÂY tiếp: nhiều Living Business Doc, stale-detection tự động, viewer.
 
 ---
 
 ## Phần V — KNOWLEDGE BASE (nó mang gì trong người)
 
-### 2 lớp (xem Phần III.1) + 6 loại tri thức
-| Loại | Ví dụ ThreeSides | Rút từ |
-|---|---|---|
-| 1. Entity/Domain | Hospital·Branch·Doctor·Bed·Customer·Coupon·Ticket + quan hệ | Rails/Django models + structure.sql |
-| 2. Business Flow | "Phát hành vé", "Đặt lịch", "Sync customer" — xuyên repo | call-graph + mối HTTP |
-| 3. Business Rule | "Giường VIP cần deposit", "trẻ <6t miễn phí" | code service/handler |
-| 4. State Machine | Bed: Available→Reserved→Occupied→Cleaning · Ticket: pending→sent→failed | enum/status + code |
-| 5. Permission | Admin/Receptionist/Customer làm được gì | before_action / DRF permissions |
-| 6. API Contract | route mỗi service phục vụ + gọi ai | routes.rb / urls.py / axios |
+### 2 nguồn tri thức tách bạch
 
-### Cách lưu
-- **Markdown + YAML front-matter, trong git** = nguồn sự thật (git log = lịch sử đổi ý).
-  **KHÔNG** vector RAG (chưa cần). **KHÔNG** Neo4j/vector DB.
-- Mỗi flow/rule = 1 file. Front-matter: `status` (draft→approved→stale), `source_symbols`
-  (trỏ GitNexus), `source_hash` (phát hiện lỗi thời).
+- **SPEC (oracle)** — `wtf-is-this/<TestCase>/specs.md` (mỗi task). QA đo đúng/sai theo cái này.
+- **Living Business Doc (navigation)** — `knowledge/*.md`. *Cách vận hành* (HOW) + kênh quan sát.
+  **KHÔNG phải oracle.** Firewall: cấm ghi kết quả kỳ vọng / luật pass-fail.
 
-Ví dụ:
+### Cách lưu Living Business Doc
+
+Markdown + YAML front-matter, trong git. Mỗi flow/channels = 1 file. Front-matter:
+`status` (draft→approved→stale), `source_symbols` + `source_hash` (metadata provenance, QA KHÔNG đọc),
+`ui_confirmed_at`. Ví dụ:
+
 ```yaml
 ---
-id: customer-sync
-status: draft            # draft (AI) → approved (người gật) → stale (code đổi)
-spans_repos: [backend, ticket]
-source_symbols:
-  - backend:app/models/concerns/threease_ticket_syncable.rb
-  - backend:app/jobs/threease_ticket_sync_job.rb#perform
-  - ticket:admin_api/data_sync/handlers.py#sync_data
-source_hash: <hash các symbol lúc duyệt>
+id: issue-ticket-pack
+status: draft            # draft (máy) → approved (người + UI-confirm) → stale (code đổi)
+kind: flow               # flow (navigation) | channels (observation)
+spans_repos: [pro, backend, ticket]
+source_symbols: [ ... ]  # metadata — QA KHÔNG đọc
+source_hash: <hash>
+ui_confirmed_at: 2026-07-07
 ---
-# Flow: Sync customer (backend → ticket) ...
+# Flow: Phát hành gói vé (HOW — navigation only)
 ```
 
 ### Chỗ đau nhất + giữ tươi
-- **Cross-repo stitching**: GitNexus 0 auto-link (không parse Rails routes). Phải nối tay
-  ở mối HTTP: parse `rails routes` + match URL với axios(pro)/urls.py(ticket).
-- **Stale-detection**: code đổi → so `source_hash` cũ↔mới → khác thì gắn `stale` → UI báo review lại.
+
+- **Cross-repo (Pro→backend→ticket)**: GitNexus 0 auto-link (không parse Rails routes) → build-time
+  trám bằng `CLAUDE.md` system-docs + **UI-confirm**.
+- **Stale-detection**: code đổi → `source_hash` lệch → `status: stale` → re-derive + re-confirm UI + duyệt lại.
 
 ---
 
-## Phần VI — MVP (Phase 1, mai/mốt build)
+## Phần VI — Vòng đời hiện tại (skill-based)
 
-### Scope đã chốt
-- **1 flow**: customer-sync (backend↔ticket) — đã trace sẵn.
-- **Test seam (MVP = hybrid)**: TẠO customer bằng `rails runner` (chắc kèo, vẫn kích hoạt
-  callback→sync thật) + ASSERT qua ticket HTTP admin-api + ticket DB thật. Backend không có
-  REST create customer đơn giản + auth devise_token_auth rối → full HTTP-as-user để **Phase 2**.
-- **LLM**: local `claude` CLI (`claude -p`), bọc trong `qa/llm.py`, cache né rate-limit.
-- **Stack**: 2 tầng — **backend Python** (pipeline `qa/` + FastAPI JSON API `api/`) +
-  **frontend Next.js 14** (App Router, TS, Tailwind, Ghibli UI) gọi API. **No DB** (đọc thẳng markdown).
-  Lý do 2 tầng: pipeline BẮT BUỘC Python (shell ra `claude`/`pytest`/`docker`/`gitnexus`);
-  Next chỉ là mặt tiền gọi API. Dev: uvicorn :8899 (API) + next dev :3001 (UI), CORS mở.
-- **Runtime**: local hết. Ghibli-lite (CSS, không tranh vẽ tay).
+### Pipeline (command của sếp)
 
-### Lát dọc — 5 mảnh nối đuôi
 ```
-① EXTRACTOR (qa/extractor.py)  GitNexus facts + code → claude → knowledge/customer-sync.md (draft)
-② REVIEW UI (web/)             người đọc/sửa/Approve → status draft→approved → git commit  ← ORACLE
-③ TESTGEN   (qa/testgen.py)    đọc doc APPROVED (CẤM đọc code) → tests_generated/test_customer_sync.py
-④ RUNNER    (qa/runner.py)     pytest trên stack: login HTTP → tạo customer → chờ/flush outbox → assert ticket
-⑤ DASHBOARD (web/)             doc + trạng thái + lần chạy + pass/fail + lý do
+/testcase-systemdoc <flow>   soạn Living Business Doc (build-time, GitNexus + UI-confirm + duyệt)
+        │
+(dùng skill qa-brain cho 1 folder spec)
+   ĐỌC SPEC → VIẾT CASE (mù code) → SEAM (spec + Living Business Doc) → tcs.json + xlsx
+        │
+/testcase-run    drive UI live → evidence 2 phía → result/actual → build Excel
+        │
+/testcase-cleanup   dọn dữ liệu test trên dev (prefix AIOTTEST*)
+        │  (review ra change/bug)
+/testcase-upspecschange → (dev fix) → /testcase-retest (subset)
 ```
 
 ### Chống flaky (tri thức nghiệp vụ nhét vào runner)
-Tạo customer có thể **sync tức thì** (ticket khỏe) HOẶC **rơi outbox** (ticket bận).
-→ Runner phải: tạo → **poll/chờ vài giây** (bắt ca direct) → nếu chưa thấy thì **flush outbox**
-→ rồi mới assert. Chính tri thức này làm test hết flaky (xem Phần VIII).
+
+Thao tác trên Pro sync sang ticket **không tức thì** → chờ vài giây rồi mới quan sát ticket-admin;
+chưa thấy thì chờ thêm 1 nhịp. **KHÔNG** đọc DB/code để "chắc".
 
 ### Ranh giới thép
-`testgen` **cấm đọc code** — chỉ đọc doc đã approved. Lén đọc code = tautology.
 
-### Demo punchline
-- **Phá code → bắt**: đổi `threease_ticket_api_secret` bên backend cho lệch → Run lại → FAIL + lý do.
-- **Đổi ý → test đuổi** (nếu kịp): sửa 1 rule trong UI → testgen sinh lại → phơi "code chưa theo kịp".
-
-### MVP KHÔNG làm (để phase sau)
-Tầng WATCH · always-on daemon · self-doubt engine · đủ 5 repo · E2E Playwright · Railway · Postgres.
+QA-runtime **cấm đọc code / cấm GitNexus**. Lén đọc code = tautology. Chỉ đọc SPEC + Living Business Doc.
 
 ### Cây thư mục repo
+
 ```
 threease_qa/
-├── knowledge/customer-sync.md      nguồn sự thật ý định (git)
-├── qa/{llm,extractor,testgen,runner,gitnexus}.py
-├── tests_generated/test_customer_sync.py
-├── api/app.py                      FastAPI JSON API (bọc pipeline qa/)
-├── web/                            Next.js 14 (App Router, TS, Tailwind) — Ghibli UI
-├── docs/QA-SERVER.md               file này
-└── .env                            creds test-admin + host các service (KHÔNG commit)
+├── wtf-is-this/<TestCase>/{specs.md, tcs.json, shots/, <Folder>.xlsx}   # per task (SPEC = oracle)
+├── knowledge/{observation-channels.md, <flow>.md}                        # Living Business Doc (navigation)
+├── .claude/skills/qa-brain/SKILL.md                                      # QA-runtime (black-box)
+├── .claude/commands/testcase-*.md                                        # pipeline + /testcase-systemdoc
+├── .claude/skills-scripts/testcase-evidence/{pw_lib.js, build_evidence.py}
+├── docs/QA-SERVER.md                                                     # file này
+└── account.txt (wtf-is-this/)                                            # creds test các service
 ```
 
 ---
@@ -215,36 +210,28 @@ threease_qa/
 
 > Section **sống**: mỗi mảnh xong → tick + ghi "đã làm gì / còn thiếu gì".
 
-| Phase | Tên | Gồm gì | Trạng thái |
-|---|---|---|---|
-| **0** | Nền móng | GitNexus index 5 repo · stack + data thật · trace flow customer-sync · chốt thiết kế | ✅ XONG |
-| **1** | MVP — lát dọc | extractor→review UI→testgen→runner→dashboard · claude CLI · local · Ghibli-lite · no DB | ✅ XONG (code + unit test; live smoke thủ công) |
-| **2** | Nhân rộng knowledge | nhiều flow · đủ 6 loại · cross-repo stitching (parse Rails routes) · stale-detection · (Postgres khi cần) | ⏸ |
-| **3** | Tầng WATCH | branch push/merge PR (webhook/poll) · detect_changes vs base_ref · multi-branch | ⏸ |
-| **4** | Always-on + Deploy | daemon 24/7 · Railway · xem online | ⏸ |
-| **5** | Self-doubt engine | rule adversarial verify · confidence · biết nghi ngờ chính nó | ⏸ |
-| **6** | Phủ toàn hệ | đủ 5 repo · E2E Playwright · regression impact đầy đủ · UI Ghibli vẽ tay full | ⏸ |
+| Phase | Tên | Trạng thái |
+| --- | --- | --- |
+| **0** | Nền móng (GitNexus index 5 repo · stack + data thật · trace flow) | ✅ XONG |
+| **1 (cũ)** | MVP dịch vụ Python (extractor/testgen/runner + FastAPI + Next.js) | ⛔ **THAY** bằng skill-based |
+| **1 (nay)** | Skill-based black-box (qa-brain + testcase-* + Playwright evidence + Excel) | ✅ chạy được; đang chuẩn hoá |
+| **2** | Nhân rộng Living Business Doc · stale-detection tự động · cross-repo stitching | ⏸ |
+| **3** | Tầng WATCH (branch/PR webhook · detect_changes vs base_ref) | ⏸ |
+| **4** | Always-on + deploy | ⏸ |
+| **5** | Self-doubt engine (adversarial verify) | ⏸ |
+| **6** | Phủ toàn hệ · viewer đầy đủ | ⏸ |
 
-### Chi tiết Phase 1 (cập nhật khi build)
-```
-Phase 1 — MVP  [5/5]  (10 task TDD, xem docs/plans/2026-07-06-phase1-mvp.md)
-  ✅ extractor.py    — sinh doc nháp (T5; live extract ra doc thật)
-  ✅ review UI       — approve + git commit (T4 approve + T8 API + T9 UI)
-  ✅ testgen.py      — sinh pytest từ doc approved, cấm đọc code (T6; +fix cache regen)
-  ✅ runner.py       — rails-create → poll ticket → flush outbox → assert (T7; branch_id=2)
-  ✅ dashboard       — FastAPI /api/* (T8) + Next.js Ghibli UI (T9)
-```
-**Nền tảng:** FastAPI API (`api/app.py`, port 8899, CORS cho :3001) + Next.js 14 UI (`web/`).
-Toàn bộ 17 unit test xanh; `next build` sạch. **Còn thủ công:** live E2E smoke ④ (cần stack up)
-và 2 punchline demo (`docs/DEMO.md`).
+### Chuẩn hoá black-box (đợt 2026-07-07)
 
-**Deferred sang Phase sau:** live E2E chạy tự động trong CI; đủ 5 repo; Playwright; deploy.
+Spec + plan: `docs/plans/2026-07-07-qa-brain-blackbox-redesign*.md`. Gỡ GitNexus khỏi vai QA;
+thêm HOW-vs-WHAT + Precondition Protocol + Living Business Doc navigation-only + observation channels.
 
 ---
 
 ## Phần VIII — GROUND TRUTH đã trace (tri thức mẫu, đừng suy ra sai)
 
 **Sync backend ↔ ticket = hai tầng: direct-first, outbox-as-fallback.**
+
 ```
 create/update model include ThreeaseTicketSyncable
   → after_commit → ThreeaseTicketSyncJob.perform_later  (Sidekiq; worker chạy ngay)
@@ -252,6 +239,7 @@ create/update model include ThreeaseTicketSyncable
       └─ ticket down      → ThreeaseTicketOutboxEvent.create!(pending)                   ← fallback
                             → chỉ được gỡ bởi  rake threease_ticket:flush_outbox
 ```
+
 - **Đường chuẩn = TỨC THÌ** qua Sidekiq worker. Không cần thao tác tay.
 - **Outbox/flush = lưới an toàn** cho ca direct webhook fail (vd ticket đang restart).
   Local docker không có scheduler → event *failed* nằm `pending` tới khi flush tay;
@@ -262,3 +250,5 @@ create/update model include ThreeaseTicketSyncable
 
 File chính: `threease_ticket_syncable.rb` (callback) · `threease_ticket_sync_job.rb`
 (direct-vs-outbox) · ticket `admin_api/data_sync/handlers.py` (upsert th_customer).
+
+> ⚠️ Phần VIII là **ground truth build-time** (dùng khi soạn Living Business Doc). QA-runtime KHÔNG đọc.
