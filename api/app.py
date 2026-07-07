@@ -61,3 +61,29 @@ def do_run():
     global _last_run
     _last_run = runner.run_generated()
     return _last_run
+
+
+# --- Viewer (Task 8): đọc folder test + tài liệu hệ thống sống ---
+import json as _json
+from pathlib import Path as _Path
+
+
+def _read_json(p: _Path):
+    return _json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
+
+
+@app.get("/api/folder")
+def folder(path: str):
+    f = _Path(path)
+    return {"tcs": _read_json(f / "tcs.json"), "trace": _read_json(f / "trace.json")}
+
+
+@app.get("/api/systemdoc")
+def systemdoc():
+    root = settings.knowledge_dir / "system"
+    out = []
+    if root.exists():
+        for md in sorted(root.glob("*.md")):
+            d = knowledge.load(md)
+            out.append({"flow": d.meta.get("flow", md.stem), "meta": d.meta, "body": d.body})
+    return out
