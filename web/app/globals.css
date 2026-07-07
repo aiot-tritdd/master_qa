@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+:root { --bg:#f4f1e8; --paper:#fffdf7; --ink:#3a3a34; --leaf:#3f7d5c; --sun:#e8b04b; }
+body { background:var(--bg); color:var(--ink); font-family:ui-rounded,"Hiragino Maru Gothic Pro",system-ui,sans-serif; }
+.card { background:var(--paper); border:1px solid #e5dfce; border-radius:1.5rem; box-shadow:0 6px 24px rgba(120,110,80,.10); }
+.btn { border-radius:9999px; padding:.55rem 1.4rem; font-weight:600; transition:transform .12s ease, box-shadow .12s ease; }
+.btn:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(120,110,80,.18); }
