@@ -15,6 +15,9 @@ def run(args: list[str]) -> str:
 def query(repo: str, q: str) -> str:
     return run(["query", "--repo", repo, q])
 
+def impact(repo: str, target: str, direction: str = "upstream") -> str:
+    return run(["impact", "--repo", repo, "--target", target, "--direction", direction])
+
 def symbol_hash(texts: list[str]) -> str:
     h = hashlib.sha256()
     for t in texts:
