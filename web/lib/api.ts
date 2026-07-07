@@ -22,3 +22,11 @@ export const api = {
   run: (): Promise<{ passed: boolean; output: string }> =>
     fetch(`${BASE}/api/run`, { method: "POST" }).then(j),
 };
+
+export type SystemDoc = { flow: string; meta: Record<string, any>; body: string };
+export const viewer = {
+  systemdoc: (): Promise<SystemDoc[]> =>
+    fetch(`${BASE}/api/systemdoc`, { cache: "no-store" }).then(j),
+  folder: (path: string) =>
+    fetch(`${BASE}/api/folder?path=${encodeURIComponent(path)}`, { cache: "no-store" }).then(j),
+};
