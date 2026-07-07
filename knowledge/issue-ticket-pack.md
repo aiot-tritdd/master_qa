@@ -23,7 +23,14 @@ ui_confirmed_at: null
 
 **Nơi quan sát (để verify precondition đã dựng — đối chiếu SPEC, KHÔNG phải để phán đúng/sai):**
 - Pro: Customer → số dư vé của khách.
-- ticket-admin (ticket-dev/admin): Packs của customer → pack + slips.
+- ⚠️ Gói vé/使用履歴 phía ticket: **CHƯA chốt kênh.** Django admin (`ticket-dev/admin/th/`) chỉ lộ
+  model sync (customer/institute/branch/staff), **không có model pack** → khả năng phải xem ở
+  **ticket-app** (`getPage('ticket')`, TESTSEED001). Cần confirm lại trước khi approve.
 
 **Ghi chú vận hành:** booking KH tương lai không hiện ở calendar mặc định (hôm nay); điều hướng
 ngày trước khi thao tác. Dữ liệu test PHẢI prefix `AIOTTEST*` để `/testcase-cleanup` quét được.
+
+## Build-time confirm log (2026-07-07)
+- GitNexus `@threease` cho flow này **thưa/lạc** (backend Rails yếu index) → UI-confirm gánh sự thật.
+- `ticket_admin` login ✅. Django admin lộ model sync, **KHÔNG** thấy pack → điểm quan sát pack cần
+  xác nhận lại ở ticket-app. → **status giữ `draft`** (gate chưa pass đủ, chưa `approved`).
