@@ -1,6 +1,6 @@
 ---
 id: customer-sync
-status: draft
+status: approved
 spans_repos:
 - backend
 - ticket
