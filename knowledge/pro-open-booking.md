@@ -43,4 +43,9 @@ ui_confirmed_at: 2026-07-07
   2. Trên transaction "Paid": nút **`.cancel-btn`** (chỉ hiện khi `status==='completed'`) → click.
   3. Confirm dialog "Do you want to cancel this transaction?" → click **"CONFIRM CANCELLATION"**.
   4. Quan sát toast: nếu gói có vé đã dùng → 「使用済みチケット…」 (server chặn, giao dịch giữ 'Paid').
-  → cancel-payment flow **approved**. (Cancel/Delete booking = status dropdown / trash icon 🗑 top panel — TODO confirm.)
+  → cancel-payment flow **approved**.
+- ✅ **Cancel/Delete booking CRACKED** (approved): nút 🗑 (trash) top-left panel `mouse.click(1068,65)` → dialog
+  "Do you want to delete this?" với 3 nút (coord): **CLOSE ~(496,473) · CANCEL RESERVATION ~(719,473) · DELETE ~(943,473)**.
+  Nút dialog KHÔNG phải semantic role → dùng coord-click. Gói có vé đã dùng → cả 2 chặn với 「使用済みチケット…」.
+- ⛔ Chưa làm: flow **phát hành gói vé** (tạo booking→thêm vé→thanh toán) để có precondition **gói nguyên**
+  (cho các case "cho phép khi vé còn nguyên": TC-01/04/05/06/08). Xem `issue-ticket-pack.md` (draft).
