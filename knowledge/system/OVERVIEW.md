@@ -25,7 +25,7 @@ reservation ────┘        (mọi FE gọi hub)          (backend↔tick
 | # | Domain | Repo chính | Trạng thái knowledge |
 |---|---|---|---|
 | 1 | **Customer/Master sync** (customer/institute/branch/staff) backend↔ticket | backend+ticket | 🟢 rõ (CLAUDE.md §8) — cần file deep-dive |
-| 2 | **Ticket issue + sync** (Pro thanh toán → phát hành gói vé → sync ticket) | backend+pro+ticket | 🟡 một phần (UI-confirm phát hành ở draft `issue-ticket-pack`) |
+| 2 | **Ticket issue + sync** (Pro thanh toán → phát hành gói vé → sync ticket) | backend+pro+ticket | 🟢 deep-dive `system/ticket-issue-sync.md` (nav phát hành `issue-ticket-pack` draft) |
 | 3 | **Payment / Invoice + Cancel** (cancel payment/booking/delete, guard vé-đã-dùng) | pro+backend | 🟢 deep-dive `system/payment-cancel.md` + nav `pro-open-booking` approved |
 | 4 | **Coupon / SC** (CouponPack/Usage/Transaction, FIFO, reverse-sync Pro↔ticket) | ticket+backend+pro | 🟡 report UI rõ (`ticket-coupon-reports`); cơ chế SC cần deep-dive |
 | 5 | **Reports** (ticket report + coupon report) | ticket | 🟢 route rõ (route_map) — `ticket-coupon-reports` approved |
