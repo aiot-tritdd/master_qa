@@ -36,10 +36,11 @@ ui_confirmed_at: 2026-07-07
 ## Build-time confirm log (2026-07-07)
 - ✅ Mở booking (date-nav verification-driven + click text) — ổn định (~70% lượt; retry 14x/3s cho chắc).
 - ✅ Remove dòng vé — chạy thật (TC-20).
-- ⛔ **Cancel-payment CHƯA CRACK được headless.** Đã thử & đều TRƠ (không mở invoice tương tác có 取引/キャンセル):
-  - Nút `button.v-btn--outlined:has-text("INVOICE")` (1218,48): force-click, real-click, coord-click → không mở gì, không tab mới, không dialog invoice.
-  - Chip `Paid (Cash)` → trơ.
-  - `View Invoice` (cuối panel, cần scroll drawer) → force-click trơ; scrollIntoView không tới.
-  → **Cần headed-session** (người thấy + click chính xác, scroll drawer tới View Invoice) HOẶC biết **route invoice**
-    (vd `/en/accounting` → 請求書 → 取引 キャンセル) để crack. Headless-blind không đủ.
-  → cancel-payment flow giữ **draft**; các case Part A/B (cancel payment / cancel booking) chưa run được.
+- ✅ **Cancel-payment CRACKED** (nhờ GitNexus+đọc code pro — exception được cho phép). Selector chuẩn:
+  1. Nút `button.v-btn--outlined:has-text("INVOICE")` (force-click) → mở **Invoice dialog** (`InvoiceDetails.vue`).
+     ⚠️ Lỗi trước: app ở `/en/` = **ENGLISH** (labels "Transactions"/"Payment Type"/"Status"), tôi tìm keyword
+     tiếng Nhật nên tưởng không mở. → check `.cancel-btn` hoặc text "Transactions" thay vì 取引.
+  2. Trên transaction "Paid": nút **`.cancel-btn`** (chỉ hiện khi `status==='completed'`) → click.
+  3. Confirm dialog "Do you want to cancel this transaction?" → click **"CONFIRM CANCELLATION"**.
+  4. Quan sát toast: nếu gói có vé đã dùng → 「使用済みチケット…」 (server chặn, giao dịch giữ 'Paid').
+  → cancel-payment flow **approved**. (Cancel/Delete booking = status dropdown / trash icon 🗑 top panel — TODO confirm.)
