@@ -39,7 +39,10 @@ Không in script, không dán base64/ảnh vào chat.
    Selector login: `input[data-cy=institute_code|therapist_code|password]`, `[data-cy=loginButton]`.
    Dữ liệu test tạo ra PHẢI có prefix `AIOT-TEST-*` (preset) / `AIOTTEST*` (staff) để cleanup quét được.
 4. **Ảnh giữ nguyên PNG rõ** (generator tự scale khi nhúng — không cần nén tay).
-   Chụp rõ vùng quan trọng (thông báo/nút/trạng thái); mỗi case ≥ 1 ảnh `after`, có `before` càng tốt.
+   **BẮT BUỘC 2 ảnh/case: `before` + `after`** (template sếp có 2 cột Evidence). Chụp rõ vùng quan trọng.
+   - Case **thao tác** (create/cancel/pay…): before = TRƯỚC thao tác · after = SAU (kết quả/thông báo).
+   - Case **hiển thị/report** (verify cột/label/tab): before = điểm vào / filter / sub-tab bar (context) ·
+     after = kết quả quan sát (KPI+bảng, hoặc 404 nếu chưa build).
 5. **Cập nhật `<folder>/tcs.json`**: mỗi tc điền `result`(PASS|FAIL|未実施),
    `actual`(mô tả quan sát được, bắt đầu bằng PASS/FAIL/未実施), `before`/`after`(tên file trong shots),
    `note`(kỹ thuật/PR nếu có).
