@@ -1,36 +1,47 @@
-# threease_qa — con QA senior tự động (đọc trước)
+# threease_qa — con QA senior tự động, THUẦN BLACK-BOX (đọc trước)
 
-Repo này KHÔNG chứa code sản phẩm. Nó chứa **1 skill** (`.claude/skills/qa-brain/`) biến
-session Claude này thành **QA senior**: từ 1 file spec → sinh test → chạy Playwright lấy
-evidence → khi FAIL thì định vị bug trong hệ thống ThreeSides (5 repo). Cộng với **pipeline
-của sếp** ở `.claude/commands/testcase-*.md` (write / run / cleanup / retest / upspecschange).
+Repo này KHÔNG chứa code sản phẩm. Nó chứa **skill `qa-brain`** (`.claude/skills/qa-brain/`) biến
+session Claude này thành **QA senior mù code**: từ 1 file **SPEC** → sinh test → drive app dev bằng
+Playwright → **quan sát live** → chấm PASS/FAIL + evidence. Cộng pipeline `.claude/commands/testcase-*.md`
+(specs-md / write / run / cleanup / retest / upspecschange / systemdoc).
+
+> 📘 **Đọc để hiểu trọn + cày tiếp:** `docs/QA-SERVER.md` (kinh thánh) · `docs/KNOWLEDGE-STRATEGY.md`
+> (grow/maintain tri thức). Bối cảnh 5 repo: `/Users/tritdd/Work/ThreeSides/CLAUDE.md`.
+
+## 2 BỨC TƯỜNG THÉP (đừng phá)
+1. **Oracle = SPEC, không phải code.** `expect` chỉ suy từ spec; lúc viết `expect` thì **MÙ code**
+   (lấy kỳ vọng từ code = tautology = vô nghĩa).
+2. **QA mù code tuyệt đối.** Không đọc code, không GitNexus lúc test. FAIL báo **hành vi**
+   ("spec bảo X, màn làm Y" + ảnh), **KHÔNG** symbol/file:line. Định vị bug ở code là việc dev.
 
 ## Cách xài (nhanh gọn)
-1. Bỏ `specs.html` (hoặc `specs.md`) vào `wtf-is-this/TestCase_No.XX/`.
-2. Bảo: **"dùng skill qa-brain cho folder wtf-is-this/TestCase_No.XX"** → skill đọc spec,
-   viết case, gắn seam bằng 5 graph, ghi `tcs.json` + `.xlsx` (chưa chạy).
-3. `/testcase-run wtf-is-this/TestCase_No.XX` → chạy thật + evidence + PASS/FAIL.
-4. FAIL → skill dùng graph chỉ bug ở symbol/file nào (KHÔNG sửa code).
+1. Bỏ `specs.md` (hoặc `specs.html` → `/specs-md` sinh md) vào `wtf-is-this/TestCase-XX/`.
+2. "dùng skill qa-brain cho folder wtf-is-this/TestCase-XX" → đọc spec → viết case (mù code) →
+   seam từ SPEC + Living Business Doc → `tcs.json` + `.xlsx`.
+3. `/testcase-run …` → drive app dev + quan sát live + evidence → PASS/FAIL.
+4. FAIL → báo hành vi lệch spec + ảnh. Feature chưa build → FAIL (quan sát 404/thiếu nút).
 
-## 2 BỨC TƯỜNG THÉP (đọc kỹ, đừng phá)
-1. **Oracle = SPEC, không phải code.** `expect` chỉ suy từ spec; lúc viết `expect` thì MÙ code.
-   Lấy kỳ vọng từ code = test lặp lại code = vô nghĩa (tautology).
-2. **Định vị bug, KHÔNG sửa code.** Đứng vai user. Chỉ ra bug ở đâu; không chỉnh 5 repo sản phẩm.
+## Chìa khoá + tri thức (black-box)
+- **HOW vs WHAT:** navigation (bấm gì) tách khỏi đúng/sai (WHAT). Bug ở WHAT (logic), không ở HOW
+  (nút/màn) → navigation miễn nhiễm bug logic.
+- **3 nguồn tri thức:** ① **SPEC** (oracle, per-folder) · ② `knowledge/*.md` = **Living Business Doc**
+  (navigation HOW, approved qua UI-confirm) · ③ `knowledge/system/*.md` = **hiểu business toàn hệ**
+  (draft, "mô tả code"—không phải oracle). Đúng/sai = SPEC + quan sát live.
+- **Precondition Protocol:** định-nghĩa-từ-SPEC → dựng-bằng-flow-CŨ (không dùng feature đang test)
+  → verify-bằng-mắt.
+- **GitNexus CHỈ ở build-time** (`/testcase-systemdoc`, soạn knowledge — UI-confirm + duyệt).
+  **QA-runtime KHÔNG đụng GitNexus, không đọc code.** ⚠️ KHÔNG code-trace để phán "build/chưa-build"
+  (đã từng SAI) — dùng `route_map` (build-time) + quan sát live.
 
-## Tri thức QA (black-box) — KHÔNG đọc code
-- **Oracle = SPEC** (mỗi TestCase folder có `specs.md`). QA mù code tuyệt đối.
-- **Chìa khoá — HOW vs WHAT:** navigation (bấm gì) tách khỏi đúng/sai (WHAT). Bug sống ở WHAT
-  (logic), không ở HOW (nút/màn) → navigation miễn nhiễm bug logic.
-- **Living Business Doc** (`knowledge/*.md`, đã duyệt) = *cách vận hành* (HOW/navigation) +
-  kênh quan sát. **Không phải oracle.** Đúng/sai = SPEC + quan sát live.
-- **Precondition Protocol:** định-nghĩa-từ-SPEC → dựng-bằng-flow-cũ (không dùng feature đang test)
-  → verify-bằng-mắt (Pro + ticket-admin).
-- **Kênh quan sát**: `knowledge/observation-channels.md` (Pro / ticket-admin / ticket-app).
-- GitNexus **chỉ dùng ở build-time** (`/testcase-systemdoc`) để soạn Living Business Doc, bắt buộc
-  UI-confirm + người duyệt. **QA-runtime KHÔNG đụng GitNexus, không đọc code.**
-- Bối cảnh hệ thống (kiến trúc, HTTP link, DB, sync) ở `/Users/tritdd/Work/ThreeSides/CLAUDE.md`
-  — chỉ dùng ở tầng build-time khi soạn Living Business Doc, không phải cho QA-runtime.
+## Access dev + evidence
+- Account: `wtf-is-this/account.txt`. `pw_lib` targets: `getPage('pro'|'ticket'|'ticket_admin'|'reservation'|'admin')`.
+- **Report ticket cần** `TESTSEED001/ticket-admin/password123` (env `TK_STAFF=ticket-admin`) — STAFF001 không có quyền.
+- Dữ liệu test tạo ra: prefix `AIOT-TEST-*`/`AIOTTEST*` → `/testcase-cleanup` quét.
+- **Evidence chuẩn:** xlsx **3 sheet** (Cover/Test Cases/Checklist+Nguồn) · **mỗi case 2 ảnh (before+after) PNG rõ**.
+
+## Maintenance khi 5 repo update
+`refresh-gitnexus.sh` (graph tươi — CHỈ graph) → **stale-check `source_hash`** → re-confirm CHỈ doc drift.
+(refresh KHÔNG tự update knowledge/ — luôn cần nhịp stale-check.)
 
 ## Nguyên tắc token
-1 session ấm nghĩ xuyên suốt + dùng graph tool + script sếp (xlsx/Playwright).
-KHÔNG đẻ subprocess `claude -p`, KHÔNG viết file `.py` phụ trợ.
+1 session ấm nghĩ xuyên suốt + script sếp (xlsx/Playwright). KHÔNG `claude -p`, KHÔNG viết `.py` phụ trợ.

@@ -132,11 +132,15 @@ XÂY tiếp: nhiều Living Business Doc, stale-detection tự động, viewer.
 
 ## Phần V — KNOWLEDGE BASE (nó mang gì trong người)
 
-### 2 nguồn tri thức tách bạch
-
+### 3 nguồn tri thức tách bạch
 - **SPEC (oracle)** — `wtf-is-this/<TestCase>/specs.md` (mỗi task). QA đo đúng/sai theo cái này.
 - **Living Business Doc (navigation)** — `knowledge/*.md`. *Cách vận hành* (HOW) + kênh quan sát.
-  **KHÔNG phải oracle.** Firewall: cấm ghi kết quả kỳ vọng / luật pass-fail.
+  **KHÔNG phải oracle.** Firewall: cấm ghi kết quả kỳ vọng / luật pass-fail. Approved qua **UI-confirm**.
+- **System-map (hiểu business toàn hệ)** — `knowledge/system/*.md`. *"Mô tả code làm gì"* per domain
+  (draft, từ GitNexus + CLAUDE.md). Để **hiểu hệ thống** khi viết case — **KHÔNG phải oracle**, cần người duyệt.
+
+> 📘 **Chiến lược grow/maintain tri thức** ở `docs/KNOWLEDGE-STRATEGY.md` (bootstrap system-map →
+> demand-driven per spec → maintenance `source_hash` → tương lai wiki/RAG). ĐỌC file đó để cày tiếp.
 
 ### Cách lưu Living Business Doc
 
@@ -170,17 +174,25 @@ ui_confirmed_at: 2026-07-07
 ### Pipeline (command của sếp)
 
 ```
+/specs-md <folder>           spec.html → specs.md format chuẩn (đẹp, oracle tốt hơn)
+        │
 /testcase-systemdoc <flow>   soạn Living Business Doc (build-time, GitNexus + UI-confirm + duyệt)
         │
 (dùng skill qa-brain cho 1 folder spec)
    ĐỌC SPEC → VIẾT CASE (mù code) → SEAM (spec + Living Business Doc) → tcs.json + xlsx
         │
-/testcase-run    drive UI live → evidence 2 phía → result/actual → build Excel
+/testcase-run    drive UI live → evidence → result/actual → build Excel
         │
 /testcase-cleanup   dọn dữ liệu test trên dev (prefix AIOTTEST*)
         │  (review ra change/bug)
 /testcase-upspecschange → (dev fix) → /testcase-retest (subset)
 ```
+
+### Chuẩn evidence (bắt buộc — khớp template sếp)
+- `build_evidence.py` xuất **3 sheet**: **Cover** (SUMMARY COUNTIF) · **Test Cases** (block-dọc/case +
+  Evidence Before/After ảnh to) · **Checklist** (+ cột **Nguồn / 発生元**).
+- **Mỗi case = 1 before + 1 after (2 ảnh)**, **PNG rõ** (KHÔNG nén JPG nhỏ). Dùng chung ảnh khi cùng màn.
+- `result` = PASS / FAIL / 未実施. FAIL báo hành vi + ảnh, KHÔNG symbol/file:line.
 
 ### Chống flaky (tri thức nghiệp vụ nhét vào runner)
 
@@ -252,3 +264,33 @@ File chính: `threease_ticket_syncable.rb` (callback) · `threease_ticket_sync_j
 (direct-vs-outbox) · ticket `admin_api/data_sync/handlers.py` (upsert th_customer).
 
 > ⚠️ Phần VIII là **ground truth build-time** (dùng khi soạn Living Business Doc). QA-runtime KHÔNG đọc.
+
+---
+
+## Phần IX — Cập nhật 2026-07-08 (chốt + bài học)
+
+### 1. Tri thức 2 tầng + chiến lược grow
+- `knowledge/*.md` = **Living Business Doc (navigation, approved)** cho QA.
+- `knowledge/system/*.md` = **hiểu business toàn hệ (draft)** — `OVERVIEW.md` (8 domain) + deep-dive per domain.
+- Chiến lược đầy đủ ở **`docs/KNOWLEDGE-STRATEGY.md`**: bootstrap system-map (bây giờ) → grow per spec →
+  maintenance → wiki/RAG. **Specs sau này = để TINH CHỈNH/UPDATE business đã map** (không phải build lại từ 0).
+
+### 2. Maintenance khi 5 repo update (đừng quên nhịp 2)
+```
+repo update → refresh-gitnexus.sh (graph tươi)  ← CHỈ update graph, KHÔNG update knowledge/
+            → stale-check (source_hash cũ↔mới)   ← tìm doc drift
+            → re-derive + re-confirm CHỈ doc stale
+```
+Surgical (per `source_hash`). **CẦN LÀM (GĐ-0):** gắn `source_hash` thật + hồi sinh lệnh `/testcase-stale`.
+
+### 3. Access — account report ticket (quan trọng)
+- Report ticket (`/reports/`, `/coupon-reports/*`) cần quyền → account **`TESTSEED001/ticket-admin/password123`**
+  (env `TK_STAFF=ticket-admin`). Account thường `STAFF001` **KHÔNG** vào report được (nav thiếu tab, /reports redirect home).
+- `pw_lib` targets: `getPage('pro' | 'ticket' | 'ticket_admin' | 'reservation' | 'admin')`.
+
+### 4. Bài học VÀNG — code-trace SAI, black-box ĐÚNG (chứng minh triết lý)
+- Guard "vé đã dùng": tôi **code-trace** → kết luận "chưa build" → **SAI** (Rails index yếu). **Black-box** thấy
+  guard **đã build + chạy đúng** (message JP nguyên văn), và bắt bug thật (Remove lộ raw i18n key).
+- Coupon report (TestCase-11): black-box **9 PASS/8 FAIL khớp 100%** list dev khai — mù code vẫn đúng.
+- → **KHÔNG code-trace để phán build/chưa-build.** Route/skeleton dùng `route_map` (build-time); đúng/sai
+  dùng **quan sát live vs SPEC**. Đây là lý do 2 bức tường thép tồn tại.
