@@ -1,0 +1,9 @@
+{
+  "name": "testcase-evidence",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Harness cơ khí cho qa-brain: Playwright chạy test + chụp evidence (pw_lib/pw_api). Build Excel = build_evidence.py.",
+  "dependencies": {
+    "playwright": "^1.44.0"
+  }
+}

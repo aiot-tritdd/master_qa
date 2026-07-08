@@ -4,7 +4,7 @@ status: approved
 kind: flow
 spans_repos: [pro]
 source_symbols: ["pro: components/features/reservations/reservation_form/ReservationForm.vue"]
-source_hash: null
+source_hash: 0d5d5b2cb5f2af2c
 ui_confirmed_at: 2026-07-07
 ---
 # Flow: Mở booking detail trên Pro (HOW — navigation only)

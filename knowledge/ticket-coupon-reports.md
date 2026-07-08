@@ -6,7 +6,7 @@ spans_repos: [ticket]
 source_symbols:
   - "ticket: backoffice/urls.py (coupon-reports routes)"
   - "ticket: ReportService.get_coupon_metrics (CouponPack/CouponUsage/CouponTransaction)"
-source_hash: null
+source_hash: a84158fb392604ca
 ui_confirmed_at: 2026-07-08
 grown_from: "GitNexus route_map(threease_ticket, coupon-reports) + UI-confirm (TestCase-11)"
 ---

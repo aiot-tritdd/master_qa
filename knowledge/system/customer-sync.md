@@ -9,7 +9,7 @@ source_symbols:
   - "backend: app/controllers/api/webhooks/threease_ticket/sync_controller.rb (handle_customer_upserted/deleted)"
   - "ticket: admin_api/data_sync/handlers.py"
   - "ticket: th/services/pro_backend_sync.py + SyncOutboxEvent"
-source_hash: null
+source_hash: c487981641476afe
 note: "MÔ TẢ code đang làm gì — KHÔNG phải oracle. Cần người duyệt."
 ---
 # Domain: Customer / Master sync (backend Rails ↔ ticket Django)
