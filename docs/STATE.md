@@ -28,11 +28,11 @@ evidence PNG/xlsx. Oracle = SPEC + quan sát live. **Mù code.** GitNexus chỉ 
 
 ## 3. VIỆC TIẾP (ưu tiên trên xuống)
 
-1. **[GĐ-0] Khép vòng maintenance** — chưa làm:
-   - Gắn `source_hash` THẬT vào mỗi doc knowledge (hash `source_symbols` từ GitNexus lúc grow).
-   - Hồi sinh lệnh **`/testcase-stale`** (bản gọn): sau `refresh-gitnexus.sh` → so hash → in list doc stale.
-2. **[Grow knowledge/system] 7 domain deep-dive còn lại** (xem `OVERVIEW.md`, thứ tự giá trị):
-   Payment/Cancel (đã UI-confirm→viết nhanh) · Ticket issue+sync · Coupon/SC · Reports · Booking · Reservation widget · Admin.
+1. ✅ **[GĐ-0] Khép vòng maintenance — XONG (2026-07-08):** `stale_check.py` + lệnh **`/testcase-stale`** +
+   `source_hash` thật trên doc có `source_symbols`. Dùng: sau `refresh-gitnexus.sh` → `/testcase-stale` →
+   re-confirm doc stale → `stale_check.py --update`. → **Việc tiếp thực sự bắt đầu từ #2.**
+2. **[Grow knowledge/system] domain deep-dive** — ✅ `customer-sync` + ✅ `payment-cancel` (2026-07-08).
+   **Còn 6:** Ticket issue+sync · Coupon/SC · Reports · Booking · Reservation widget · Admin (xem `OVERVIEW.md`).
 3. **[Nav doc]** Nâng `issue-ticket-pack.md` draft→approved: UI-confirm khâu **tạo booking→thanh toán→phát hành vé** (chưa drive đủ).
 4. **[Optional]** `TestCase_NEW`: 6 case còn 未実施 cần precondition **gói vé còn nguyên** (KH3 đã dùng 2 vé) → phải dựng booking mới.
 
