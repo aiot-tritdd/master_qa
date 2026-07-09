@@ -53,6 +53,17 @@ Trước đó 4 lệnh trỏ vào file **không tồn tại**. Nay:
 - ✅ **Capture Lessons** (bắt buộc) vào `/testcase-run` + `/testcase-retest`.
 - ✅ Luật **"1 tri thức = 1 nhà"** + **"dot-folder không chứa deliverable"** vào `KNOWLEDGE-STRATEGY.md`.
 
+### ✅ REGRESSION TEST cho chính hệ QA (2026-07-09) — merge KHÔNG phá black-box
+Thước đo thành công của `MERGE-PLAN`: chạy lại TestCase-11 phải vẫn ra **9 PASS / 8 FAIL**. → ✅ **ĐÚNG**.
+- `200`: top-tab `チケットレポート`+`クーポンレポート` · `/reports/` · `/coupon-reports/sales/` (filter, KPI,
+  `CSVエクスポート`, cột `発行元`) · `/coupon-reports/usage/`
+- `404`: `/coupon-reports/` (dashboard) · `/monthly/` · `/by-store/` · `/csv-snapshots/`; nút `過去のCSV` = 0
+- Sub-tab クーポンレポート thật = **2** (`販売`,`消費`), spec đòi 5 → TC-04 FAIL.
+- ⚠️ **Chốt OQ-01:** coupon report **CÓ tồn tại**, mới build 2/5 sub-tab. Khẳng định `grep` của sếp
+  (*"CHƯA TỒN TẠI TRONG CODE"*) **sai**. Model nằm chỗ khác/tên khác.
+- 📌 Bẫy tự bắt: selector `.nav-link,[role=tab]` hốt cả top-nav → ra 9. Số thật là 2.
+  Tin thẳng số 9 ⇒ TC-04 PASS **sai**. Luôn nhìn ảnh khi con số lạ.
+
 ### ✅ LIVE-VERIFY harness (2026-07-09) — cổng chặn đã MỞ
 Chạy thật trên dev, không phải syntax check:
 - ✅ `pw_api` sniff devise-token: `GET /permissions/presets` → **200**, 7 preset. Id không tồn tại → **404**

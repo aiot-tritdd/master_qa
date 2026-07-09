@@ -37,7 +37,7 @@ ui_confirmed_at: null
 
 ---
 
-## OQ-01 — `ReportService.get_coupon_metrics()` có tồn tại không? 🔴
+## OQ-01 — `ReportService.get_coupon_metrics()` có tồn tại không? 🟡 **thu hẹp 2026-07-09**
 **Vì sao hỏi:** hai nguồn cùng ngày 2026-07-08 **mâu thuẫn trực tiếp**.
 
 | Nguồn | Phương pháp | Kết luận |
@@ -52,6 +52,13 @@ loại trừ khả năng `source_hash` của ta đang hash một file **không c
 **Ai trả lời:** dev ticket · hoặc `context({name:"get_coupon_metrics", repo:"threease_ticket"})` (build-time).
 **Block:** độ tin cậy của `stale_check.py` trên `ticket-coupon-reports.md`; mọi phán quyết "đã/chưa build".
 **Ghi chú:** dù kết quả thế nào, **QA-runtime vẫn chấm bằng quan sát live**, không bằng câu trả lời này.
+
+**Cập nhật 2026-07-09 (quan sát live, regression TestCase-11):** coupon report **CÓ tồn tại** —
+`/coupon-reports/sales/` và `/usage/` trả **`200`** với filter + KPI + `CSVエクスポート` + cột `発行元`.
+Bốn route còn lại (`/`, `/monthly/`, `/by-store/`, `/csv-snapshots/`) trả **`404`**.
+⇒ Khẳng định *"CHƯA TỒN TẠI TRONG CODE"* của `REPORTING.md` **SAI**. Thực tế: **đã build 2/5 sub-tab**.
+**Câu hỏi thu hẹp lại:** tên/vị trí thật của model + service là gì (vì `grep -i coupon` trên
+`th/models/` ra rỗng)? → dev trả lời. **Không chặn test nào nữa** (quan sát live là đủ để chấm).
 
 ## OQ-02 — Dev URL của Ứng dụng Quản trị / Widget Đặt lịch / Hệ thống Vé? ✅ **ĐÃ ĐÓNG 2026-07-09**
 **Cách đóng:** tự mở thử (`curl` + đọc `<title>`) — **không cần hỏi ai**. Cả 5 URL đều sống, đúng app:
