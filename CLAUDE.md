@@ -5,9 +5,8 @@ session Claude này thành **QA senior mù code**: từ 1 file **SPEC** → sinh
 Playwright → **quan sát live** → chấm PASS/FAIL + evidence. Cộng pipeline `.claude/commands/testcase-*.md`
 (specs-md / write / run / cleanup / retest / upspecschange / systemdoc).
 
-> 📘 **Đọc để hiểu trọn + cày tiếp:** `docs/STATE.md` (đọc đầu tiên) · `docs/QA-SERVER.md` (kinh thánh) ·
-> `docs/SYSTEM-COMPARISON.md` (hệ mình vs hệ sếp) · `docs/MERGE-PLAN.md` (đang chạy) ·
-> `docs/KNOWLEDGE-STRATEGY.md` (grow/maintain tri thức). Bối cảnh 5 repo: `/Users/tritdd/Work/ThreeSides/CLAUDE.md`.
+> 📘 **Hiểu hệ thống:** `docs/README.md` (cửa vào — 1 file là đủ, có bảng "muốn biết X → mở file Y").
+> **Đang làm gì tiếp:** `docs/STATE.md` (đọc đầu mỗi phiên). Bối cảnh 5 repo: `/Users/tritdd/Work/ThreeSides/CLAUDE.md`.
 
 ## 2 BỨC TƯỜNG THÉP (đừng phá)
 1. **Oracle = SPEC, không phải code.** `expect` chỉ suy từ spec; lúc viết `expect` thì **MÙ code**

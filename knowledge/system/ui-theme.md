@@ -10,7 +10,7 @@ source_symbols:
 source_hash: null
 confidence: 🟡
 verify_by: "Màu/token đổi theo release → mở lại nuxt.config.js / variables.scss / colors.dart trước khi tin."
-grown_from: ".claude-tester/.claude-knowledge/UI_UX.md"
+grown_from: "0119159:.claude-tester/.claude-knowledge/UI_UX.md"
 ---
 # UI/UX theme theo từng app (WHAT — chỉ dùng khi test/mockup giao diện)
 

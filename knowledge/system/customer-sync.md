@@ -10,7 +10,8 @@ source_symbols:
   - "ticket: admin_api/data_sync/handlers.py"
   - "ticket: th/services/pro_backend_sync.py + SyncOutboxEvent"
 source_hash: c487981641476afe
-note: "MÔ TẢ code đang làm gì — KHÔNG phải oracle. Cần người duyệt."
+note: "MÔ TẢ code đang làm gì — KHÔNG phải oracle. Cần người duyệt. Là NHÀ của ground truth sync (workspace CLAUDE.md §8 chỉ trỏ về đây)."
+grown_from: "0119159:.claude-tester/.claude-knowledge/SYNC_MAP.md#1 + workspace CLAUDE.md §8"
 confidence: 🟡
 verify_by: "Code-derived (đọc 2026/07/08). Endpoint/outbox/cron đổi theo release → đọc lại threease_ticket_service.rb + handlers.py."
 ---
@@ -54,9 +55,7 @@ Rails nhận ở `SyncController` (`handle_customer_upserted/deleted/institute/b
 
 ---
 
-## 📥 Nhập từ `.claude-tester/.claude-knowledge/SYNC_MAP.md` §1 (2026-07-09, cửa WHAT)
-> `grown_from: .claude-tester/.claude-knowledge/SYNC_MAP.md#1-chiều-lõi-vé`
-> Nguồn gốc: đọc code 2026/07/08 · ⛔ **QA-runtime CẤM đọc mục này.**
+## Chi tiết endpoint / bảo mật / outbox (code-derived 2026/07/08)
 
 - **Endpoint forward:** `POST /admin-api/sync` (hằng `API_ENDPOINT_WEBHOOK_SYNC`,
   `threease_backend/app/services/threease_ticket_service.rb:38` `send_sync_request`).

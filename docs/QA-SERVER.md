@@ -1,11 +1,9 @@
-# QA-Server — Kinh thánh của dự án
+# QA-Server — vì sao nó được thiết kế như vậy
 
-> Tài liệu tổng: mọi thứ về con QA-Server này — nó là gì, tồn tại để làm gì,
-> nghĩ thế nào, mang tri thức gì, làm ra sao, và lộ trình các phase.
-> Đọc file này là hiểu trọn dự án. Đây là tài liệu **sống** — cập nhật khi có thay đổi.
-
-Ngày khởi tạo: 2026-07-06 · Cập nhật: 2026-07-07
-Trạng thái: **Bản skill-based (Claude Code) — chạy được, đang chuẩn hoá black-box**
+> Tài liệu **đào sâu**: triết lý, kiến trúc, và bằng chứng.
+> Chưa đọc [`README.md`](README.md) thì đọc cái đó trước — file này giả định bạn đã hiểu hệ thống làm gì.
+>
+> Tài liệu **sống**: có cái mới → **sửa tại chỗ**, không nối `## Cập nhật ngày…`. Lịch sử ở `git log`.
 
 ---
 
@@ -13,8 +11,8 @@ Trạng thái: **Bản skill-based (Claude Code) — chạy được, đang chu�
 
 ### Nỗi đau
 
-Hệ thống **ThreeSides** (đặt lịch khám bệnh, giường bệnh, vé/coupon) là 5 repo,
-4 ngôn ngữ, chạy chung qua Docker. Vấn đề:
+Hệ thống **ThreeSides** (đặt lịch khám, giường bệnh, vé/coupon) là 5 repo, 4 ngôn ngữ, chạy chung
+qua Docker. Vấn đề:
 
 - **Không có tài liệu.** Không spec. Business logic phức tạp, đổi liên tục.
 - Nghiệp vụ nằm **trong đầu vài người** — mất người là mất tri thức.
@@ -23,324 +21,280 @@ Hệ thống **ThreeSides** (đặt lịch khám bệnh, giường bệnh, vé/c
 
 ### Nó KHÔNG phải "AI đi click website"
 
-Rất nhiều tool đã làm chuyện mở browser bấm nút. Con này khác:
-nó là một **QA senior nhân tạo HIỂU NGHIỆP VỤ** của chính hệ thống này.
+Rất nhiều tool đã làm chuyện mở browser bấm nút. Con này khác: nó là một **QA senior nhân tạo hiểu
+nghiệp vụ** của chính hệ thống này.
 
 ### Oracle problem — sự thật phũ, và là trái tim mọi quyết định
 
-Khi một hành vi thay đổi, **nhìn code không phân biệt được** đó là **BUG** (đổi ngoài ý muốn)
-hay **FEATURE** (cố ý đổi). Vì "ý định đúng" **không nằm trong code** — nó nằm trong đầu người.
-Code chỉ biết nó *đang* làm gì, không biết nó *nên* làm gì. → Nếu test sinh ra **từ code**, nó chỉ
-xác nhận "code đang làm gì" (tautology), không bao giờ bắt được lỗi so với ý định.
-→ **Ý định đúng = SPEC** (do người viết). Toàn bộ kiến trúc xoay quanh việc lấy oracle từ SPEC,
-KHÔNG từ code.
+Khi một hành vi thay đổi, **nhìn code không phân biệt được** đó là **BUG** (đổi ngoài ý muốn) hay
+**FEATURE** (cố ý đổi). Vì "ý định đúng" **không nằm trong code** — nó nằm trong đầu người. Code chỉ
+biết nó *đang* làm gì, không biết nó *nên* làm gì.
+
+⇒ Nếu test sinh ra **từ code**, nó chỉ xác nhận "code đang làm gì" (**tautology**), không bao giờ bắt
+được lỗi so với ý định.
+
+⇒ **Ý định đúng = SPEC** (do người viết). Toàn bộ kiến trúc xoay quanh việc lấy oracle từ SPEC,
+**không** từ code.
 
 ---
 
 ## Phần II — WHAT (nó là gì)
 
-**Một câu:** một **skill trong Claude Code** (`qa-brain` + bộ command `testcase-*`) biến session
-này thành QA senior **thuần black-box**: từ 1 file **SPEC** (oracle) → sinh test → drive app thật
-bằng Playwright → quan sát live → chấm PASS/FAIL kèm evidence (screenshot 2 phía Pro + ticket).
-Kiến trúc **skill-based**, chạy per-folder `wtf-is-this/<TestCase>/`. **KHÔNG** phải dịch vụ Python.
+**Một câu:** một **skill trong Claude Code** (`qa-brain` + bộ command `testcase-*`) biến session này
+thành QA senior **thuần black-box**: từ 1 file **SPEC** (oracle) → sinh test → drive app thật bằng
+Playwright → quan sát live → chấm điểm kèm evidence (screenshot 2 phía Pro + ticket).
+Kiến trúc **skill-based**, chạy per-folder `wtf-is-this/<TestCase>/`. **Không** phải dịch vụ Python.
 
-### Kiến trúc thực tại (đã chốt)
+### Ba thành phần
 
-- **QA-runtime (skill `qa-brain`)**: mù code tuyệt đối. Đọc SPEC + Living Business Doc (navigation)
-  → drive UI → quan sát live → report hành vi. Xuất `tcs.json` (schema sếp) + `.xlsx` evidence.
-- **Build-time (command `/testcase-systemdoc`)**: tầng "người vẽ bản đồ" — dùng GitNexus + system-docs
-  soạn **Living Business Doc** (`knowledge/`), bắt buộc UI-confirm + người duyệt. **Đây KHÔNG phải QA.**
-- **Harness cơ khí** (`.claude/skills-scripts/testcase-evidence/`): `pw_lib.js` (login/getPage đa hệ),
-  `build_evidence.py` (sinh Excel). Command pipeline: `/testcase-write · run · cleanup · upspecschange · retest`.
+- **QA-runtime (skill `qa-brain`)** — mù code tuyệt đối. Đọc SPEC + Living Business Doc (navigation)
+  → drive UI → quan sát live → report hành vi. Xuất `tcs.json` + `.xlsx`.
+- **Build-time (command `/testcase-systemdoc`)** — tầng "người vẽ bản đồ": dùng GitNexus + system-doc
+  soạn Living Business Doc (`knowledge/`), bắt buộc UI-confirm + người duyệt. **Đây không phải QA.**
+- **Harness cơ khí** (`.claude/skills-scripts/testcase-evidence/`) — `pw_lib.js` (login/getPage đa hệ),
+  `pw_api.js` (sniff devise-token), `build_evidence.py` (sinh Excel), `theme.json`, `cleanup.js`.
 
-### Nó NÓI ĐƯỢC gì vs KHÔNG hứa được gì
+### Nó nói được gì vs không hứa được gì
 
-| Nói được (mô tả thực tại) | KHÔNG tự hứa (phán ý định) |
-| --- | --- |
-| "Màn này **đang làm** X, Y, Z" ✅ | "X **là SAI**, đáng lẽ phải là W" — trừ khi có **SPEC** để so ❌ (máy không tự phán) |
+| Nói được (mô tả thực tại) | Không tự hứa (phán ý định) |
+|---|---|
+| "Màn này **đang làm** X, Y, Z" ✅ | "X **là SAI**, đáng lẽ phải là W" — trừ khi có **SPEC** để so ❌ |
 
-→ Quan tòa = **SPEC** (ý định người viết) + **quan sát live**. Máy không tự làm quan tòa cuối cùng.
+⇒ Quan tòa = **SPEC** (ý định người viết) + **quan sát live**. Máy không tự làm quan tòa cuối cùng.
 
 ### Giá trị thật
 
 - ✅ **Test evidence công ty chưa từng có** — screenshot 2 phía + PASS/FAIL theo spec.
 - ✅ **Lưới chống regression** khi đổi code.
-- ❌ **KHÔNG** phải "AI tự tìm bug logic đúng-sai" mà không có spec — "đúng" đến từ **SPEC**.
+- ❌ **Không** phải "AI tự tìm bug logic" mà không có spec — "đúng" đến từ **SPEC**.
 
 ---
 
-## Phần III — CÁCH NÓ NGHĨ (triết lý cốt lõi)
+## Phần III — Cách nó nghĩ
 
-### 1. Chìa khoá — tách "LÀM SAO vận hành" (HOW) khỏi "ĐÚNG/SAI" (WHAT)
+### 1. Chìa khoá — tách "vận hành" (HOW) khỏi "đúng/sai" (WHAT)
 
-Hệ thống có 2 loại tri thức, 2 tầng:
-- **HOW — vận hành:** nút ở đâu, màn nào, bấm thứ tự gì. Tầng giao diện.
-- **WHAT — hành vi:** bấm xong ra kết quả gì, đúng luật không. Tầng logic — **oracle**.
+| | **HOW — vận hành** | **WHAT — hành vi** |
+|---|---|---|
+| Trả lời | nút ở đâu, màn nào, bấm thứ tự nào, xem kết quả ở đâu | bấm xong ra kết quả gì, có đúng luật không |
+| Tầng | giao diện | logic nghiệp vụ |
+| Là oracle? | ❌ không | ✅ **chính là oracle** |
+| Ai cấp? | Living Business Doc (`knowledge/`) | SPEC + quan sát live |
 
-**Bug sống ở tầng WHAT, không ở HOW.** Dev code sai luật → sai *cái xảy ra khi bấm*, không dời nút.
-→ Navigation gần như **miễn nhiễm bug logic**. Nên Living Business Doc (chép tầng HOW) có thể derive
-từ code (build-time) mà không làm QA sai — vì **đúng/sai luôn do SPEC + quan sát live**, không do doc.
+**Bug sống ở tầng WHAT, không ở HOW.** Dev code sai luật → sai *cái xảy ra khi bấm*, chứ không dời nút.
+⇒ Navigation gần như **miễn nhiễm bug logic**. Nên Living Business Doc (chỉ chép HOW) có thể derive
+từ code ở build-time mà **không** làm QA sai — vì đúng/sai luôn do SPEC + quan sát live, không do doc.
 
-### 2. Structural vs Semantic
+Đây là toàn bộ lý do `knowledge/` được phép tồn tại trong một hệ "mù code".
+
+### 2. Ba tầng tri thức
+
+Tri thức chia theo **quyền lực** (có cấp được `expect` không), không theo chủ đề:
+
+| Tầng | Ở đâu | QA-runtime |
+|---|---|:--:|
+| **HOW** — bấm gì, xem đâu | `knowledge/*.md` | ✅ |
+| **WHAT** — code làm gì, đã/chưa build | `knowledge/system/*.md` | ⛔ **CẤM** |
+| **CHƯA BIẾT** — tra rồi vẫn không đủ căn cứ | `knowledge/OPEN-QUESTIONS.md` | ✅ |
+
+Tầng "chưa biết" an toàn vì nó **không phán đúng/sai** — nó chỉ nói *"đừng tự tin ở đây"*. Thiếu nó,
+mọi thứ chưa biết bị ép thành "có" (→ **bịa**) hoặc "không" (→ điều tra vô hạn).
+
+*(Vòng đời doc, `source_hash`, 3 loại stale: [`KNOWLEDGE-STRATEGY.md`](KNOWLEDGE-STRATEGY.md))*
+
+### 3. Structural vs Semantic
 
 ```
-STRUCTURAL (facts — rút máy móc)          → GitNexus, chỉ ở BUILD-TIME
-SEMANTIC (ý nghĩa — LLM sinh, dễ sai)     → Living Business Doc, BẮT BUỘC UI-confirm + người duyệt
+STRUCTURAL (facts — rút máy móc)       → GitNexus, chỉ ở BUILD-TIME
+SEMANTIC (ý nghĩa — LLM sinh, dễ sai)  → Living Business Doc, BẮT BUỘC UI-confirm + người duyệt
 ```
 
-Semantic-doc = **navigation-only** (không đóng vai quan tòa). GitNexus chỉ là nguyên liệu build-time.
+Semantic-doc = **navigation-only**, không đóng vai quan tòa. GitNexus chỉ là nguyên liệu build-time.
 
-### 3. Test đẻ từ Ý ĐỊNH (= SPEC), không đẻ từ code
+### 4. Test đẻ từ Ý ĐỊNH (= SPEC), không đẻ từ code
 
-Tại mọi thời điểm có 3 thứ, việc QA là phát hiện chúng **lệch nhau**:
+Tại mọi thời điểm có 3 thứ; việc của QA là phát hiện chúng **lệch nhau**:
 
 ```
-① CODE đang làm gì        (hệ thống thật — quan sát qua UI, KHÔNG đọc code)
-② SPEC = ý định đã chốt   (oracle — test đo theo cái này)
-③ Ý ĐỊNH MỚI              (spec change)
+① CODE đang làm gì      (hệ thống thật — quan sát qua UI, KHÔNG đọc code)
+② SPEC = ý định đã chốt (oracle — test đo theo cái này)
+③ Ý ĐỊNH MỚI            (spec change)
 ```
 
 | Tình huống | QA nói | Ai quyết |
-| --- | --- | --- |
+|---|---|---|
 | Hành vi khác spec | "spec bảo X, màn làm Y → FAIL" | → ticket dev |
-| Spec đổi, code chưa | "muốn W, màn vẫn X — FAIL: code chưa theo kịp" | → ticket dev |
+| Spec đổi, code chưa | "muốn W, màn vẫn X → FAIL: code chưa theo kịp" | → ticket dev |
 | Cả 2 khớp | "màn khớp spec → PASS" ✅ | (ca đẹp) |
 
-### 4. Precondition Protocol (dựng tình huống mà không tin code)
+### 5. Bốn kết quả, không phải ba — và `SPEC-GAP`
 
-1. **Định nghĩa** precondition từ **SPEC (ô `pre`)** — nghiệp vụ, không code.
-2. **Dựng** bằng flow CŨ đã chạy ổn (Living Business Doc) — **KHÔNG dùng feature MỚI đang test**.
+| Kết quả | Nghĩa |
+|---|---|
+| `PASS` | quan sát khớp spec |
+| `FAIL` | quan sát lệch spec (mô tả hành vi + ảnh) |
+| `未実施` | **không quan sát được** |
+| `SPEC-GAP` | **quan sát được, nhưng SPEC không định nghĩa kỳ vọng** |
+
+`SPEC-GAP` xảy ra khi `knowledge/METHOD.md` bảo *phải có case* mà **SPEC im lặng**.
+Ranh giới một dòng, nhầm là phá Tường thép #1:
+
+> `METHOD.md` quyết định **case nào phải tồn tại** (coverage).
+> Nó **không bao giờ** quyết định `expect` (oracle).
+
+⇒ Gặp `SPEC-GAP` thì **không bịa `expect`**. Đây là finding **giá trị cao nhất** của QA mù code:
+bằng chứng rằng **spec chưa nghĩ tới**.
+
+`SPEC-GAP` ở tầng test case chính là `OPEN-QUESTIONS.md` ở tầng tri thức — cùng một khái niệm:
+*"tôi quan sát được, nhưng không có căn cứ để chấm"*.
+
+### 6. Precondition Protocol (dựng tình huống mà không tin code)
+
+1. **Định nghĩa** precondition từ **SPEC** (ô `pre`) — bằng ngôn ngữ nghiệp vụ, không phải code.
+2. **Dựng** bằng flow CŨ đã chạy ổn (Living Business Doc) — **không dùng feature MỚI đang test**.
 3. **Verify bằng mắt**: quan sát trạng thái thật (Pro + ticket-admin) đối chiếu spec → khớp mới chạy.
 
----
-
-## Phần IV — KIẾN TRÚC (tầng)
-
-```
-① NGUỒN        5 repo + stack đang chạy trên dev (đánh test qua UI/HTTP)
-② KNOWLEDGE    SPEC (oracle, per-folder specs.md) + Living Business Doc (navigation, knowledge/)
-     │  build-time: GitNexus facts + UI-confirm → Living Business Doc (người duyệt)
-③ BỘ NÃO       skill qa-brain: ĐỌC SPEC → VIẾT CASE (mù code) → SEAM → PRECONDITION → RUN → REPORT
-④ TEST         Playwright evidence (pw_lib) — drive UI, chụp 2 phía; build Excel
-⑤ EVIDENCE     tcs.json + <Folder>.xlsx (PASS/FAIL/未実施 + ảnh + lý do hành vi)
-```
-
-CÓ: skill + command pipeline, harness Playwright, GitNexus (chỉ build-time), stack dev + data thật.
-XÂY tiếp: nhiều Living Business Doc, stale-detection tự động, viewer.
+Bước 2 là chỗ tinh tế: dựng precondition bằng chính feature đang test thì code sai của nó sẽ làm hỏng
+khâu dựng, và ta không phân biệt được *"bug ở feature"* với *"tôi dựng sai từ đầu"*.
 
 ---
 
-## Phần V — KNOWLEDGE BASE (nó mang gì trong người)
+## Phần IV — Kiến trúc (tầng)
 
-### 3 nguồn tri thức tách bạch
-- **SPEC (oracle)** — `wtf-is-this/<TestCase>/specs.md` (mỗi task). QA đo đúng/sai theo cái này.
+```
+① NGUỒN      5 repo + stack đang chạy trên dev (đánh test qua UI/HTTP)
+② KNOWLEDGE  SPEC (oracle, per-folder specs.md) + Living Business Doc (navigation, knowledge/)
+    │  build-time: GitNexus facts + UI-confirm → Living Business Doc (người duyệt)
+③ BỘ NÃO     skill qa-brain: ĐỌC SPEC → VIẾT CASE (mù code) → SEAM → PRECONDITION → RUN → REPORT
+④ TEST       Playwright evidence (pw_lib) — drive UI, chụp 2 phía; build Excel
+⑤ EVIDENCE   tcs.json + <Folder>.xlsx (PASS/FAIL/未実施/SPEC-GAP + ảnh + lý do hành vi)
+```
+
+---
+
+## Phần V — Knowledge base (nó mang gì trong người)
+
+### Ba nguồn tri thức tách bạch
+
+- **SPEC (oracle)** — `wtf-is-this/<TestCase>/specs.md`, mỗi task một file. QA đo đúng/sai theo đây.
 - **Living Business Doc (navigation)** — `knowledge/*.md`. *Cách vận hành* (HOW) + kênh quan sát.
-  **KHÔNG phải oracle.** Firewall: cấm ghi kết quả kỳ vọng / luật pass-fail. Approved qua **UI-confirm**.
-- **System-map (hiểu business toàn hệ)** — `knowledge/system/*.md`. *"Mô tả code làm gì"* per domain
-  (draft, từ GitNexus + CLAUDE.md). Để **hiểu hệ thống** khi viết case — **KHÔNG phải oracle**, cần người duyệt.
+  **Không phải oracle.** Firewall: cấm ghi kết quả kỳ vọng / luật pass-fail. `approved` qua UI-confirm.
+- **System-map (hiểu business toàn hệ)** — `knowledge/system/*.md`. *"Mô tả code làm gì"* per domain.
+  Để **hiểu hệ thống** khi soạn doc — **không phải oracle**, và **QA-runtime cấm đọc**.
 
-> 📘 **Chiến lược grow/maintain tri thức** ở `docs/KNOWLEDGE-STRATEGY.md` (bootstrap system-map →
-> demand-driven per spec → maintenance `source_hash` → tương lai wiki/RAG). ĐỌC file đó để cày tiếp.
+### Chỗ đau nhất
 
-### Cách lưu Living Business Doc
+**Cross-repo (Pro→backend→ticket)**: GitNexus không parse Rails routes → **0 auto-link** giữa các repo.
+Build-time trám bằng workspace `CLAUDE.md` §2 + **UI-confirm**, không bằng contract registry.
 
-Markdown + YAML front-matter, trong git. Mỗi flow/channels = 1 file. Front-matter:
-`status` (draft→approved→stale), `source_symbols` + `source_hash` (metadata provenance, QA KHÔNG đọc),
-`ui_confirmed_at`. Ví dụ:
-
-```yaml
----
-id: issue-ticket-pack
-status: draft            # draft (máy) → approved (người + UI-confirm) → stale (code đổi)
-kind: flow               # flow (navigation) | channels (observation)
-spans_repos: [pro, backend, ticket]
-source_symbols: [ ... ]  # metadata — QA KHÔNG đọc
-source_hash: <hash>
-ui_confirmed_at: 2026-07-07
----
-# Flow: Phát hành gói vé (HOW — navigation only)
-```
-
-### Chỗ đau nhất + giữ tươi
-
-- **Cross-repo (Pro→backend→ticket)**: GitNexus 0 auto-link (không parse Rails routes) → build-time
-  trám bằng `CLAUDE.md` system-docs + **UI-confirm**.
-- **Stale-detection**: code đổi → `source_hash` lệch → `status: stale` → re-derive + re-confirm UI + duyệt lại.
+*(Chiến lược grow/maintain + 3 loại stale: [`KNOWLEDGE-STRATEGY.md`](KNOWLEDGE-STRATEGY.md))*
 
 ---
 
-## Phần VI — Vòng đời hiện tại (skill-based)
-
-### Pipeline (command của sếp)
+## Phần VI — Vòng đời hiện tại
 
 ```
-/specs-md <folder>           spec.html → specs.md format chuẩn (đẹp, oracle tốt hơn)
+/specs-md <folder>           spec.html → specs.md format chuẩn
         │
-/testcase-systemdoc <flow>   soạn Living Business Doc (build-time, GitNexus + UI-confirm + duyệt)
+/testcase-systemdoc <flow>   soạn Living Business Doc (build-time: GitNexus + UI-confirm + duyệt)
         │
 (dùng skill qa-brain cho 1 folder spec)
    ĐỌC SPEC → VIẾT CASE (mù code) → SEAM (spec + Living Business Doc) → tcs.json + xlsx
         │
-/testcase-run    drive UI live → evidence → result/actual → build Excel
+/testcase-run       drive UI live → evidence → result/actual → build Excel
         │
 /testcase-cleanup   dọn dữ liệu test trên dev (prefix AIOTTEST*)
         │  (review ra change/bug)
 /testcase-upspecschange → (dev fix) → /testcase-retest (subset)
 ```
 
-### Chuẩn evidence (bắt buộc — khớp template sếp)
-- `build_evidence.py` xuất **3 sheet**: **Cover** (SUMMARY COUNTIF) · **Test Cases** (block-dọc/case +
-  Evidence Before/After ảnh to) · **Checklist** (+ cột **Nguồn / 発生元**).
-- **Mỗi case = 1 before + 1 after (2 ảnh)**, **PNG rõ** (KHÔNG nén JPG nhỏ). Dùng chung ảnh khi cùng màn.
-- `result` = PASS / FAIL / 未実施. FAIL báo hành vi + ảnh, KHÔNG symbol/file:line.
+### Chuẩn evidence (bắt buộc)
 
-### Chống flaky (tri thức nghiệp vụ nhét vào runner)
+- `build_evidence.py` xuất **3 sheet**: **Cover** (SUMMARY COUNTIF) · **Test Cases** (block dọc/case +
+  Evidence Before/After ảnh to) · **Checklist** (+ cột **Nguồn / 発生元**).
+- **Mỗi case = 1 before + 1 after (2 ảnh)**, **PNG rõ** (không nén JPG). Dùng chung ảnh khi cùng màn.
+- Định dạng Excel nằm ở `theme.json` — đổi màu/font **không đụng code**.
+- FAIL báo **hành vi + ảnh**, **không** symbol/`file:line`.
+
+### Chống flaky
 
 Thao tác trên Pro sync sang ticket **không tức thì** → chờ vài giây rồi mới quan sát ticket-admin;
-chưa thấy thì chờ thêm 1 nhịp. **KHÔNG** đọc DB/code để "chắc".
+chưa thấy thì chờ thêm một nhịp. **Không** đọc DB/code để "chắc".
+Chụp ảnh bằng `shot(page, path, readySelector)` — không `waitForTimeout` + screenshot trần.
 
-### Ranh giới thép
+---
 
-QA-runtime **cấm đọc code / cấm GitNexus**. Lén đọc code = tautology. Chỉ đọc SPEC + Living Business Doc.
+## Phần VII — Ranh giới thép & cây thư mục
 
-### Cây thư mục repo
+QA-runtime **cấm đọc code, cấm GitNexus, cấm `knowledge/system/**`**. Lén đọc code = tautology.
+Chỉ đọc SPEC + Living Business Doc approved + `OPEN-QUESTIONS.md`.
+
+> ⚠️ **Hiện tại đây là VĂN BẢN, chưa phải CƠ CHẾ.** Không có gì kỹ thuật chặn một phiên đọc code lúc
+> test. Cơ chế thật = PreToolUse hook — **chưa làm**. Xem [`STATE.md`](STATE.md).
 
 ```
 threease_qa/
 ├── wtf-is-this/<TestCase>/{specs.md, tcs.json, shots/, <Folder>.xlsx}   # per task (SPEC = oracle)
-├── knowledge/{observation-channels.md, <flow>.md}                        # Living Business Doc (navigation)
-├── .claude/skills/qa-brain/SKILL.md                                      # QA-runtime (black-box)
-├── .claude/commands/testcase-*.md                                        # pipeline + /testcase-systemdoc
-├── .claude/skills-scripts/testcase-evidence/{pw_lib.js, build_evidence.py}
-├── docs/QA-SERVER.md                                                     # file này
-└── account.txt (wtf-is-this/)                                            # creds test các service
+├── knowledge/            # HOW + OPEN-QUESTIONS (QA đọc được) · system/ = WHAT (cấm)
+├── .claude/skills/qa-brain/SKILL.md                # QA-runtime (black-box)
+├── .claude/commands/testcase-*.md                  # pipeline + /testcase-systemdoc
+├── .claude/skills-scripts/testcase-evidence/       # pw_lib, pw_api, build_evidence, theme, cleanup
+└── docs/                 # README (cửa vào) · file này · KNOWLEDGE-STRATEGY · STATE
 ```
 
 ---
 
-## Phần VII — ROADMAP & PHASE TRACKER
-
-> Section **sống**: mỗi mảnh xong → tick + ghi "đã làm gì / còn thiếu gì".
+## Phần VIII — Roadmap
 
 | Phase | Tên | Trạng thái |
-| --- | --- | --- |
+|---|---|---|
 | **0** | Nền móng (GitNexus index 5 repo · stack + data thật · trace flow) | ✅ XONG |
 | **1 (cũ)** | MVP dịch vụ Python (extractor/testgen/runner + FastAPI + Next.js) | ⛔ **THAY** bằng skill-based |
-| **1 (nay)** | Skill-based black-box (qa-brain + testcase-* + Playwright evidence + Excel) | ✅ chạy được; đang chuẩn hoá |
+| **1 (nay)** | Skill-based black-box (qa-brain + testcase-* + Playwright evidence + Excel) | ✅ chạy được |
 | **2** | Nhân rộng Living Business Doc · stale-detection tự động · cross-repo stitching | ⏸ |
 | **3** | Tầng WATCH (branch/PR webhook · detect_changes vs base_ref) | ⏸ |
 | **4** | Always-on + deploy | ⏸ |
 | **5** | Self-doubt engine (adversarial verify) | ⏸ |
 | **6** | Phủ toàn hệ · viewer đầy đủ | ⏸ |
 
-### Chuẩn hoá black-box (đợt 2026-07-07)
-
-Spec + plan: `docs/plans/2026-07-07-qa-brain-blackbox-redesign*.md`. Gỡ GitNexus khỏi vai QA;
-thêm HOW-vs-WHAT + Precondition Protocol + Living Business Doc navigation-only + observation channels.
-
 ---
 
-## Phần VIII — GROUND TRUTH đã trace (tri thức mẫu, đừng suy ra sai)
+## Phần IX — Bằng chứng đối chứng: code-trace SAI, black-box ĐÚNG
 
-**Sync backend ↔ ticket = hai tầng: direct-first, outbox-as-fallback.**
+Đây là phần quan trọng nhất của tài liệu. Không phải lý thuyết — hai ca thật, và chúng là **lý do hai
+bức tường thép tồn tại**.
 
-```
-create/update model include ThreeaseTicketSyncable
-  → after_commit → ThreeaseTicketSyncJob.perform_later  (Sidekiq; worker chạy ngay)
-      ├─ ticket reachable → direct HMAC webhook POST /admin-api/sync → "sent directly"  ← INSTANT
-      └─ ticket down      → ThreeaseTicketOutboxEvent.create!(pending)                   ← fallback
-                            → chỉ được gỡ bởi  rake threease_ticket:flush_outbox
-```
+### Ca 1 — Coupon report (TestCase-11, 2026-07-08)
 
-- **Đường chuẩn = TỨC THÌ** qua Sidekiq worker. Không cần thao tác tay.
-- **Outbox/flush = lưới an toàn** cho ca direct webhook fail (vd ticket đang restart).
-  Local docker không có scheduler → event *failed* nằm `pending` tới khi flush tay;
-  nhưng create *khỏe mạnh* không hề đụng outbox.
-- Reverse (ticket→backend): `th/services/pro_backend_sync.py` + `SyncOutboxEvent`, gỡ bởi
-  `python manage.py flush_sync_outbox`. Config: ticket `config/admin_api_settings.py`
-  (gitignore; key/secret/`SYNC_START_ID=200000` phải khớp backend `development.rb`).
+Test màn báo cáo Coupon trên Hệ thống Vé, **mù code + mù cả danh sách dev khai**.
+Kết quả: **9 PASS / 8 FAIL**. Đối chiếu list dev khai "đã làm / chưa làm" → **khớp 100%, không sai một
+dòng** (đến chi tiết *"tab 販売 làm 1 phần: Report ✅ / 過去のCSV ❌"* cũng bắt đúng).
 
-File chính: `threease_ticket_syncable.rb` (callback) · `threease_ticket_sync_job.rb`
-(direct-vs-outbox) · ticket `admin_api/data_sync/handlers.py` (upsert th_customer).
+Cùng ngày, một hệ khác dùng phương pháp **đọc code** (`grep -i coupon` trên `th/models/` → **rỗng**)
+kết luận nguyên văn: *"`ReportService.get_coupon_metrics()` **CHƯA TỒN TẠI TRONG CODE**"*.
 
-> ⚠️ Phần VIII là **ground truth build-time** (dùng khi soạn Living Business Doc). QA-runtime KHÔNG đọc.
+Một tính năng không tồn tại thì **không thể có 9 case PASS**.
 
----
+### Ca 2 — Guard "vé đã dùng"
 
-## Phần IX — Cập nhật 2026-07-08 (chốt + bài học)
+- **Code-trace** qua GitNexus → kết luận *"guard chưa build → FAIL"*. **SAI** (Rails index yếu,
+  graph không thấy).
+- **Black-box** (drive app thật): cancel payment / cancel booking / delete → **chặn đúng**, nguyên văn
+  `使用済みチケットが含まれているため、支払キャンセル・削除はできません。` ⇒ guard **đã build, chạy đúng**.
+- Còn bắt được **bug thật** mà code-trace không thấy: luồng **Remove** lộ raw i18n key
+  `reservations.used_ticket_cannot_remove` thay vì câu tiếng Nhật.
 
-### 1. Tri thức 2 tầng + chiến lược grow
-- `knowledge/*.md` = **Living Business Doc (navigation, approved)** cho QA.
-- `knowledge/system/*.md` = **hiểu business toàn hệ (draft)** — `OVERVIEW.md` (8 domain) + deep-dive per domain.
-- Chiến lược đầy đủ ở **`docs/KNOWLEDGE-STRATEGY.md`**: bootstrap system-map (bây giờ) → grow per spec →
-  maintenance → wiki/RAG. **Specs sau này = để TINH CHỈNH/UPDATE business đã map** (không phải build lại từ 0).
+### Kết luận rút ra
 
-### 2. Maintenance khi 5 repo update (đừng quên nhịp 2)
-```
-repo update → refresh-gitnexus.sh (graph tươi)  ← CHỈ update graph, KHÔNG update knowledge/
-            → stale-check (source_hash cũ↔mới)   ← tìm doc drift
-            → re-derive + re-confirm CHỈ doc stale
-```
-Surgical (per `source_hash`). **CẦN LÀM (GĐ-0):** gắn `source_hash` thật + hồi sinh lệnh `/testcase-stale`.
+> **`grep` không thấy ≠ không tồn tại.** Hai lần, cùng một kiểu sai.
+> Code có thể nằm chỗ khác, tên khác, sinh động lúc runtime, hoặc index code-graph yếu.
 
-### 3. Access — account report ticket (quan trọng)
-- Report ticket (`/reports/`, `/coupon-reports/*`) cần quyền → account **`TESTSEED001/ticket-admin/password123`**
-  (env `TK_STAFF=ticket-admin`). Account thường `STAFF001` **KHÔNG** vào report được (nav thiếu tab, /reports redirect home).
-- `pw_lib` targets: `getPage('pro' | 'ticket' | 'ticket_admin' | 'reservation' | 'admin')`.
+⇒ **Không code-trace để phán "đã build / chưa build".** Route/skeleton dùng `route_map` (build-time);
+đúng/sai dùng **quan sát live vs SPEC**.
 
-### 4. Bài học VÀNG — code-trace SAI, black-box ĐÚNG (chứng minh triết lý)
-- Guard "vé đã dùng": tôi **code-trace** → kết luận "chưa build" → **SAI** (Rails index yếu). **Black-box** thấy
-  guard **đã build + chạy đúng** (message JP nguyên văn), và bắt bug thật (Remove lộ raw i18n key).
-- Coupon report (TestCase-11): black-box **9 PASS/8 FAIL khớp 100%** list dev khai — mù code vẫn đúng.
-- → **KHÔNG code-trace để phán build/chưa-build.** Route/skeleton dùng `route_map` (build-time); đúng/sai
-  dùng **quan sát live vs SPEC**. Đây là lý do 2 bức tường thép tồn tại.
+Cả hai ca đều là một dạng lỗi nhận thức: **nhầm "cái quan sát được" với "cái tồn tại"**.
+Dạng lỗi này đã tái phát lần thứ ba (2026-07-09: *"xoá `.claude-tester/` rồi ⇒ tường thép thành cơ chế"*
+— sai, vì lỗ tự-nạp vẫn còn). Nó rất dai. Cảnh giác.
 
----
-
-## Phần X — Cập nhật 2026-07-09 (merge hệ của sếp + tầng tri thức thứ ba)
-
-### 1. Ba tầng tri thức, không phải hai
-| Tầng | Ở đâu | QA-runtime |
-|---|---|:--:|
-| **HOW** (bấm gì, xem đâu) | `knowledge/*.md` — `GLOSSARY` · `lessons` · flow · channels | ✅ |
-| **WHAT** (code làm gì, đã/chưa build) | `knowledge/system/*.md` | ⛔ **CẤM** |
-| **CHƯA BIẾT** (tra rồi vẫn không đủ căn cứ) | `knowledge/OPEN-QUESTIONS.md` | ✅ |
-
-Tầng 3 là **mới**. Thiếu nó → mọi thứ "chưa biết" bị ép thành "có" (**bịa**) hoặc "không"
-(`/testcase-systemdoc` vô hạn). Nó an toàn vì **không phán đúng/sai**, chỉ nói *"đừng tự tin ở đây"*.
-
-### 2. `SPEC-GAP` — result thứ tư
-Cùng khái niệm ở tầng test case: *quan sát được, nhưng không có căn cứ để chấm*.
-Xảy ra khi `METHOD.md` bảo phải có case mà **SPEC im lặng**. → **KHÔNG bịa `expect`**.
-
-> `METHOD.md` quyết định **case nào phải tồn tại** (coverage).
-> Nó **không bao giờ** quyết định `expect` (oracle). Nhầm chỗ này = phá Tường thép #1.
-
-`SPEC-GAP` là finding **giá trị cao nhất** của QA mù code: bằng chứng **spec chưa nghĩ tới**.
-4 trạng thái: `PASS` · `FAIL` · `未実施` (không quan sát được) · `SPEC-GAP` (không chấm được).
-
-### 3. Bài học VÀNG lần 2 — code-trace SAI, black-box ĐÚNG (lại)
-Cùng ngày 2026-07-08, hai nguồn mâu thuẫn về **coupon report**:
-- `.claude-tester/.claude-knowledge/REPORTING.md` (đọc code, `grep -i coupon` → rỗng):
-  *"CHƯA TỒN TẠI TRONG CODE"*.
-- `TestCase-11` (quan sát live): **9 PASS** / 8 FAIL, khớp 100% list dev khai.
-
-Một tính năng "không tồn tại" thì không thể có 9 case PASS. Đây là **lần thứ hai** `grep`-không-thấy
-dẫn tới kết luận sai (lần 1: guard "vé đã dùng"). → `OPEN-QUESTIONS.md#OQ-01`.
-
-> **`grep` không thấy ≠ không tồn tại.** Code có thể ở chỗ khác, tên khác, sinh động lúc runtime,
-> hoặc index code-graph yếu. Đây là lý do `knowledge/system/` bị cấm ở QA-runtime.
-
-### 4. Merge `.claude-tester` (hệ của sếp)
-Nguyên tắc: **nhập CƠ KHÍ + VỆ SINH TRI THỨC, không nhập KẾT LUẬN.**
-Bộ lọc 1 câu hỏi, 3 cửa: *"Cái này nói HOW, nói WHAT, hay nói 'chưa biết'?"*
-Xong Phase 0 (harness) + Phase 1 (vệ sinh tri thức). Còn Phase 2-4 → `docs/MERGE-PLAN.md`.
-Sau Phase 4: **`git rm -r .claude-tester/`** — bức tường thép từ **văn bản** thành **cơ chế**
-(thứ độc không còn trong cây thư mục để mà grep trúng).
-
-### 5. Ngân sách GitNexus thật (đo `list_repos` 2026-07-09)
-backend 227 · ticket 130 · pro 116 · **admin 0** · **reservation 0** processes.
-**473 = 227+130+116** — *tổng call-chain*, KHÔNG phải "473 flow phải viết doc" (gom thành 8 domain).
-`processes = 0` **≠ graph rỗng**: admin cho 20 route (`route_map`), reservation cho `definitions`
-(màn + method). Hai lỗ khác nhau: **cross-repo wiring** → `CLAUDE.md` trám; **flow nội bộ Nuxt** →
-`CLAUDE.md` KHÔNG trám, phải UI-confirm.
+Câu hỏi chưa trả lời được thì đổ vào [`knowledge/OPEN-QUESTIONS.md`](../knowledge/OPEN-QUESTIONS.md),
+**không** ép thành "có" hay "không".

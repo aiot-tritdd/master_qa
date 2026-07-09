@@ -7,7 +7,7 @@ source_symbols: []
 source_hash: null
 confidence: 🟢
 verify_by: "Mỗi dòng là thứ QUAN SÁT ĐƯỢC lúc drive app. Nghi ngờ → drive lại; selector đổi → sửa + đổi ngày."
-grown_from: ".claude-tester/knowledge/LESSONS.md (chỉ 9/11 mục — 2 mục code-derived đi sang knowledge/system/)"
+grown_from: "0119159:.claude-tester/knowledge/LESSONS.md (chỉ 9/11 mục — 2 mục code-derived đi sang knowledge/system/)"
 ---
 # LESSONS — bẫy CƠ KHÍ khi drive app (tăng dần, có ngày)
 
@@ -32,7 +32,7 @@ grown_from: ".claude-tester/knowledge/LESSONS.md (chỉ 9/11 mục — 2 mục c
 
 ## Bẫy đã gặp
 
-- **2026/07/09 — [selector/chung] Bảng selector Vuetify hay dùng** (nhập từ `.claude-tester/knowledge/SYSTEM.md`,
+- **2026/07/09 — [selector/chung] Bảng selector Vuetify hay dùng** (nhập từ `0119159:.claude-tester/knowledge/SYSTEM.md`,
   ⚠️ code-derived, mới verify được phần đánh ✅):
   · Login: `input[data-cy=institute_code|therapist_code|password]`, nút `[data-cy=loginButton]` ✅
   · Input Vuetify: field bọc `div[data-cy=…]` → **phải target `input[data-cy=…]`** ✅

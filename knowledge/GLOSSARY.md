@@ -8,7 +8,7 @@ source_hash: null
 confidence: 🟢
 verify_by: "Tên nghiệp vụ do người đặt, không đổi theo code. Chỉ cập nhật khi hệ thống mới xuất hiện."
 ui_confirmed_at: null
-grown_from: ".claude-tester/.claude-knowledge/DOMAIN.md#bảng-thuật-ngữ"
+grown_from: "0119159:.claude-tester/.claude-knowledge/DOMAIN.md#bảng-thuật-ngữ"
 ---
 # GLOSSARY — thuật ngữ nghiệp vụ (dùng khi VIẾT REPORT)
 

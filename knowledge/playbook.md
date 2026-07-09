@@ -8,11 +8,11 @@ source_hash: null
 confidence: 🟡
 verify_by: "CHƯA UI-confirm dưới locale ja-JP. Mỗi công thức phải drive thật rồi mới approved. Nhãn UI trong file gốc của sếp được confirm dưới harness THIẾU locale → có thể sai (xem lessons.md 2026/07/09)."
 ui_confirmed_at: null
-grown_from: ".claude-tester/knowledge/PLAYBOOK.md"
+grown_from: "0119159:.claude-tester/knowledge/PLAYBOOK.md"
 ---
 # PLAYBOOK — công thức thao tác trên Threease dev (HOW)
 
-> ⚠️ **`status: draft` — chưa UI-confirm.** File gốc (`.claude-tester/knowledge/PLAYBOOK.md`) được soạn
+> ⚠️ **`status: draft` — chưa UI-confirm.** File gốc (`0119159:.claude-tester/knowledge/PLAYBOOK.md`) được soạn
 > khi harness **thiếu `locale`** → app chạy tiếng Anh. Doc `pro-open-booking.md` từng dính đúng lỗi đó
 > (`Remove` thay vì `削除する`, `INVOICE` thay vì `請求書`, toạ độ chuột lệch 40px).
 > **Drive thật từng công thức dưới đây rồi mới `approved`.** Đừng tin nhãn chưa kiểm.

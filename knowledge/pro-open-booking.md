@@ -68,7 +68,7 @@ là cách âm thầm tạo ra một FAIL giả.
 - Dòng item: tên · số phút · tiền (vd `taxexe1 / 20分 / 2000円`), `保険分合計`, `割引額`.
 - Chi tiết hơn → `knowledge/observation-channels.md`.
 
-## Dữ liệu test trên dev (cập nhật 2026-07-09)
+## Dữ liệu test trên dev
 
 - ✅ **Booking `Jenny`** — `2026/07/09 14:20`, **branch 3**, `id=774`, `一部支払済み`, **có dòng vé
   `AIOT-TEST-TK1` + coupon `Yoga coupon`**. Dùng làm booking mẫu để drive.

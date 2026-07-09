@@ -10,6 +10,7 @@ source_hash: f84cd5e8d6f4a7de
 note: "MÔ TẢ code làm gì — KHÔNG phải oracle. Nav report ở knowledge/ticket-coupon-reports.md."
 confidence: 🔴
 verify_by: "Phần Coupon/SC theo SPEC No.11, CHƯA verify code. ⚠️ Claim 'coupon chưa tồn tại' đã bị black-box bác bỏ (9 PASS) — xem OPEN-QUESTIONS.md#OQ-01."
+grown_from: "0119159:.claude-tester/.claude-knowledge/REPORTING.md (cửa WHAT)"
 ---
 # Domain: Coupon / SC (store credit) — ticket × backend × pro
 
@@ -41,10 +42,7 @@ verify_by: "Phần Coupon/SC theo SPEC No.11, CHƯA verify code. ⚠️ Claim 'c
 ## Draft — cần
 - Đọc ticket models `CouponPack/Usage/Transaction` + `ReportService.get_coupon_metrics` xác nhận công thức SC. source_hash (`--update`).
 
----
-
-## 📥 Nhập từ `.claude-tester/.claude-knowledge/REPORTING.md` (2026-07-09, cửa WHAT)
-> `grown_from: .claude-tester/.claude-knowledge/REPORTING.md` · ⛔ **QA-runtime CẤM đọc mục này.**
+## Chi tiết model / thuế / 発行元 (theo SPEC No.11)
 
 ### ☠️ CẢNH BÁO PHẢN CHỨNG — đọc trước khi tin bất cứ dòng nào dưới đây
 File gốc khẳng định (2026/07/08, phương pháp = `grep -i coupon` trên `threease_ticket/th/models/` → rỗng):

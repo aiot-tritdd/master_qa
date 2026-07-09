@@ -8,6 +8,7 @@ note: "MÔ TẢ code/hệ thống đang LÀM GÌ — KHÔNG phải oracle. Oracl
 source_hash: null
 confidence: 🟡
 verify_by: "Chạy list_repos + route_map (build-time). Số processes/nodes đo lại nếu nghi ngờ."
+grown_from: "0119159:.claude-tester/.claude-knowledge/PROJECT_MAP.md (tech stack + dev URL)"
 ---
 # System Business Map — ThreeSides (backbone để hiểu toàn hệ)
 
@@ -71,12 +72,9 @@ Chú: 🟢 hiểu tốt · 🟡 một phần · 🔴 chưa.
 ① Customer/Master sync (đã rõ, viết nhanh) → ② Payment/Cancel (đã UI-confirm) → ③ Ticket issue+sync →
 ④ Coupon/SC → ⑤ Reports → ⑥ Booking → ⑦ Reservation widget → ⑧ Admin.
 
----
-
-## 📥 Nhập từ `.claude-tester/.claude-knowledge/PROJECT_MAP.md` (2026-07-09, cửa WHAT)
-> `grown_from: .claude-tester/.claude-knowledge/PROJECT_MAP.md` · Nguồn gốc: đọc `Gemfile`/`package.json`/
-> `pyproject.toml`/`pubspec.yaml` từng repo, 2026/07/08. ⛔ **QA-runtime CẤM đọc.**
-> Tên nghiệp vụ ↔ tên kỹ thuật: `knowledge/GLOSSARY.md` (file đó QA **được** đọc).
+## Tech stack + dev URL từng repo
+> Nguồn: đọc `Gemfile`/`package.json`/`pyproject.toml`/`pubspec.yaml` từng repo (2026/07/08);
+> dev URL xác nhận 2026-07-09. Tên nghiệp vụ ↔ tên kỹ thuật: `knowledge/GLOSSARY.md` (QA được đọc).
 
 | Hệ | Repo | Tech stack | Nguồn sự thật dữ liệu? | Dev URL (✅ xác nhận 2026-07-09) |
 |---|---|---|---|---|

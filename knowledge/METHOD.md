@@ -7,7 +7,7 @@ source_symbols: []
 source_hash: null
 confidence: ⭐
 verify_by: "Kỹ thuật test bất biến, không phụ thuộc hệ thống. Không lỗi thời theo release."
-grown_from: ".claude-tester/knowledge/METHOD.md"
+grown_from: "0119159:.claude-tester/knowledge/METHOD.md"
 ---
 # METHOD — kỹ thuật test bất biến (COVERAGE, không phải ORACLE)
 

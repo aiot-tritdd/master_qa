@@ -5,14 +5,10 @@
 
 ---
 
-## 0. Đọc theo thứ tự để nắm hệ thống
+## 0. File này là gì
 
-`docs/STATE.md` (file này) → `CLAUDE.md` → `docs/QA-SERVER.md` (kinh thánh) →
-**`docs/SYSTEM-COMPARISON.md`** (so hệ mình vs hệ sếp — hiểu vì sao có 2 bức tường) →
-**`docs/MERGE-PLAN.md`** (kế hoạch hợp nhất, đang chạy) →
-`docs/KNOWLEDGE-STRATEGY.md` → `knowledge/system/OVERVIEW.md`.
-
-## 1. Hệ thống LÀ GÌ (1 dòng)
+Đây là **điểm hồi phục**: mở phiên mới, đọc file này là biết *đang đứng đâu, làm gì tiếp*.
+Nó **không** giải thích hệ thống — muốn hiểu hệ thống thì đọc [`README.md`](README.md) (1 file, đủ).
 
 QA senior **black-box** (skill `qa-brain` + commands `testcase-*`): SPEC → sinh+chạy test trên **dev** →
 evidence PNG/xlsx. Oracle = SPEC + quan sát live. **Mù code.** GitNexus chỉ ở build-time (soạn knowledge).
@@ -85,8 +81,10 @@ Chạy thật trên dev, không phải syntax check:
    `system/api-endpoints.md`; phần còn lại đổ vào nhà có sẵn (`customer-sync`/`coupon-sc`/`OVERVIEW`/
    `observation-channels`/`lessons`/`KNOWLEDGE-STRATEGY`).
 4. ✅ **[MERGE Phase 4] XONG** — archive `0119159` → `git rm` `822d5dd` → `rm -rf` phần untracked.
-   `.claude-tester` **không còn trong working tree** ⇒ bức tường thép thành **cơ chế**.
-   ⚠️ Nó **chưa từng được commit** — suýt mất vĩnh viễn. Xem `MERGE-PLAN.md` §6.2.
+   `.claude-tester` **không còn trong working tree**. Tra nguồn: `git show 0119159:.claude-tester/<path>`.
+   ⚠️ **KHÔNG** kết luận "tường thép thành cơ chế" — đó là câu sai (lần 3 của lỗi "quan sát được = tồn tại").
+   Lỗ tự-nạp (workspace `CLAUDE.md` §8) đã bịt; lỗ phải-grep (`.claude-tester/`) đã bịt; nhưng tường thép
+   **vẫn là văn bản**. Cơ chế thật = PreToolUse hook, **chưa làm** → `OPEN-QUESTIONS.md#OQ-09` (việc lớn nhất còn lại).
 5. **[Grow knowledge/system]** Còn 3 domain: **6 Booking** (GitNexus được việc) ·
    **7 Reservation widget** + **8 Admin** — ✅ **hết bị chặn** (OQ-02 đã đóng: dev URL xác nhận đúng).
 6. ✅ **[Nav doc] `pro-open-booking.md` đã re-UI-confirm 2026-07-09** dưới `ja-JP` → `approved`.
@@ -101,11 +99,7 @@ Chạy thật trên dev, không phải syntax check:
 re-derive + re-confirm **CHỈ doc drift**.
 ⚠️ refresh KHÔNG tự update `knowledge/`. Graph hiện **đang tươi** (index 2026-07-06/08, không repo nào
 báo `commitsBehind`) → chỉ chạy refresh khi 5 repo thực sự có commit mới.
-
-**Ngân sách GitNexus thật** (đo `list_repos` 2026-07-09): backend 227 · ticket 130 · pro 116 ·
-**admin 0** · **reservation 0** processes. **473 = 227+130+116**, là *tổng call-chain*, KHÔNG phải
-"473 flow phải viết doc" (chúng gom thành 8 domain). `processes=0` ≠ graph rỗng — admin vẫn cho
-20 route qua `route_map`, reservation cho `definitions` (màn + method). Chi tiết: `system/OVERVIEW.md`.
+Ngân sách GitNexus thật (processes/repo) + 3 loại stale: [`KNOWLEDGE-STRATEGY.md`](KNOWLEDGE-STRATEGY.md) §1, §4b.
 
 ## 5. Access nhanh (dev) — để chạy ngay
 

@@ -42,23 +42,18 @@ ui_confirmed_at: null
 
 | Nguồn | Phương pháp | Kết luận |
 |---|---|---|
-| `.claude-tester/.claude-knowledge/REPORTING.md:7-14` | đọc code (`grep -i coupon` → rỗng) | *"CHƯA TỒN TẠI TRONG CODE"* |
+| `0119159:.claude-tester/.claude-knowledge/REPORTING.md:7-14` | đọc code (`grep -i coupon` → rỗng) | *"CHƯA TỒN TẠI TRONG CODE"* |
 | `docs/QA-SERVER.md §IX.4` + `TestCase-11` | quan sát live | **9 PASS** / 8 FAIL, khớp 100% list dev khai |
 | `knowledge/ticket-coupon-reports.md` (của ta) | GitNexus + UI-confirm | `approved`, `source_symbols` **có** symbol này |
 
-**Không kết luận được vì:** tính năng "không tồn tại" thì không thể có 9 case PASS. Nhưng cũng chưa
-loại trừ khả năng `source_hash` của ta đang hash một file **không chứa** symbol đó (→ stale-check mù).
-
-**Ai trả lời:** dev ticket · hoặc `context({name:"get_coupon_metrics", repo:"threease_ticket"})` (build-time).
-**Block:** độ tin cậy của `stale_check.py` trên `ticket-coupon-reports.md`; mọi phán quyết "đã/chưa build".
-**Ghi chú:** dù kết quả thế nào, **QA-runtime vẫn chấm bằng quan sát live**, không bằng câu trả lời này.
-
-**Cập nhật 2026-07-09 (quan sát live, regression TestCase-11):** coupon report **CÓ tồn tại** —
+**Đã thu hẹp bằng quan sát live (regression TestCase-11):** coupon report **CÓ tồn tại** —
 `/coupon-reports/sales/` và `/usage/` trả **`200`** với filter + KPI + `CSVエクスポート` + cột `発行元`.
 Bốn route còn lại (`/`, `/monthly/`, `/by-store/`, `/csv-snapshots/`) trả **`404`**.
 ⇒ Khẳng định *"CHƯA TỒN TẠI TRONG CODE"* của `REPORTING.md` **SAI**. Thực tế: **đã build 2/5 sub-tab**.
-**Câu hỏi thu hẹp lại:** tên/vị trí thật của model + service là gì (vì `grep -i coupon` trên
-`th/models/` ra rỗng)? → dev trả lời. **Không chặn test nào nữa** (quan sát live là đủ để chấm).
+
+**Câu hỏi còn lại (thu hẹp):** tên/vị trí thật của model + service là gì (vì `grep -i coupon` trên
+`th/models/` ra rỗng)? → dev trả lời, hoặc `context({name:"get_coupon_metrics", repo:"threease_ticket"})`
+(build-time). **Không chặn test nào nữa** — QA-runtime chấm bằng quan sát live, không bằng câu trả lời này.
 
 ## OQ-02 — Dev URL của Ứng dụng Quản trị / Widget Đặt lịch / Hệ thống Vé? ✅ **ĐÃ ĐÓNG 2026-07-09**
 **Cách đóng:** tự mở thử (`curl` + đọc `<title>`) — **không cần hỏi ai**. Cả 5 URL đều sống, đúng app:
@@ -117,6 +112,19 @@ Vậy radio đó điều khiển cái gì?
 **Đã thử:** không thấy trong 6 repo đang quản lý. Tài liệu cũ có nhắc.
 **Ai trả lời:** PM.
 **Block:** phạm vi hệ thống trong `system/OVERVIEW.md` (hiện liệt kê 6 hệ).
+
+## OQ-09 — Bức tường thép vẫn là VĂN BẢN, chưa phải CƠ CHẾ 🔴 **chưa xử**
+**Vấn đề:** QA-runtime "cấm đọc code / cấm GitNexus / cấm `knowledge/system/**`" hiện chỉ là luật viết
+trong doc. Không có gì kỹ thuật chặn một phiên `/testcase-run` thật sự đọc chúng. Hai lỗ đã biết:
+- Workspace `CLAUDE.md` §3 vẫn dạy cách gọi `query`/`impact`/`context`, và các tool GitNexus **luôn có
+  sẵn** qua MCP bất kể doc viết gì. Xoá chữ không gỡ được tool.
+- (Đã bịt phần văn bản: §8 ground-truth-sync đã dời sang `system/customer-sync.md`; thư mục
+  `.claude-tester` đã xoá. Nhưng đó chỉ làm văn bản sạch hơn, **không** biến tường thành cơ chế.)
+
+**Cách xử thật:** PreToolUse hook chặn `Read`/`Grep` vào `knowledge/system/**` + 5 repo sản phẩm, và
+chặn mọi tool GitNexus, khi đang chạy `/testcase-run`.
+**Ai trả lời / làm:** user (quyết cách chặn) + build hook.
+**Block:** đây là việc lớn nhất còn lại của dự án — xem `docs/STATE.md`.
 
 ---
 

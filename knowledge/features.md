@@ -8,7 +8,7 @@ source_hash: null
 confidence: 🟡
 verify_by: "CHƯA UI-confirm dưới ja-JP. Mỗi tính năng phải drive thật (vào đúng route, thấy đúng nhãn) rồi mới approved."
 ui_confirmed_at: null
-grown_from: ".claude-tester/.claude-knowledge/FEATURES.md (chỉ phần HOW: vào đâu · luồng · bẫy thao tác)"
+grown_from: "0119159:.claude-tester/.claude-knowledge/FEATURES.md (chỉ phần HOW: vào đâu · luồng · bẫy thao tác)"
 ---
 # FEATURES — sổ tay tính năng (HOW: vào đâu · luồng · bẫy thao tác)
 

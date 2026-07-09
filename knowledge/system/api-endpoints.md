@@ -8,7 +8,7 @@ source_symbols:
 source_hash: null
 confidence: 🔴
 verify_by: "CODE-DERIVED, CHƯA GỌI THẬT. Gọi bằng withApi() rồi mới tin. Endpoint đã verify live → chuyển sang knowledge/observation-channels.md (HOW, QA đọc được)."
-grown_from: ".claude-tester/knowledge/SYSTEM.md#endpoint-hay-dùng"
+grown_from: "0119159:.claude-tester/knowledge/SYSTEM.md#endpoint-hay-dùng"
 ---
 # API endpoints — CHƯA VERIFY LIVE (WHAT)
 

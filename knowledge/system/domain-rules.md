@@ -7,7 +7,7 @@ source_symbols: []
 source_hash: null
 confidence: 🟢
 verify_by: "Khái niệm nghiệp vụ ổn định, không đổi theo release UI. Nghi ngờ → đối chiếu spec gốc trong wtf-is-this/<TestCase>/specs.md."
-grown_from: ".claude-tester/.claude-knowledge/DOMAIN.md#khái-niệm-cốt-lõi"
+grown_from: "0119159:.claude-tester/.claude-knowledge/DOMAIN.md#khái-niệm-cốt-lõi"
 ---
 # Domain rules — vì sao một hành vi LÀ bug (WHAT)
 

@@ -14,7 +14,7 @@
 - Front-matter: `id, status(draft→approved→stale), kind, spans_repos, source_symbols,
   source_hash, ui_confirmed_at, confidence, verify_by, grown_from`.
 
-### BA tầng tri thức, không phải hai (cập nhật 2026-07-09)
+### Ba tầng tri thức
 
 | Tầng | Ở đâu | Trả lời | QA-runtime |
 |---|---|---|:--:|
@@ -135,7 +135,7 @@ repo update → refresh-gitnexus.sh (graph tươi)  ← ĐIỀU KIỆN CẦN, ch
    folder test hay repo root. Trong vận hành thật, skill LUÔN chỉ định path tường minh
    (`<folder>/shots/...`); default chỉ là lưới an toàn.
 
-## 4b. ⚠️ Lỗ của `source_hash`: STALE DO HARNESS (phát hiện 2026-07-09)
+## 4b. ⚠️ Lỗ của `source_hash`: STALE DO HARNESS
 
 `stale_check.py` bắt được **code đổi**. Nó **KHÔNG** bắt được **harness đổi**.
 
@@ -160,24 +160,29 @@ một bug của harness thành "sự thật"**, rồi mọi phiên sau kế th�
 (locale, viewport, deviceScaleFactor, auth) → **đánh dấu `status: stale` cho MỌI doc `kind: flow`**
 và re-UI-confirm. Không tin `source_hash` ở đây — nó mù với loại stale này.
 
-## 5. Trạng thái hiện tại (cập nhật khi grow) — 2026-07-09
+## 5. Trạng thái hiện tại
 ```
-knowledge/                          ← HOW + registry. QA-runtime ĐỌC ĐƯỢC.
-├── OPEN-QUESTIONS.md   [approved] ⭐ 8 câu hỏi mở (OQ-01..08) — "chưa biết, phải hỏi"
+knowledge/                          ← HOW + COVERAGE + registry. QA-runtime ĐỌC ĐƯỢC.
+├── OPEN-QUESTIONS.md   [approved] ⭐ 9 câu hỏi mở (OQ-01..09) — "chưa biết, phải hỏi"
+├── METHOD.md           [approved] ⭐ COVERAGE: 5 archetype + luật vàng (KHÔNG cấp expect)
 ├── GLOSSARY.md         [approved] 🟢 thuật ngữ nghiệp vụ (viết report không lộ tên repo)
-├── lessons.md          [approved] 🟢 bẫy cơ khí khi drive app (12 mục, có ngày)
+├── lessons.md          [approved] 🟢 bẫy cơ khí khi drive app (có ngày)
 ├── observation-channels.md [approved] 🟢 kênh quan sát Pro/ticket-app/ticket-admin
-├── pro-open-booking.md     [approved] 🟢 mở booking + cancel payment/cancel/delete/remove
+├── pro-open-booking.md     [approved] 🟢 mở booking + cancel/delete/remove (re-confirm ja-JP)
 ├── ticket-coupon-reports.md[approved] 🟡 route coupon-report — ⚠️ source_symbols tranh chấp (OQ-01)
-├── issue-ticket-pack.md    [draft]    🔴 phát hành gói vé — CHƯA UI-confirm
+├── features.md         [draft]    🟡 sổ tay tính năng (HOW) — CHƯA UI-confirm ja-JP
+├── playbook.md         [draft]    🟡 công thức thao tác (HOW) — CHƯA UI-confirm ja-JP
+└── issue-ticket-pack.md    [draft] 🔴 phát hành gói vé — CHƯA UI-confirm
 │
-└── system/                         ← WHAT. BUILD-TIME ONLY. QA-runtime CẤM.
-    ├── OVERVIEW.md      [draft] 8 domain × repo × trạng thái
-    ├── customer-sync.md      [draft]
-    ├── payment-cancel.md     [draft]
-    ├── ticket-issue-sync.md  [draft]
-    └── coupon-sc.md          [draft]
+system/                             ← WHAT. BUILD-TIME ONLY. QA-runtime CẤM.
+├── OVERVIEW.md      [draft] 8 domain × repo × trạng thái
+├── customer-sync.md      [draft]  (NHÀ của ground-truth-sync; workspace CLAUDE.md §8 trỏ về đây)
+├── payment-cancel.md     [draft]
+├── ticket-issue-sync.md  [draft]
+├── coupon-sc.md          [draft]
+├── api-endpoints.md      [draft] 🔴 endpoint code-derived, CHƯA gọi thật
+├── domain-rules.md       [draft]     vì sao một hành vi LÀ bug (WHAT)
+└── ui-theme.md           [draft]     màu/font (chỉ khi test UI)
 ```
-**Còn thiếu (theo `system/OVERVIEW.md`):** domain 6 Booking (🟡 tạo mới chưa confirm — GitNexus **được việc**) ·
-domain 7 Reservation widget (🔴) · domain 8 Admin (🔴).
-⛔ Domain 7-8 bị **chặn cứng bởi `OPEN-QUESTIONS.md#OQ-02`**: chưa xác nhận dev URL → không UI-confirm được.
+**Còn thiếu (theo `system/OVERVIEW.md`):** domain 6 Booking (🟡 GitNexus được việc) ·
+domain 7 Reservation widget (🔴) · domain 8 Admin (🔴). OQ-02 đã đóng (dev URL xác nhận) → 7-8 **hết bị chặn**.

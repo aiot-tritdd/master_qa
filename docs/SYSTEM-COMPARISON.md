@@ -1,9 +1,13 @@
 # So sánh 2 hệ thống — `threease_qa` (của tôi) vs `.claude-tester` (của sếp)
 
-> **Mục đích:** đọc file này xong là hiểu (1) hệ của tôi là gì, vận hành ra sao, (2) hệ của sếp
-> là gì, (3) hai hệ khác nhau ở đâu và **vì sao** khác, (4) mỗi bên mạnh/yếu chỗ nào,
-> (5) bù trừ cho nhau thế nào.
-> Kế hoạch hợp nhất nằm ở file riêng: [`MERGE-PLAN.md`](MERGE-PLAN.md).
+> ⏳ **DOC ĐÃ HẾT HẠN — kho lưu.** Việc merge đã xong (`.claude-tester/` đã tan vào hệ + xoá,
+> 2026-07-09). File này **cố ý viết để đứng một mình** (giải thích trọn vẹn vì sao có 2 bức tường
+> thép, kể cả ca coupon 9 PASS) nên hơi trùng với `README.md`/`QA-SERVER.md` — đó là chủ ý, để mang
+> đi trình bày. Muốn nắm hệ thống nhanh: [`README.md`](README.md).
+>
+> **Mục đích (khi còn là dự án đang chạy):** đọc file này xong là hiểu (1) hệ của tôi là gì, (2) hệ
+> của sếp là gì, (3) hai hệ khác nhau ở đâu và **vì sao**, (4) mỗi bên mạnh/yếu chỗ nào, (5) bù trừ
+> ra sao. Kế hoạch thực thi: [`MERGE-PLAN.md`](MERGE-PLAN.md).
 >
 > Ngày: 2026-07-09 · Nguồn: đọc trực tiếp `.claude-tester/` (23 file) + `.claude-tester/.claude-knowledge/`
 > (8 file, 512 dòng) + toàn bộ `threease_qa/`.
@@ -473,8 +477,8 @@ Ký hiệu: **✅** có và tốt · **⚠️** có nhưng yếu/hỏng · **❌
 
 ### Lỗ hổng của TÔI
 
-> **Trạng thái 2026-07-09:** L1, L2 → ✅ **đã vá** (Phase 0). L3, L5 → ✅ **đã vá** (Phase 1).
-> Còn: **L4** (`SPEC-GAP` đã có ở harness, chờ `METHOD.md` — Phase 2) · **L6** (Phase 4).
+> **Trạng thái 2026-07-09:** L1, L2 → ✅ **đã vá** (Phase 0). L3, L4, L5 → ✅ **đã vá** (Phase 1–2).
+> **L6 → chưa vá** (xem định nghĩa lại bên dưới — hoá ra to hơn lúc đầu tưởng).
 > Phần dưới giữ nguyên để hiểu **vì sao** phải vá.
 
 **L1 — 4 lệnh chết (đã verify bằng filesystem).** Command ra lệnh dùng file không tồn tại:
@@ -508,9 +512,14 @@ một con QA mù code — bằng chứng rằng spec chưa nghĩ tới — và t
 **L5 — Không tự lớn lên.** Chạy xong một suite, tôi không học được gì. Selector đổi, timing lạ,
 bẫy thao tác — tất cả bay hơi hết sau session.
 
-**L6 — Bức tường thép là văn bản, không phải cơ chế.** `.claude-tester/` đang nằm **trong** repo
-`threease_qa`. Một session tương lai chạy `/testcase-run` hoàn toàn có thể `grep` trúng
-`REPORTING.md` và đọc nó. Không có gì chặn về mặt kỹ thuật.
+**L6 — Bức tường thép là văn bản, không phải cơ chế.** *(định nghĩa lại 2026-07-09 — hoá ra to hơn.)*
+Lúc đầu tưởng lỗ là `.claude-tester/` nằm trong repo (session `/testcase-run` có thể `grep` trúng
+`REPORTING.md`). Đã xoá `.claude-tester/` — nhưng đó chỉ là lỗ **phải đi tìm mới trúng**.
+Lỗ thật **to hơn** và **tự chui vào**: workspace `CLAUDE.md` được Claude Code **nạp tự động vào mọi
+phiên**, và §8 của nó là **WHAT** (cơ chế sync + tên file code). Con QA đọc code gián tiếp từ token
+đầu tiên, không cần grep gì cả. Đã dời §8 sang `knowledge/system/customer-sync.md`, nhưng GitNexus
+vẫn nằm trong tay QA qua MCP. **Chưa vá xong** — cơ chế thật = PreToolUse hook (`OPEN-QUESTIONS.md#OQ-09`).
+Không có gì chặn về mặt kỹ thuật.
 
 ### Lỗ hổng của SẾP
 

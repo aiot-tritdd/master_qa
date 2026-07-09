@@ -1,6 +1,10 @@
 # Kế hoạch hợp nhất — nâng cấp `threease_qa` bằng những gì học được từ `.claude-tester`
 
-> **Đọc trước:** [`SYSTEM-COMPARISON.md`](SYSTEM-COMPARISON.md) — phân tích hai hệ, lỗ hổng mỗi bên,
+> ⏳ **DOC ĐÃ HẾT HẠN — kho lưu, không nằm trên đường đọc.** Phase 0→4 đã xong (commit `822d5dd`
+> ..`6561b56`, 2026-07-09), `.claude-tester/` đã merge + xoá. Giữ lại làm hồ sơ dự án.
+> Muốn hiểu hệ thống: [`README.md`](README.md). Đang làm gì tiếp: [`STATE.md`](STATE.md).
+>
+> **Đọc kèm:** [`SYSTEM-COMPARISON.md`](SYSTEM-COMPARISON.md) — phân tích hai hệ, lỗ hổng mỗi bên,
 > và bằng chứng đối chứng vì sao không được nhập tri thức của sếp nguyên khối.
 >
 > Ngày: 2026-07-09 · Trạng thái: **Phase 0 ĐÃ XONG + verified**. Phase 1 sẵn sàng chạy.
