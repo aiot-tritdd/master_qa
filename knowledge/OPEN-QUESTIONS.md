@@ -122,9 +122,11 @@ trong doc. Không có gì kỹ thuật chặn một phiên `/testcase-run` thậ
   `.claude-tester` đã xoá. Nhưng đó chỉ làm văn bản sạch hơn, **không** biến tường thành cơ chế.)
 
 **Cách xử thật:** PreToolUse hook chặn `Read`/`Grep` vào `knowledge/system/**` + 5 repo sản phẩm, và
-chặn mọi tool GitNexus, khi đang chạy `/testcase-run`.
+chặn mọi tool GitNexus, khi đang chạy `/testcase-run` (KHÔNG chặn lúc build-time soạn knowledge).
+**Quyết định 2026-07-09:** tạm **GIỮ TEXT** (luật viết trong doc), **chưa dựng hook**. Ghi lại ở đây +
+`docs/STATE.md` §3.0 để không rơi. Dựng khi có nhịp.
 **Ai trả lời / làm:** user (quyết cách chặn) + build hook.
-**Block:** đây là việc lớn nhất còn lại của dự án — xem `docs/STATE.md`.
+**Block:** đây là việc lớn nhất còn lại của dự án.
 
 ---
 

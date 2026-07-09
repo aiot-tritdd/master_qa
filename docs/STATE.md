@@ -73,6 +73,11 @@ Chạy thật trên dev, không phải syntax check:
 
 ## 3. VIỆC TIẾP (ưu tiên trên xuống)
 
+0. 🔴 **[TO NHẤT — PreToolUse hook] Biến tường thép từ VĂN BẢN thành CƠ CHẾ.** Hiện QA-runtime "cấm
+   đọc code/GitNexus/`knowledge/system/`" chỉ là luật viết, không có gì chặn kỹ thuật. Cần hook chặn
+   `Read`/`Grep` vào 5 repo + `knowledge/system/**` + mọi `mcp__gitnexus__*` **khi đang `/testcase-run`**
+   (không chặn lúc build-time soạn knowledge). **Quyết định: tạm GIỮ TEXT, chưa dựng hook** (2026-07-09).
+   Chi tiết + lý do: `OPEN-QUESTIONS.md#OQ-09`. → dựng khi có nhịp.
 1. ✅ **Live-verify `pw_api` + `shot()` — XONG.** Cổng chặn Phase 2 đã mở.
 2. ✅ **[MERGE Phase 2] XONG** — `knowledge/METHOD.md` (5 archetype + 6 luật vàng + adapter
    *"coverage ≠ oracle"* + sơ đồ rẽ nhánh `SPEC-GAP`). Còn: live-verify archetype #5 (chống bypass).
