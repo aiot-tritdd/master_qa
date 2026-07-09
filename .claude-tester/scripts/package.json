@@ -1,9 +1,0 @@
-{
-  "name": "testcase-evidence-helpers",
-  "version": "1.0.0",
-  "private": true,
-  "description": "Helper Playwright/API cho bộ skill testcase-* (Threease). Chạy `npm i` 1 lần để require('playwright') hoạt động không cần NODE_PATH.",
-  "dependencies": {
-    "playwright": "^1.61.0"
-  }
-}
