@@ -63,7 +63,7 @@
       ["5", "Actual Result", "actual"]
     ],
 
-    "_status_note": "SPEC-GAP = spec im lặng ở chỗ METHOD.md bảo phải có case → KHÔNG bịa expect → không chấm được. Khác 未実施 (= không quan sát được). Xem docs/MERGE-PLAN.md §4.",
+    "_status_note": "SPEC-GAP = spec im lặng ở chỗ METHOD.md bảo phải có case → KHÔNG bịa expect → không chấm được. Khác 未実施 (= không quan sát được). Xem docs/README.md §7.",
     "status": {
       "PASS":     { "bg": "pass_bg",    "tx": "pass_tx",    "count_match": "PASS" },
       "FAIL":     { "bg": "fail_bg",    "tx": "fail_tx",    "count_match": "FAIL" },

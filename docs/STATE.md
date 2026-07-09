@@ -22,7 +22,7 @@ evidence PNG/xlsx. Oracle = SPEC + quan sát live. **Mù code.** GitNexus chỉ 
 - ✅ **Re-UI-confirm `pro-open-booking.md`** (2026-07-09, ja-JP) — phát hiện toạ độ cứng + nhãn EN đều mục rữa.
 - ✅ **Test đã chạy:** `TestCase_NEW` (thu hồi vé) 7 case verified ·
   `TestCase-11` (coupon report) **9 PASS / 8 FAIL**, khớp 100% scope dev.
-- ✅ **Phân tích + kế hoạch merge hệ của sếp** (`.claude-tester/`): `docs/SYSTEM-COMPARISON.md` + `docs/MERGE-PLAN.md`.
+- ✅ **Phân tích + merge hệ của sếp** (`.claude-tester/`): xong Phase 0→4; hồ sơ ở `docs/SYSTEM-COMPARISON.md` (archived).
 
 ### ✅ MERGE Phase 0 — vá lệnh chết (2026-07-09, đã verify)
 Trước đó 4 lệnh trỏ vào file **không tồn tại**. Nay:
@@ -50,7 +50,7 @@ Trước đó 4 lệnh trỏ vào file **không tồn tại**. Nay:
 - ✅ Luật **"1 tri thức = 1 nhà"** + **"dot-folder không chứa deliverable"** vào `KNOWLEDGE-STRATEGY.md`.
 
 ### ✅ REGRESSION TEST cho chính hệ QA (2026-07-09) — merge KHÔNG phá black-box
-Thước đo thành công của `MERGE-PLAN`: chạy lại TestCase-11 phải vẫn ra **9 PASS / 8 FAIL**. → ✅ **ĐÚNG**.
+Thước đo thành công của merge: chạy lại TestCase-11 phải vẫn ra **9 PASS / 8 FAIL**. → ✅ **ĐÚNG**.
 - `200`: top-tab `チケットレポート`+`クーポンレポート` · `/reports/` · `/coupon-reports/sales/` (filter, KPI,
   `CSVエクスポート`, cột `発行元`) · `/coupon-reports/usage/`
 - `404`: `/coupon-reports/` (dashboard) · `/monthly/` · `/by-store/` · `/csv-snapshots/`; nút `過去のCSV` = 0

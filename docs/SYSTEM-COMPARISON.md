@@ -2,12 +2,12 @@
 
 > ⏳ **DOC ĐÃ HẾT HẠN — kho lưu.** Việc merge đã xong (`.claude-tester/` đã tan vào hệ + xoá,
 > 2026-07-09). File này **cố ý viết để đứng một mình** (giải thích trọn vẹn vì sao có 2 bức tường
-> thép, kể cả ca coupon 9 PASS) nên hơi trùng với `README.md`/`QA-SERVER.md` — đó là chủ ý, để mang
+> thép, kể cả ca coupon 9 PASS) nên hơi trùng với [`README.md`](README.md) — đó là chủ ý, để mang
 > đi trình bày. Muốn nắm hệ thống nhanh: [`README.md`](README.md).
 >
 > **Mục đích (khi còn là dự án đang chạy):** đọc file này xong là hiểu (1) hệ của tôi là gì, (2) hệ
 > của sếp là gì, (3) hai hệ khác nhau ở đâu và **vì sao**, (4) mỗi bên mạnh/yếu chỗ nào, (5) bù trừ
-> ra sao. Kế hoạch thực thi: [`MERGE-PLAN.md`](MERGE-PLAN.md).
+> ra sao. *(Kế hoạch thực thi merge — `MERGE-PLAN.md` — đã hoàn tất và xoá; hệ sếp đã tan vào `knowledge/`.)*
 >
 > Ngày: 2026-07-09 · Nguồn: đọc trực tiếp `.claude-tester/` (23 file) + `.claude-tester/.claude-knowledge/`
 > (8 file, 512 dòng) + toàn bộ `threease_qa/`.
@@ -384,7 +384,7 @@ Tính năng: **báo cáo Coupon** (No.11) trên Hệ thống Vé.
 > `CouponPack`/`CouponUsage`/`CouponTransaction` và `ReportService.get_coupon_metrics()`
 > **CHƯA TỒN TẠI TRONG CODE**, toàn bộ là tên đề xuất trong spec (No.11 chưa code)."*
 
-**Hệ của tôi**, `docs/QA-SERVER.md §IX.4`, ngày **2026-07-08**, phương pháp = quan sát live:
+**Hệ của tôi** (`README.md` §11 · TestCase-11), ngày **2026-07-08**, phương pháp = quan sát live:
 
 > *"Coupon report (TestCase-11): black-box **9 PASS / 8 FAIL**, khớp **100%** list dev khai — mù code vẫn đúng."*
 
@@ -393,7 +393,7 @@ Tính năng: **báo cáo Coupon** (No.11) trên Hệ thống Vé.
 Nếu coupon report *"chưa tồn tại trong code"* thì không thể có **9 case PASS**. Một tính năng không
 tồn tại thì không PASS được cái gì cả.
 
-Và đây không phải lần đầu. Cũng trong `QA-SERVER.md §IX.4`:
+Và đây không phải lần đầu (cũng ghi ở `README.md` §11):
 
 > *"Guard 'vé đã dùng': tôi **code-trace** → kết luận 'chưa build' → **SAI** (Rails index yếu).
 > **Black-box** thấy guard **đã build + chạy đúng** (message JP nguyên văn), và bắt bug thật
@@ -678,4 +678,5 @@ cuốn sổ tay của sếp (tri thức tự khai báo độ tin cậy, tự l�
 
 ---
 
-*Kế hoạch thực thi chi tiết: [`MERGE-PLAN.md`](MERGE-PLAN.md).*
+*Việc merge đã hoàn tất (Phase 0→4, 2026-07-09). Tri thức hệ sếp đã tan vào `knowledge/`; hệ hiện tại
+mô tả ở [`README.md`](README.md).*

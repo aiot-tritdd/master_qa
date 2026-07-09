@@ -49,6 +49,11 @@ Playwright → **quan sát live** → chấm PASS/FAIL + evidence. Cộng pipeli
 - Dữ liệu test tạo ra: prefix `AIOT-TEST-*`/`AIOTTEST*` → `/testcase-cleanup` quét.
 - **Evidence chuẩn:** xlsx **3 sheet** (Cover/Test Cases/Checklist+Nguồn) · **mỗi case 2 ảnh (before+after) PNG rõ**.
 
+## Grow tri thức (demand-driven — đừng grow trước)
+Spec mới cần 1 flow để dựng precondition → **có** trong `knowledge/` (approved) thì dùng luôn; **chưa có**
+thì **DỪNG, KHÔNG tự đọc code để bù** → `/testcase-systemdoc <flow>` (build-time: GitNexus ra draft →
+UI-confirm → approved) → quay lại chạy test. Chỉ viết doc cho flow **thực sự test tới**. Chi tiết: `docs/README.md` §10.
+
 ## Maintenance khi 5 repo update
 `refresh-gitnexus.sh` (graph tươi — CHỈ graph) → **stale-check `source_hash`** (`/testcase-stale`, hoặc
 `python3 .claude/skills-scripts/testcase-evidence/stale_check.py`) → re-confirm CHỈ doc drift.
