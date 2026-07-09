@@ -6,25 +6,36 @@
 
 ---
 
-## 0. `knowledge/` là gì (nhắc lại — kẻo lệch)
-- Nơi chứa **Living Business Doc** = tri thức **HOW (cách vận hành app)** + **kênh quan sát**.
-- **KHÔNG** phải oracle. Đúng/sai = **SPEC** (mỗi TestCase có `specs.md`) đối chiếu **quan sát live**.
-  → Doc chỉ trả lời *"bấm gì / vào đâu / xem ở đâu"*, không trả lời *"đúng hay sai"*.
-- Lưu **markdown + YAML front-matter, trong git** = source of truth (git log = lịch sử đổi ý).
-- Front-matter: `id, status(draft→approved→stale), kind, spans_repos, source_symbols,
-  source_hash, ui_confirmed_at, confidence, verify_by, grown_from`.
+## 0. `knowledge/` là gì
 
-### Ba tầng tri thức
+`knowledge/` là **trí nhớ dài hạn** của con QA — thứ sống sót qua các phiên. Nó chia theo **quyền lực**:
+mẩu tri thức này có được phép trả lời *"kết quả đúng là gì"* không? Đó là ranh giới tách hai thư mục.
 
-| Tầng | Ở đâu | Trả lời | QA-runtime |
-|---|---|---|:--:|
-| **HOW** | `knowledge/*.md` (`GLOSSARY` · `lessons` · flow · channels) | bấm gì, xem ở đâu, gọi báo cáo thế nào | ✅ đọc được |
-| **WHAT** | `knowledge/system/*.md` | code làm gì, hành vi ra sao, cái gì đã/chưa build | ❌ **CẤM** |
-| **CHƯA BIẾT** | `knowledge/OPEN-QUESTIONS.md` | *"tra rồi vẫn không đủ căn cứ → hỏi người"* | ✅ đọc được |
+### `knowledge/*.md` (thư mục gốc) — **HOW: cách vận hành**
+- Trả lời *"bấm gì / vào đâu / xem kết quả ở đâu"*. Ví dụ: *"nút Thanh toán ở tab 会計"*.
+- **KHÔNG** phải oracle — nó không nói cái gì đúng/sai. Đúng/sai = **SPEC** đối chiếu **quan sát live**.
+- **QA lúc test ĐƯỢC đọc.** An toàn, vì bug sống ở tầng logic (WHAT), không ở tầng nút bấm (HOW):
+  dev code sai luật thì *kết quả khi bấm* sai, chứ không dời cái nút đi.
+- Gồm: các flow (`pro-open-booking`…), `observation-channels`, `GLOSSARY`, `lessons`, `METHOD`.
 
-Tầng 3 là tầng **mới** (thiếu trước 2026-07-09). Không có nó, mọi thứ "chưa biết" bị ép thành
-"có" (→ **bịa**) hoặc "không" (→ `/testcase-systemdoc` vô hạn). Nó an toàn cho QA-runtime vì
-**không phán đúng/sai** — nó phán *"đừng tự tin ở chỗ này"*.
+### `knowledge/system/*.md` — **WHAT: code đang làm gì**
+- Mô tả *cơ chế bên trong*: code làm gì, hành vi ra sao, cái gì đã/chưa build. Ví dụ:
+  *"hủy booking thì SC được hoàn"*.
+- Tồn tại để **con người hiểu hệ thống** + để soạn tầng HOW nhanh hơn (ở build-time).
+- ⛔ **QA lúc test CẤM đọc.** Không phải vì nó sai, mà vì nó **đúng theo code** — đọc nó là gián tiếp
+  đọc code → con QA thôi quan sát trung thực, quay ra suy diễn → tautology.
+
+### `knowledge/OPEN-QUESTIONS.md` — **CHƯA BIẾT**
+- *"Tra rồi vẫn không đủ căn cứ → hỏi người"*. **QA ĐƯỢC đọc**, vì nó **không phán đúng/sai** —
+  nó chỉ nói *"đừng tự tin ở chỗ này"*. Thiếu tầng này, mọi thứ chưa biết bị ép thành "có" (→ **bịa**)
+  hoặc "không" (→ điều tra vô hạn). Cùng khái niệm ở tầng test case = **`SPEC-GAP`** (kết quả thứ tư).
+
+> **Tóm:** HOW = *làm sao bấm* (QA đọc) · WHAT = *đúng/sai ra sao* (QA cấm) · CHƯA BIẾT = *chưa chắc, hỏi đi* (QA đọc).
+
+### Cách lưu
+Markdown + YAML front-matter, trong git (git log = lịch sử đổi ý). Front-matter:
+`id, status(draft→approved→stale), kind, spans_repos, source_symbols, source_hash, ui_confirmed_at,
+confidence, verify_by, grown_from`.
 
 > Cùng khái niệm đó ở tầng test case tên là **`SPEC-GAP`** (result thứ tư): *quan sát được, nhưng
 > không có căn cứ để chấm*. Xem `docs/MERGE-PLAN.md` §4.
@@ -82,6 +93,11 @@ không nói *"nội dung này đúng"*.
 | `impact` + `source_hash` | blast radius + phát hiện doc lỗi thời |
 
 ## 3. Chiến lược grow — 3 giai đoạn
+
+> **Nguyên tắc xuyên suốt: grow theo NHU CẦU, không grow trước.** Không ngồi viết doc cho cả 8 domain
+> ngay từ đầu — chỉ viết một flow khi có test thật cần tới nó. Ba giai đoạn = ba thời điểm khác nhau của
+> vòng đời: **dựng khung** (GĐ-0) → **lớn dần theo mỗi spec** (GĐ-1) → **giữ tươi khi code đổi** (GĐ-2),
+> và một hướng tương lai (GĐ-3).
 
 ### GĐ-0 — bootstrap skeleton + cơ chế staleness ✅ **XONG 2026-07-08**
 1. ✅ **INDEX tổng** → `knowledge/system/OVERVIEW.md` (8 domain × repo × trạng thái).
