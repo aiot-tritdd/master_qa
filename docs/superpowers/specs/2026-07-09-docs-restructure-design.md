@@ -50,9 +50,14 @@ khá sạch. `docs/` thì không ai áp.
 - Doc "có hạn" được đóng dấu rõ, người mới biết bỏ qua.
 
 **KHÔNG phải mục tiêu**
-- Không `git rm -r .claude-tester/` — **user tự làm sau**.
-- Không đụng `knowledge/` (đã sạch).
+- Không đụng nội dung `knowledge/` (đã sạch sau Phase 3).
 - Không viết lại `MERGE-PLAN.md` (chỉ thêm banner).
+
+> **Cập nhật thực tại (commit `822d5dd` + `e7891be` + `6561b56`, 2026-07-09 14:59):**
+> Phase 3–4 **đã xong** trong lúc soạn spec này. `.claude-tester/` đã archive (`0119159`) rồi xoá.
+> `knowledge/` mọc thêm 5 file: `playbook.md` · `features.md` (HOW, draft) và
+> `system/api-endpoints.md` · `system/domain-rules.md` · `system/ui-theme.md` (WHAT, cấm đọc).
+> ⇒ Spec này giữ nguyên hiệu lực; chỉ §6 và §8 phải sửa (xem dưới).
 
 ---
 
@@ -150,6 +155,22 @@ vào mọi phiên**, kể cả phiên `/testcase-run` đang chạy test mù code
 ⇒ Con QA đã đọc code (gián tiếp) từ token đầu tiên, mọi phiên. Đây là lỗ tường thép **to hơn**
 lỗ `L6` mà docs đang mô tả (`.claude-tester/` — thứ phải `grep` mới trúng).
 
+### ⚠️ Một khẳng định sai phải sửa
+
+`docs/STATE.md:88` (commit `e7891be`) đang ghi:
+
+> *"`.claude-tester` không còn trong working tree ⇒ bức tường thép thành **cơ chế**."*
+
+**Sai.** Xoá `.claude-tester/` chỉ bịt lỗ *phải đi tìm mới trúng*. Lỗ *tự chui vào* — workspace
+`CLAUDE.md` §8, nạp tự động mọi phiên — vẫn nguyên. Tường thép **vẫn là văn bản**.
+
+Đây là lần thứ **ba** cùng một dạng lỗi trong dự án (lần 1: guard vé-đã-dùng; lần 2: coupon report):
+**nhầm "cái quan sát được" với "cái tồn tại"**. Lần này nó tự cắn mình — xoá được thứ nhìn thấy
+nên tưởng đã kín.
+
+⇒ Sửa `STATE.md:88` và `SYSTEM-COMPARISON.md` (L6): tường thép thành cơ chế **chỉ sau khi**
+workspace `CLAUDE.md` hết chứa WHAT.
+
 **Hành động:**
 - Chuyển nội dung §8 → `knowledge/system/customer-sync.md` (đã kiểm: file này là **superset**
   của §8 — có thêm 9 model serializer, `MAX_RETRIES=5`, cron 5 phút, known gap `handlers.py`.
@@ -178,8 +199,9 @@ tiện tay khi làm việc ở `threease_backend`/`threease_ticket` — đổi l
 
 ---
 
-## 8. Việc user tự làm sau
+## 8. Còn lại sau khi spec này xong
 
-- `git rm -r .claude-tester/` (sau khi Phase 3 khử độc xong).
-- Quyết định về workspace `CLAUDE.md` §3 (đồ nghề GitNexus lộ ra QA-runtime) — đã ghi ở
-  `OPEN-QUESTIONS.md`.
+- ~~`git rm -r .claude-tester/`~~ → **đã xong** (`822d5dd`, archive ở `0119159`).
+- Quyết định về workspace `CLAUDE.md` §3 (nó dạy Claude gọi `query`/`impact`/`context` — đồ nghề
+  code-trace trong tay con QA phải mù code). Ghi vào `OPEN-QUESTIONS.md`, **user quyết sau**.
+- Nâng `knowledge/playbook.md` + `features.md` từ `draft` → `approved` (cần UI-confirm dưới `ja-JP`).
