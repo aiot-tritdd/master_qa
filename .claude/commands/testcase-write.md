@@ -13,7 +13,7 @@ Bộ template chính ở `.claude/skills-scripts/testcase-evidence/`:
 ```
 /testcase-write <folder>
 ```
-Ví dụ: `/testcase-write 7.Test/TestCase_No.10.5`
+Ví dụ: `/testcase-write wtf-is-this/TestCase_No.10.5`
 
 ## TIẾT KIỆM TOKEN — đọc trước
 **KHÔNG viết lại generator, KHÔNG dựng lại cấu trúc test case từ số 0.** Chỉ:
@@ -33,12 +33,18 @@ Không in nội dung script/không dán ảnh vào chat.
    Khung có sẵn 5 archetype: (1) Happy path, (2) Biến thể điều kiện/quyền,
    (3) Boundary, (4) Regression, (5) Backend/API·toàn vẹn dữ liệu.
 3. **Chỉnh khung theo spec** (tiếng Việt; giữ tên màn hình/hàm JP/EN):
-   - Đổi `meta` (module = tên folder/task; env lấy từ `7.Test/account.txt` URL Pro dev).
+   - Đổi `meta` (module = tên folder/task; env lấy từ `wtf-is-this/account.txt` URL Pro dev).
    - Với mỗi archetype: đổi `screen/title/pre/steps/expect` theo màn hình & thay đổi thật.
    - Mỗi màn hình trong spec ≥ 1 case; thêm/bớt case (copy 1 archetype phù hợp).
-   - **Xoá mọi khoá bắt đầu bằng `_`** (`_huong_dan`, `_archetype`) khi hoàn thiện.
+   - **Xoá mọi khoá bắt đầu bằng `_`** (`_huong_dan`, `_archetype`, `_tuong_thep_*`) khi hoàn thiện.
    - Giữ `result`=`"未実施"`, `actual`=`"未実施"`, `before`/`after`=`null` (Skill 2 sẽ điền).
-   Schema mỗi tc: `id, screen, pri(High|Medium|Low), result, title, pre, steps, expect, actual, note, before, after`.
+   Schema mỗi tc: `id, screen, pri(High|Medium|Low), result, title, pre, steps, expect, actual, note, source, before, after`.
+   `result` hợp lệ: **`PASS` | `FAIL` | `未実施` | `SPEC-GAP`** (định nghĩa trong `theme.json`).
+
+   ⚠️ **Oracle = SPEC.** `expect` CHỈ suy từ spec — lúc viết `expect` thì **mù code**.
+   `knowledge/METHOD.md` quyết định **case nào phải tồn tại** (coverage), **không bao giờ** quyết định
+   `expect`. Spec im lặng ở chỗ METHOD bảo phải kiểm → **KHÔNG bịa `expect`** → khi chạy sẽ ra `SPEC-GAP`
+   (finding giá trị cao: bằng chứng spec chưa nghĩ tới), chứ không phải bịa ra một kỳ vọng rồi chấm FAIL.
 4. **Sinh Excel vào folder**:
    ```
    python3 .claude/skills-scripts/testcase-evidence/build_evidence.py \
@@ -53,6 +59,15 @@ Không in nội dung script/không dán ảnh vào chat.
    - Số case thiết kế phải **≥ KPI**; nếu dưới thì bổ sung nhóm validation/negative trước
      (đây là nhóm hay thiếu nhất), không đẻ thêm case trùng happy path để đủ số.
 6. **Báo cáo**: liệt kê số case theo màn hình + **KPI (Min/Max/mục tiêu/thực tế)** + đường dẫn file .xlsx trong folder.
+
+## Before final (checklist bắt buộc trước khi báo cáo xong)
+- [ ] Có đọc source code không? **Ở bước viết `expect` đáp án đúng luôn là KHÔNG.** Lỡ đọc → khai ra.
+- [ ] Có đọc `knowledge/system/**` hoặc dùng GitNexus không? (cả hai đều **CẤM**)
+- [ ] Mọi `expect` đều truy được về 1 câu trong SPEC? Có chỗ nào tự bịa kỳ vọng không?
+- [ ] Case nào `METHOD.md` bảo phải có mà spec im lặng → đã đánh dấu để chạy ra `SPEC-GAP` chưa?
+- [ ] Flow dựng precondition có nằm trong `knowledge/` (approved) không? Nếu chưa → dừng,
+      chạy `/testcase-systemdoc <flow>` (build-time), **KHÔNG** tự đọc code để bù.
+- [ ] Có chạm `knowledge/OPEN-QUESTIONS.md` không? (case đụng OQ nào → ghi vào `note`)
 
 ## Lưu ý
 - File `.xlsx` và `tcs.json` **luôn để trong `<folder>`** cùng spec. Skill 2 đọc lại `tcs.json`.

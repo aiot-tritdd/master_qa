@@ -9,6 +9,8 @@ source_symbols:
   - "ticket: admin_api/data_sync/handlers.py"
 source_hash: 8e034f0c8d478d29
 note: "MÔ TẢ code làm gì — KHÔNG phải oracle."
+confidence: 🟡
+verify_by: "Code-derived. Verify bằng sync_controller.rb + handlers.py; hành vi thật phải quan sát live 2 phía."
 ---
 # Domain: Ticket issue + sync (phát hành gói vé + đồng bộ Pro↔ticket)
 

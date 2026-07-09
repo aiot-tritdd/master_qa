@@ -1,0 +1,82 @@
+{
+  "_huong_dan": "KHUNG TEMPLATE CHÍNH (5 archetype). /testcase-write copy file này -> <folder>/tcs.json rồi CHỈNH theo spec: đổi meta, screen/title/pre/steps/expect theo màn hình thật, thêm/bớt case. Giữ result='未実施', actual='未実施', before/after=null cho tới khi /testcase-run chạy. XOÁ mọi khoá bắt đầu bằng '_' khi hoàn thiện.",
+
+  "_tuong_thep_1": "expect CHỈ suy từ SPEC. Lúc viết expect thì MÙ CODE. Lấy kỳ vọng từ code = tautology = vô nghĩa.",
+  "_tuong_thep_2": "METHOD.md quyết định case NÀO PHẢI TỒN TẠI (coverage). Nó KHÔNG BAO GIỜ quyết định expect (oracle). Spec im lặng ở chỗ METHOD bảo phải có case → KHÔNG bịa expect → result='SPEC-GAP'.",
+
+  "_result_hop_le": {
+    "PASS": "quan sát khớp expect",
+    "FAIL": "quan sát lệch expect. actual = 'spec kỳ vọng X; màn hình làm Y'. KHÔNG symbol/file:line.",
+    "未実施": "KHÔNG QUAN SÁT ĐƯỢC (vd không truy cập được kênh quan sát).",
+    "SPEC-GAP": "QUAN SÁT ĐƯỢC nhưng KHÔNG CÓ CĂN CỨ ĐỂ CHẤM — spec không định nghĩa kỳ vọng ở chỗ METHOD bảo phải kiểm. actual mô tả cái quan sát được + 'không chấm được → hỏi BA/dev'. Đây là finding GIÁ TRỊ CAO (bằng chứng spec chưa nghĩ tới), không phải case lỗi."
+  },
+
+  "meta": {
+    "project": "Threease",
+    "module": "No.X：<tên task>",
+    "issue": "<mô tả ngắn vấn đề / mục tiêu>",
+    "tester": "QA-Server",
+    "date": "YYYY/MM/DD",
+    "env": "Dev (develop.pro.threease.com / ticket-dev.threease.com)"
+  },
+  "shots_dir": "shots",
+
+  "tcs": [
+    {
+      "_archetype": "1. Happy path — luồng chính của MỖI màn hình bị ảnh hưởng (mỗi màn >= 1 case)",
+      "id": "TC-01", "screen": "<Màn hình chính>", "pri": "High", "result": "未実施",
+      "title": "Luồng chính hoạt động đúng",
+      "pre": "・Đã đăng nhập tài khoản phù hợp\n・<dữ liệu tiền đề — dựng bằng flow CŨ, KHÔNG dùng feature đang test>",
+      "steps": "1. Mở <màn hình>\n2. Thực hiện <thao tác chính>\n3. Quan sát kết quả",
+      "expect": "<kết quả mong đợi — NGUYÊN VĂN THEO SPEC>",
+      "actual": "未実施",
+      "note": "[seam:ui] tạo: … · xem: …",
+      "source": "",
+      "before": null, "after": null
+    },
+    {
+      "_archetype": "2. Biến thể điều kiện/quyền — cùng thao tác, đổi quyền/trạng thái => hành vi khác (before = trạng thái A, after = trạng thái B)",
+      "id": "TC-02", "screen": "<Màn hình chính>", "pri": "High", "result": "未実施",
+      "title": "Biến thể theo quyền/trạng thái",
+      "pre": "・<điều kiện khác: quyền/trạng thái B>",
+      "steps": "1. Mở <màn hình> ở điều kiện B\n2. Thực hiện <thao tác>\n3. So sánh với điều kiện A",
+      "expect": "<hành vi khác đúng thiết kế: ẩn/hiện, cho phép/chặn — theo SPEC>",
+      "actual": "未実施",
+      "note": "", "source": "",
+      "before": null, "after": null
+    },
+    {
+      "_archetype": "3. Boundary — giá trị ngưỡng/giới hạn GHI TRONG SPEC (spec không ghi ngưỡng => không tự bịa ngưỡng)",
+      "id": "TC-03", "screen": "<Màn hình>", "pri": "Medium", "result": "未実施",
+      "title": "Kiểm tra giá trị biên/giới hạn",
+      "pre": "・<dữ liệu ở ngưỡng: min/max/vượt ngưỡng>",
+      "steps": "1. Nhập/chọn giá trị biên\n2. Quan sát xử lý",
+      "expect": "<xử lý đúng tại biên, thông báo lỗi khi vượt — theo SPEC>",
+      "actual": "未実施",
+      "note": "", "source": "",
+      "before": null, "after": null
+    },
+    {
+      "_archetype": "4. Regression — chức năng liên quan KHÔNG bị ảnh hưởng bởi thay đổi",
+      "id": "TC-04", "screen": "<Màn hình liên quan>", "pri": "Medium", "result": "未実施",
+      "title": "Chức năng liên quan vẫn hoạt động (regression)",
+      "pre": "・<trạng thái không thuộc phạm vi thay đổi>",
+      "steps": "1. Thực hiện <chức năng cũ liên quan>\n2. Kiểm tra vẫn đúng như trước",
+      "expect": "<không thay đổi hành vi cũ>",
+      "actual": "未実施",
+      "note": "Regression: phạm vi áp dụng chỉ khi <điều kiện>", "source": "",
+      "before": null, "after": null
+    },
+    {
+      "_archetype": "5. Backend/API · toàn vẹn dữ liệu — kiểm tầng API/DB, chống bypass, số dư/vé. NHÓM DỄ RA BUG NHẤT. Dùng withApi() (pw_api.js) sniff devise-token từ request thật của app — KHÔNG đọc code để biết endpoint, lấy endpoint từ knowledge/ đã approved.",
+      "id": "TC-05", "screen": "Backend/API", "pri": "High", "result": "未実施",
+      "title": "Kiểm tra tầng API / toàn vẹn dữ liệu",
+      "pre": "・<trạng thái dữ liệu trước thao tác: số dư vé = N, sổ = M>",
+      "steps": "1. Ghi nhận số liệu TRƯỚC (qua kênh quan sát trong knowledge/observation-channels.md)\n2. Thực hiện thao tác hủy/xóa/refund (hoặc gọi thẳng API khi UI đã ẩn nút)\n3. Ghi nhận số liệu SAU, đối chiếu",
+      "expect": "<theo SPEC. Nếu SPEC KHÔNG NÓI dữ liệu phái sinh phải hoàn/thu hồi => ĐỪNG bịa expect => result='SPEC-GAP'>",
+      "actual": "未実施",
+      "note": "", "source": "",
+      "before": null, "after": null
+    }
+  ]
+}

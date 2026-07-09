@@ -8,6 +8,9 @@ source_symbols:
   - "ticket: ReportService.get_coupon_metrics (CouponPack/CouponUsage/CouponTransaction)"
 source_hash: a84158fb392604ca
 ui_confirmed_at: 2026-07-08
+confidence: 🟡
+verify_by: "Navigation ĐÃ UI-confirm (tin được). NHƯNG source_symbols đang tranh chấp — xem OPEN-QUESTIONS.md#OQ-01 (một nguồn khẳng định get_coupon_metrics không tồn tại, trong khi black-box ra 9 PASS). => source_hash có thể đang hash file không chứa symbol => stale_check có thể MÙ với doc này."
+open_questions: [OQ-01]
 grown_from: "GitNexus route_map(threease_ticket, coupon-reports) + UI-confirm (TestCase-11)"
 ---
 # Flow: Coupon Report trên Ticket app (HOW — navigation only)

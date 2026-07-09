@@ -294,3 +294,53 @@ Surgical (per `source_hash`). **CẦN LÀM (GĐ-0):** gắn `source_hash` thật
 - Coupon report (TestCase-11): black-box **9 PASS/8 FAIL khớp 100%** list dev khai — mù code vẫn đúng.
 - → **KHÔNG code-trace để phán build/chưa-build.** Route/skeleton dùng `route_map` (build-time); đúng/sai
   dùng **quan sát live vs SPEC**. Đây là lý do 2 bức tường thép tồn tại.
+
+---
+
+## Phần X — Cập nhật 2026-07-09 (merge hệ của sếp + tầng tri thức thứ ba)
+
+### 1. Ba tầng tri thức, không phải hai
+| Tầng | Ở đâu | QA-runtime |
+|---|---|:--:|
+| **HOW** (bấm gì, xem đâu) | `knowledge/*.md` — `GLOSSARY` · `lessons` · flow · channels | ✅ |
+| **WHAT** (code làm gì, đã/chưa build) | `knowledge/system/*.md` | ⛔ **CẤM** |
+| **CHƯA BIẾT** (tra rồi vẫn không đủ căn cứ) | `knowledge/OPEN-QUESTIONS.md` | ✅ |
+
+Tầng 3 là **mới**. Thiếu nó → mọi thứ "chưa biết" bị ép thành "có" (**bịa**) hoặc "không"
+(`/testcase-systemdoc` vô hạn). Nó an toàn vì **không phán đúng/sai**, chỉ nói *"đừng tự tin ở đây"*.
+
+### 2. `SPEC-GAP` — result thứ tư
+Cùng khái niệm ở tầng test case: *quan sát được, nhưng không có căn cứ để chấm*.
+Xảy ra khi `METHOD.md` bảo phải có case mà **SPEC im lặng**. → **KHÔNG bịa `expect`**.
+
+> `METHOD.md` quyết định **case nào phải tồn tại** (coverage).
+> Nó **không bao giờ** quyết định `expect` (oracle). Nhầm chỗ này = phá Tường thép #1.
+
+`SPEC-GAP` là finding **giá trị cao nhất** của QA mù code: bằng chứng **spec chưa nghĩ tới**.
+4 trạng thái: `PASS` · `FAIL` · `未実施` (không quan sát được) · `SPEC-GAP` (không chấm được).
+
+### 3. Bài học VÀNG lần 2 — code-trace SAI, black-box ĐÚNG (lại)
+Cùng ngày 2026-07-08, hai nguồn mâu thuẫn về **coupon report**:
+- `.claude-tester/.claude-knowledge/REPORTING.md` (đọc code, `grep -i coupon` → rỗng):
+  *"CHƯA TỒN TẠI TRONG CODE"*.
+- `TestCase-11` (quan sát live): **9 PASS** / 8 FAIL, khớp 100% list dev khai.
+
+Một tính năng "không tồn tại" thì không thể có 9 case PASS. Đây là **lần thứ hai** `grep`-không-thấy
+dẫn tới kết luận sai (lần 1: guard "vé đã dùng"). → `OPEN-QUESTIONS.md#OQ-01`.
+
+> **`grep` không thấy ≠ không tồn tại.** Code có thể ở chỗ khác, tên khác, sinh động lúc runtime,
+> hoặc index code-graph yếu. Đây là lý do `knowledge/system/` bị cấm ở QA-runtime.
+
+### 4. Merge `.claude-tester` (hệ của sếp)
+Nguyên tắc: **nhập CƠ KHÍ + VỆ SINH TRI THỨC, không nhập KẾT LUẬN.**
+Bộ lọc 1 câu hỏi, 3 cửa: *"Cái này nói HOW, nói WHAT, hay nói 'chưa biết'?"*
+Xong Phase 0 (harness) + Phase 1 (vệ sinh tri thức). Còn Phase 2-4 → `docs/MERGE-PLAN.md`.
+Sau Phase 4: **`git rm -r .claude-tester/`** — bức tường thép từ **văn bản** thành **cơ chế**
+(thứ độc không còn trong cây thư mục để mà grep trúng).
+
+### 5. Ngân sách GitNexus thật (đo `list_repos` 2026-07-09)
+backend 227 · ticket 130 · pro 116 · **admin 0** · **reservation 0** processes.
+**473 = 227+130+116** — *tổng call-chain*, KHÔNG phải "473 flow phải viết doc" (gom thành 8 domain).
+`processes = 0` **≠ graph rỗng**: admin cho 20 route (`route_map`), reservation cho `definitions`
+(màn + method). Hai lỗ khác nhau: **cross-repo wiring** → `CLAUDE.md` trám; **flow nội bộ Nuxt** →
+`CLAUDE.md` KHÔNG trám, phải UI-confirm.

@@ -5,14 +5,19 @@ session Claude này thành **QA senior mù code**: từ 1 file **SPEC** → sinh
 Playwright → **quan sát live** → chấm PASS/FAIL + evidence. Cộng pipeline `.claude/commands/testcase-*.md`
 (specs-md / write / run / cleanup / retest / upspecschange / systemdoc).
 
-> 📘 **Đọc để hiểu trọn + cày tiếp:** `docs/QA-SERVER.md` (kinh thánh) · `docs/KNOWLEDGE-STRATEGY.md`
-> (grow/maintain tri thức). Bối cảnh 5 repo: `/Users/tritdd/Work/ThreeSides/CLAUDE.md`.
+> 📘 **Đọc để hiểu trọn + cày tiếp:** `docs/STATE.md` (đọc đầu tiên) · `docs/QA-SERVER.md` (kinh thánh) ·
+> `docs/SYSTEM-COMPARISON.md` (hệ mình vs hệ sếp) · `docs/MERGE-PLAN.md` (đang chạy) ·
+> `docs/KNOWLEDGE-STRATEGY.md` (grow/maintain tri thức). Bối cảnh 5 repo: `/Users/tritdd/Work/ThreeSides/CLAUDE.md`.
 
 ## 2 BỨC TƯỜNG THÉP (đừng phá)
 1. **Oracle = SPEC, không phải code.** `expect` chỉ suy từ spec; lúc viết `expect` thì **MÙ code**
-   (lấy kỳ vọng từ code = tautology = vô nghĩa).
-2. **QA mù code tuyệt đối.** Không đọc code, không GitNexus lúc test. FAIL báo **hành vi**
-   ("spec bảo X, màn làm Y" + ảnh), **KHÔNG** symbol/file:line. Định vị bug ở code là việc dev.
+   (lấy kỳ vọng từ code = tautology = vô nghĩa). `METHOD.md` cấp **coverage**, KHÔNG cấp `expect`.
+2. **QA mù code tuyệt đối.** Không đọc code, không GitNexus, không `knowledge/system/**` lúc test.
+   FAIL báo **hành vi** ("spec bảo X, màn làm Y" + ảnh), **KHÔNG** symbol/file:line. Định vị bug ở code là việc dev.
+
+## 4 kết quả test (không phải 3)
+`PASS` · `FAIL` · `未実施` (**không quan sát được**) · `SPEC-GAP` (**quan sát được nhưng spec không
+định nghĩa kỳ vọng** → không bịa `expect`; đây là finding giá trị cao nhất của QA mù code).
 
 ## Cách xài (nhanh gọn)
 1. Bỏ `specs.md` (hoặc `specs.html` → `/specs-md` sinh md) vào `wtf-is-this/TestCase-XX/`.
@@ -27,6 +32,12 @@ Playwright → **quan sát live** → chấm PASS/FAIL + evidence. Cộng pipeli
 - **3 nguồn tri thức:** ① **SPEC** (oracle, per-folder) · ② `knowledge/*.md` = **Living Business Doc**
   (navigation HOW, approved qua UI-confirm) · ③ `knowledge/system/*.md` = **hiểu business toàn hệ**
   (draft, "mô tả code"—không phải oracle). Đúng/sai = SPEC + quan sát live.
+- **Tầng tri thức thứ 3 — `knowledge/OPEN-QUESTIONS.md`:** *"tra rồi vẫn không đủ căn cứ → hỏi người"*.
+  QA-runtime **ĐƯỢC đọc** (nó không phán đúng/sai, chỉ nói "đừng tự tin ở đây").
+  ⚠️ **`grep` không thấy ≠ không tồn tại** — đã sai 2 lần (guard vé-đã-dùng; coupon report "chưa build"
+  trong khi black-box ra 9 PASS).
+- **`knowledge/lessons.md`:** bẫy **cơ khí** (selector/timing/mã HTTP quan sát được). Cấm ghi nguyên nhân
+  hay phán quyết "đã/chưa build" — đó là WHAT. Bug **không** vào knowledge (bug ở `specs.md` + Excel).
 - **Precondition Protocol:** định-nghĩa-từ-SPEC → dựng-bằng-flow-CŨ (không dùng feature đang test)
   → verify-bằng-mắt.
 - **GitNexus CHỈ ở build-time** (`/testcase-systemdoc`, soạn knowledge — UI-confirm + duyệt).

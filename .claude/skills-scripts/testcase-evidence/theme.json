@@ -1,0 +1,83 @@
+{
+  "_note": "Nguồn sự thật DUY NHẤT cho FORMAT file Test Case Evidence. Đổi màu/layout/nhãn = sửa file này, KHÔNG đụng build_evidence.py và KHÔNG đụng tcs.json cũ. Màu = ARGB hex 6 ký tự.",
+  "_adapted_from": ".claude-tester/scripts/theme.json (cơ chế single-source-of-truth) — layout giữ theo chuẩn threease_qa (3 sheet, Evidence E:J/K:P, ảnh PNG rõ, alt-row Checklist).",
+
+  "palette": {
+    "navy": "1F3864",
+    "blue": "2E75B6",
+    "lblue": "D6E4F0",
+    "white": "FFFFFF",
+    "alt_row": "EBF3FB",
+    "num_bg": "FAFAFA",
+    "note_bg": "FFFBE6",
+    "na_bg": "F2F2F2",
+    "border": "D0D0D0",
+
+    "pass_bg": "E2EFDA", "pass_tx": "375623",
+    "fail_bg": "FCE4E4", "fail_tx": "9C0006",
+    "pending_bg": "FFF2CC", "pending_tx": "7F6000",
+    "specgap_bg": "EAE3F7", "specgap_tx": "5B3E96",
+
+    "pri_high": "C00000",
+    "pri_medium": "BF8F00",
+    "pri_low": "548235"
+  },
+
+  "fonts": {
+    "cover_title": 14,
+    "sheet_title": 13,
+    "checklist_title": 13
+  },
+
+  "layout": {
+    "cover_cols": { "A": 4, "B": 22, "C": 58, "D": 4 },
+    "detail_cols": { "A": 5, "B": 18, "C": 50, "D": 2 },
+    "evidence_col_width": 9,
+    "evidence_before": [5, 10],
+    "evidence_after": [11, 16],
+    "checklist_cols": { "A": 5, "B": 10, "C": 62, "D": 10, "E": 12, "F": 20 },
+    "image_display_width_px": 360,
+    "evidence_row_min_height": 18.0,
+    "evidence_row_empty_height": 26
+  },
+
+  "labels": {
+    "cover_title": "TEST CASE EVIDENCE REPORT",
+    "cover_summary": "SUMMARY",
+    "cover_rows": ["Project", "Screen / Module", "Issue", "Tester", "Test Date", "Environment"],
+    "detail_header": "Detail / Actual Result",
+    "evidence_before": "Evidence (Before)",
+    "evidence_after": "Evidence (After)",
+    "checklist_title": "CHECKLIST",
+    "checklist_header": ["#", "TC ID", "Test Case Title", "Priority", "Result", "Nguồn / 発生元"],
+    "note": "Note",
+    "note_icon": "📝",
+    "placeholder_na": "（不要 / N/A）",
+    "placeholder_missing": "(thiếu {name})",
+
+    "fields": [
+      ["1", "Test Case", "title"],
+      ["2", "Pre-conditions", "pre"],
+      ["3", "Steps", "steps"],
+      ["4", "Expected Result", "expect"],
+      ["5", "Actual Result", "actual"]
+    ],
+
+    "_status_note": "SPEC-GAP = spec im lặng ở chỗ METHOD.md bảo phải có case → KHÔNG bịa expect → không chấm được. Khác 未実施 (= không quan sát được). Xem docs/MERGE-PLAN.md §4.",
+    "status": {
+      "PASS":     { "bg": "pass_bg",    "tx": "pass_tx",    "count_match": "PASS" },
+      "FAIL":     { "bg": "fail_bg",    "tx": "fail_tx",    "count_match": "FAIL" },
+      "未実施":    { "bg": "pending_bg", "tx": "pending_tx", "count_match": "未実施" },
+      "SPEC-GAP": { "bg": "specgap_bg", "tx": "specgap_tx", "count_match": "SPEC-GAP" }
+    },
+    "cover_summary_rows": [
+      ["Total TC", "TC-*",      "A", "lblue"],
+      ["PASS",      "PASS*",     "C", "pass_bg"],
+      ["FAIL",      "FAIL*",     "C", "fail_bg"],
+      ["未実施",     "未実施*",    "C", "pending_bg"],
+      ["⚠️ SPEC-GAP", "SPEC-GAP*", "C", "specgap_bg"]
+    ],
+
+    "priority": { "High": "pri_high", "Medium": "pri_medium", "Low": "pri_low", "_default": "blue" }
+  }
+}

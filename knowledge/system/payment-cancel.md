@@ -12,6 +12,8 @@ source_symbols:
   - "pro: components/features/reservations/reservation_form/ReservationForm.vue"
 source_hash: 84418ad68623e2bd
 note: "MÔ TẢ code làm gì — KHÔNG phải oracle. Navigation approved ở knowledge/pro-open-booking.md."
+confidence: 🟢
+verify_by: "Guard 'vé đã dùng' đã black-box verify. Navigation chi tiết → knowledge/pro-open-booking.md (approved)."
 ---
 # Domain: Payment / Invoice + Cancel/Delete + Remove vé (Pro × backend × ticket)
 

@@ -10,7 +10,8 @@ __pycache__/
 venv/
 *.egg-info/
 .pytest_cache/
-
+node_modules
+wtf-is-this
 # llm cache
 .qa_cache/
 
@@ -20,3 +21,12 @@ tests_generated/
 # os
 .DS_Store
 .superpowers/
+
+# gitnexus (index global ở ~/.gitnexus; ignore mọi dấu vết local)
+.gitnexus/
+
+# QA test working-data (spec/tcs/shots/xlsx) — local, không version-control
+wtf-is-this/
+
+# Playwright session cache (không phải deliverable)
+.claude/skills-scripts/testcase-evidence/.state.*.json

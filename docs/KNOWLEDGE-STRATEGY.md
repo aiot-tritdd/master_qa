@@ -11,16 +11,66 @@
 - **KHÔNG** phải oracle. Đúng/sai = **SPEC** (mỗi TestCase có `specs.md`) đối chiếu **quan sát live**.
   → Doc chỉ trả lời *"bấm gì / vào đâu / xem ở đâu"*, không trả lời *"đúng hay sai"*.
 - Lưu **markdown + YAML front-matter, trong git** = source of truth (git log = lịch sử đổi ý).
-- Front-matter: `id, status(draft→approved→stale), kind(flow|channels), spans_repos, source_symbols,
-  source_hash, ui_confirmed_at, grown_from`.
+- Front-matter: `id, status(draft→approved→stale), kind, spans_repos, source_symbols,
+  source_hash, ui_confirmed_at, confidence, verify_by, grown_from`.
+
+### BA tầng tri thức, không phải hai (cập nhật 2026-07-09)
+
+| Tầng | Ở đâu | Trả lời | QA-runtime |
+|---|---|---|:--:|
+| **HOW** | `knowledge/*.md` (`GLOSSARY` · `lessons` · flow · channels) | bấm gì, xem ở đâu, gọi báo cáo thế nào | ✅ đọc được |
+| **WHAT** | `knowledge/system/*.md` | code làm gì, hành vi ra sao, cái gì đã/chưa build | ❌ **CẤM** |
+| **CHƯA BIẾT** | `knowledge/OPEN-QUESTIONS.md` | *"tra rồi vẫn không đủ căn cứ → hỏi người"* | ✅ đọc được |
+
+Tầng 3 là tầng **mới** (thiếu trước 2026-07-09). Không có nó, mọi thứ "chưa biết" bị ép thành
+"có" (→ **bịa**) hoặc "không" (→ `/testcase-systemdoc` vô hạn). Nó an toàn cho QA-runtime vì
+**không phán đúng/sai** — nó phán *"đừng tự tin ở chỗ này"*.
+
+> Cùng khái niệm đó ở tầng test case tên là **`SPEC-GAP`** (result thứ tư): *quan sát được, nhưng
+> không có căn cứ để chấm*. Xem `docs/MERGE-PLAN.md` §4.
+
+### Fact-confidence (mượn `.claude-tester`)
+Mỗi doc khai `confidence:` + `verify_by:`.
+⭐ code cứng · 🟢 ổn định · 🟡 đổi theo release · 🔴 có suy luận / chưa xác nhận.
+
+**Vì sao cần, dù đã có `source_hash`** — hai cơ chế bắt hai loại lỗi khác nhau:
+
+| | bắt được | KHÔNG bắt được |
+|---|---|---|
+| `source_hash` | **code đã đổi** từ lúc duyệt | doc **chưa từng** được xác nhận lần nào |
+| `confidence` | doc **chưa chắc ngay từ đầu** | code đổi mà không ai đụng doc |
+
+Một doc `draft` có `source_hash` khớp hoàn hảo vẫn có thể **sai** — hash chỉ nói *"chưa ai đổi code"*,
+không nói *"nội dung này đúng"*.
 
 ## 1. Hai nguồn tri thức — KHÔNG trộn
 | | GitNexus (5 repo index) | UI-confirm (app chạy) |
 |---|---|---|
 | Cho | **Skeleton + mechanism** (route/flow/symbol) | **Navigation tin cậy** (nút/bước thật) |
 | Kết quả | doc `draft` | doc `approved` |
-| Lỗ | §3: backend 0 HTTP contract, cross-repo 0 link, Nuxt(reservation/admin) 0 process | (đắt: phải drive app) |
-→ Graph **tăng tốc**, UI-confirm **chốt**. Lỗ cross-repo §3 trám bằng `/Users/tritdd/Work/ThreeSides/CLAUDE.md`.
+| Lỗ | backend 0 HTTP contract · cross-repo 0 link · Nuxt(reservation/admin) 0 **process** | (đắt: phải drive app) |
+→ Graph **tăng tốc**, UI-confirm **chốt**.
+
+### Hai lỗ khác nhau — chỉ MỘT được `CLAUDE.md` trám (đo thật 2026-07-09)
+
+| Lỗ | Ai trám |
+|---|---|
+| **Cross-repo wiring** — backend 0 HTTP contract, 0 auto-link giữa 5 repo | ✅ **workspace `CLAUDE.md`** §2 (links là HTTP, không phải call-graph) + §8 (sync direct-first / outbox-fallback) |
+| **Flow nội bộ admin & reservation** — `processes = 0` | ❌ `CLAUDE.md` **không** trám (chỉ có 1 dòng bảng/repo). → `route_map` + `definitions` (skeleton) → **UI-confirm** |
+
+⚠️ **`processes = 0` ≠ graph rỗng.** Đo thật (`list_repos`, 2026-07-09):
+
+| Repo | processes | nodes | Graph vẫn cho gì |
+|---|---:|---:|---|
+| backend | 227 | 15 813 | call-chain đầy đủ |
+| ticket | 130 | 2 449 | call-chain đầy đủ |
+| pro | 116 | 11 729 | call-chain đầy đủ |
+| **admin** | **0** | 502 | `route_map` → **20 route + handler** |
+| **reservation** | **0** | 634 | `query` → `definitions`: `pages/_branchId/index.vue:bookReservation`, `guest_confirm.vue:submitGuestReservation`, … |
+
+**473 = 227+130+116** (tổng call-chain của 3 repo có process), **không phải** "473 business flow phải viết doc".
+`system/OVERVIEW.md` gom chúng thành **8 domain**. Với admin/reservation, graph cho skeleton **mỏng hơn**
+(route + file + method, không có call-chain) → phần UI-confirm nặng hơn, chứ **không phải vô dụng**.
 
 ## 2. Tool GitNexus → sản phẩm knowledge
 | Tool | Cho |
@@ -33,12 +83,10 @@
 
 ## 3. Chiến lược grow — 3 giai đoạn
 
-### GĐ-0 (NGAY BÂY GIỜ) — bootstrap skeleton + cơ chế staleness
-1. **INDEX tổng:** quét `route_map`+`processes` 5 repo → `knowledge/_system-map/INDEX.md`
-   = bản đồ domain × flow × route (đã build/chưa). Rẻ, để định hướng. Toàn `draft`.
-2. **source_hash thật:** lúc grow doc, compute hash các `source_symbols` (từ GitNexus) → lưu vào doc.
-3. **Lệnh stale-check** (`/testcase-stale`, hồi sinh bản gọn): so `source_hash` cũ ↔ mới sau refresh
-   → in list doc `stale`.
+### GĐ-0 — bootstrap skeleton + cơ chế staleness ✅ **XONG 2026-07-08**
+1. ✅ **INDEX tổng** → `knowledge/system/OVERVIEW.md` (8 domain × repo × trạng thái).
+2. ✅ **source_hash thật** — `stale_check.py` compute hash các file trong `source_symbols`.
+3. ✅ **Lệnh stale-check** `/testcase-stale` — so `source_hash` cũ ↔ mới sau refresh → in doc `stale`.
 
 ### GĐ-1 (DẦN DẦN, theo mỗi spec mới) — demand-driven, UI-confirm
 - Mỗi spec/TestCase mới → qa-brain cần 1 flow để dựng precondition.
@@ -66,17 +114,70 @@ repo update → refresh-gitnexus.sh (graph tươi)  ← ĐIỀU KIỆN CẦN, ch
 → Nâng cấp = thêm **view/index** trên cùng nguồn markdown → **không re-author**, không mất công cũ.
 
 ## 4. Ranh giới thép (đừng phá khi grow)
-1. Doc = navigation-only (HOW). Oracle = SPEC. Không ghi luật đúng/sai vào doc.
+1. Doc `knowledge/*.md` = navigation-only (HOW). Oracle = SPEC. Không ghi luật đúng/sai vào doc.
 2. Graph-derived = `draft`; chỉ UI-confirm mới `approved`.
 3. `source_hash` để biết doc lỗi thời — không tin doc `stale` cho tới khi re-confirm.
 4. QA-runtime **mù code**; GitNexus chỉ ở **build-time** (soạn/refresh doc), không phải lúc test.
+5. **`grep` không thấy ≠ không tồn tại.** Đã sai 2 lần. Không kết luận được → `OPEN-QUESTIONS.md`,
+   **không** ép thành "có" hay "không".
+6. **Mỗi loại tri thức có đúng 1 nhà.** Thấy nội dung trùng ở 2 file → gộp về 1, file kia để 1 dòng trỏ sang.
+   Sửa quy ước thì sửa **đúng 1 chỗ**; các doc khác chỉ link, không copy nội dung.
+7. **Dot-folder chứa tool, không chứa deliverable** *(nhập từ `.claude-knowledge/OUTPUT_LOCATIONS.md` —
+   nguồn định nghĩa DUY NHẤT về "output ghi ở đâu"; các README khác chỉ trỏ về đây, không copy)*:
 
-## 5. Trạng thái hiện tại (cập nhật khi grow)
+   | Tooling (dot-folder) | Deliverable thật (nơi user mở/xem) |
+   |---|---|
+   | `.claude/` — skill · commands · scripts | **`wtf-is-this/<TestCase>/`** — `specs.md`, `tcs.json`, `shots/*.png`, `<Tên>.xlsx` |
+   | `knowledge/` | không sinh deliverable — chỉ chứa tri thức (đọc, không phải nơi ghi output) |
+
+   **Nguyên tắc:** dot-folder **không bao giờ** chứa dữ liệu công việc thật. Cache kỹ thuật
+   (`.state.<target>.json`, `.shots/` dự phòng) nằm **cạnh script**, đã gitignore, **không** leak ra
+   folder test hay repo root. Trong vận hành thật, skill LUÔN chỉ định path tường minh
+   (`<folder>/shots/...`); default chỉ là lưới an toàn.
+
+## 4b. ⚠️ Lỗ của `source_hash`: STALE DO HARNESS (phát hiện 2026-07-09)
+
+`stale_check.py` bắt được **code đổi**. Nó **KHÔNG** bắt được **harness đổi**.
+
+Ca thật: `pro-open-booking.md` được UI-confirm 2026-07-07 khi `pw_lib` **thiếu `locale`** → app chạy
+tiếng Anh → doc ghi selector `Remove` / `INVOICE`. Ngày 2026-07-09, `pw_lib` set `locale:'ja-JP'`
+(đúng, vì spec viết tiếng Nhật) → nhãn UI đổi. Doc **sai**, nhưng `source_hash` **vẫn khớp hoàn hảo**
+vì code sản phẩm không đổi một dòng nào.
+
+Tệ hơn: doc đó ghi nguyên văn *"app ở `/en/` = ENGLISH nên tôi đổi keyword sang EN"* — tức phiên đó
+**gặp bug harness rồi chép bug vào knowledge** thay vì sửa harness. **Doc navigation có thể đóng băng
+một bug của harness thành "sự thật"**, rồi mọi phiên sau kế thừa cái sai đó.
+
+**Ba loại stale — chỉ 1 loại được tự động bắt:**
+
+| Loại | Nguyên nhân | `stale_check.py` bắt được? | Cách bắt |
+|---|---|:--:|---|
+| **Code stale** | 5 repo đổi | ✅ | `source_hash` |
+| **Harness stale** | `pw_lib`/locale/viewport đổi | ❌ | **drive lại** |
+| **UI stale** | dev đổi UI mà không đổi file trong `source_symbols` | ❌ | **drive lại** |
+
+→ **Luật:** đổi bất cứ gì trong `.claude/skills-scripts/` mà **ảnh hưởng cách app render**
+(locale, viewport, deviceScaleFactor, auth) → **đánh dấu `status: stale` cho MỌI doc `kind: flow`**
+và re-UI-confirm. Không tin `source_hash` ở đây — nó mù với loại stale này.
+
+## 5. Trạng thái hiện tại (cập nhật khi grow) — 2026-07-09
 ```
-knowledge/
-├── observation-channels.md   [approved] kênh quan sát Pro/ticket-app/ticket-admin
-├── pro-open-booking.md        [approved] mở booking + cancel payment/cancel/delete/remove (Pro)
-├── ticket-coupon-reports.md   [approved] route coupon-report (GitNexus route_map + UI-confirm)
-└── issue-ticket-pack.md       [draft]    phát hành gói vé (chưa UI-confirm đủ)
+knowledge/                          ← HOW + registry. QA-runtime ĐỌC ĐƯỢC.
+├── OPEN-QUESTIONS.md   [approved] ⭐ 8 câu hỏi mở (OQ-01..08) — "chưa biết, phải hỏi"
+├── GLOSSARY.md         [approved] 🟢 thuật ngữ nghiệp vụ (viết report không lộ tên repo)
+├── lessons.md          [approved] 🟢 bẫy cơ khí khi drive app (12 mục, có ngày)
+├── observation-channels.md [approved] 🟢 kênh quan sát Pro/ticket-app/ticket-admin
+├── pro-open-booking.md     [approved] 🟢 mở booking + cancel payment/cancel/delete/remove
+├── ticket-coupon-reports.md[approved] 🟡 route coupon-report — ⚠️ source_symbols tranh chấp (OQ-01)
+├── issue-ticket-pack.md    [draft]    🔴 phát hành gói vé — CHƯA UI-confirm
+│
+└── system/                         ← WHAT. BUILD-TIME ONLY. QA-runtime CẤM.
+    ├── OVERVIEW.md      [draft] 8 domain × repo × trạng thái
+    ├── customer-sync.md      [draft]
+    ├── payment-cancel.md     [draft]
+    ├── ticket-issue-sync.md  [draft]
+    └── coupon-sc.md          [draft]
 ```
-Chưa làm: `_system-map/INDEX.md`, cơ chế `source_hash` thật + lệnh stale-check (GĐ-0).
+**Còn thiếu (theo `system/OVERVIEW.md`):** domain 6 Booking (🟡 tạo mới chưa confirm — GitNexus **được việc**) ·
+domain 7 Reservation widget (🔴) · domain 8 Admin (🔴).
+⛔ Domain 7-8 bị **chặn cứng bởi `OPEN-QUESTIONS.md#OQ-02`**: chưa xác nhận dev URL → không UI-confirm được.

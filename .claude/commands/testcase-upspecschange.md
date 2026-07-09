@@ -11,7 +11,7 @@ KHÔNG chạy test — chỉ cập nhật tài liệu + khung case. Dùng `/test
 ```
 Ví dụ:
 ```
-/testcase-upspecschange 7.Test/TestCase_No.10.5
+/testcase-upspecschange wtf-is-this/TestCase_No.10.5
 - Change: đổi text quyền「会計後の修正・削除を許可」→「会計完了後の修正・削除」
 - Bug: dời quyền mới về cuối danh sách
 - Bug: chỉnh UI/UX nút キャンセル
@@ -43,6 +43,12 @@ KHÔNG viết lại generator, KHÔNG dán ảnh. Đọc file `.md` (rẻ), trá
    Mỗi CHANGE/BUG cần verify ≥ 1 case; nếu tổng case < KPI mới thì bổ sung
    (ưu tiên validation/negative của phần thay đổi).
 6. **Báo cáo**: liệt kê các ID vừa thêm (CHANGE/BUG) + test case mới (nếu có) + KPI mới (Min/Max/mục tiêu/thực tế).
+
+## Before final (checklist bắt buộc)
+- [ ] Có đọc source code / `knowledge/system/**` / GitNexus không? **Đáp án đúng luôn là KHÔNG.**
+- [ ] TC mới có `expect` truy được về SPEC (đã cập nhật) không? Spec im lặng → để chạy ra `SPEC-GAP`.
+- [ ] CHANGE/BUG mới có chạm mục nào trong `knowledge/OPEN-QUESTIONS.md` không? (nếu có → link vào `note`)
+- [ ] Mỗi CHANGE/BUG có ≥ 1 TC verify chưa?
 
 ## Lưu ý
 - `specs.md` là **nguồn spec chuẩn** — luôn cập nhật ở đây, không sửa vào ảnh cũ.

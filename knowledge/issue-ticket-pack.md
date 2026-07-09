@@ -6,6 +6,8 @@ spans_repos: [pro, backend, ticket]
 source_symbols: []
 source_hash: null
 ui_confirmed_at: null
+confidence: 🔴
+verify_by: "CHƯA UI-confirm — KHÔNG tin. Phải drive thật khâu tạo booking→thanh toán→phát hành vé rồi mới approved."
 ---
 # Flow: Phát hành gói vé (HOW — navigation only)
 

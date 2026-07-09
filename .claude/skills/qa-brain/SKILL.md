@@ -38,6 +38,28 @@ qua `/testcase-systemdoc`). Còn **WHAT (đúng/sai)** doc KHÔNG đụng — do
 | **Bấm gì** để dựng | Living Business Doc (HOW) |
 | **Đã dựng đúng chưa** | **QUAN SÁT LIVE** so spec |
 
+## ROUTING TABLE — bước nào nạp gì (đọc đúng, không grep bừa)
+
+| Bước | Nạp | KHÔNG được nạp |
+|---|---|---|
+| **A. Đọc spec** | `<F>/specs.md` (oracle) | mọi thứ khác |
+| **B. Viết case** (`expect`) | **CHỈ spec** + `knowledge/METHOD.md` (coverage) | knowledge/ · code · GitNexus |
+| **C. Seam** (create/observe) | `knowledge/*.md` (**approved**) · `observation-channels.md` · `pro-open-booking.md` · `OPEN-QUESTIONS.md` | `knowledge/system/**` · doc `draft` |
+| **D. Chạy + chấm** | như C + `lessons.md` · `GLOSSARY.md` (viết report) | `knowledge/system/**` · code · GitNexus |
+
+⚠️ Doc `status: draft` (`playbook.md`, `features.md`, `issue-ticket-pack.md`) = **chưa UI-confirm** →
+dùng để **định hướng**, KHÔNG tin selector/nhãn trong đó. Cần dùng thật → UI-confirm rồi `approved`.
+
+### ⛔ DANH SÁCH CẤM ĐỌC Ở QA-RUNTIME
+- `knowledge/system/**` — WHAT (mô tả code làm gì). Đọc = gián tiếp đọc code.
+- Mọi file trong 5 repo sản phẩm (`threease_backend|ticket|pro|admin|reservation`).
+- Mọi tool GitNexus (`query`/`context`/`impact`/`route_map`/…).
+- *(`.claude-tester/` đã bị xoá 2026-07-09 — không còn tồn tại để grep trúng. Tra nguồn gốc:
+  `git show 0119159:.claude-tester/<path>` — **build-time only**.)*
+
+`knowledge/OPEN-QUESTIONS.md` **ĐƯỢC đọc**: nó không phán đúng/sai, nó nói *"chỗ này chưa ai biết
+chắc — đừng suy diễn"*. Đó là thuốc giải cho suy diễn, không phải nguồn của suy diễn.
+
 ## Quy trình
 
 ### A. ĐỌC SPEC (oracle)
@@ -69,17 +91,26 @@ pre, steps, expect, actual, note, before, after`. Để `result`/`actual`=`"未�
    **Khớp → chạy. Lệch → KHÔNG chạy** (khâu dựng lệch spec → 1 finding).
 
 ### D. CHẠY + EVIDENCE → REPORT HÀNH VI
-Harness cơ khí ở `.claude/skills-scripts/testcase-evidence/`: `pw_lib.js` (`getPage('pro'|'ticket_admin'|'ticket')`),
-`build_evidence.py` (xlsx). Require bằng đường dẫn repo này:
-`const P='<repo>/.claude/skills-scripts/testcase-evidence/'; const {getPage}=require(P+'pw_lib');`.
+Harness cơ khí ở `.claude/skills-scripts/testcase-evidence/`: `pw_lib.js`
+(`getPage('pro'|'ticket'|'ticket_admin'|'reservation'|'admin')` + **`shot()`**), `pw_api.js`
+(`withApi` — sniff devise-token từ request thật, trả `{status, body}`), `build_evidence.py` (xlsx),
+`theme.json` (format), `example.tcs.json` (khung 5 archetype), `cleanup.js`.
+Require: `const P='<repo>/.claude/skills-scripts/testcase-evidence/'; const {getPage, shot}=require(P+'pw_lib');`
 Gọi `/testcase-run <F>`: drive UI theo seam, chụp before/after **2 phía** (Pro + ticket-app/admin) vào
-`<F>/shots/` (**PNG rõ**, không nén JPG — chuẩn như `TestCase_No.10.1~3/shots/`), điền
-`result`/`actual`/`before`/`after`, rồi build lại Excel (3 sheet: Cover/Test Cases/Checklist).
-- `actual` bắt đầu bằng `PASS`/`FAIL`/`未実施`, mô tả **quan sát được**.
+`<F>/shots/` (**PNG rõ**, không nén JPG), điền `result`/`actual`/`before`/`after`, build lại Excel.
+- **Chụp BẮT BUỘC bằng `shot(page, path, readySelector)`** — chờ selector đặc trưng + networkidle + đệm.
+  KHÔNG `waitForTimeout(6000)` + screenshot trần (dính spinner/màn trắng).
+- `actual` bắt đầu bằng `PASS`/`FAIL`/`未実施`/`SPEC-GAP`, mô tả **quan sát được**.
 - **FAIL:** `actual` = "spec kỳ vọng …; thao tác trên màn … kết quả …". **KHÔNG** symbol/file:line.
 - **Feature chưa build → FAIL**: quan sát "màn không có nút / behavior không xảy ra" + ảnh *absence*.
   Không suy đoán "chưa code" (đó là code-knowledge) — chỉ báo cái **quan sát được**.
 - **未実施** CHỈ khi *không quan sát được* (vd không truy cập được kênh).
+- **SPEC-GAP** khi *quan sát được* nhưng **spec không định nghĩa kỳ vọng** ở chỗ `METHOD.md` bảo phải
+  kiểm → **KHÔNG bịa `expect`**. Đây là finding **giá trị cao nhất** của QA mù code (bằng chứng spec
+  chưa nghĩ tới). `actual` = cái quan sát được + "không chấm được → hỏi BA/dev".
+
+> ⚠️ `METHOD.md` quyết định **case nào phải tồn tại** (coverage). Nó **không bao giờ** quyết định
+> `expect` (oracle). Nhầm chỗ này = phá Tường thép #1.
 
 ## Output
 `<F>/tcs.json` + `<F>/<TênFolder>.xlsx` (kèm ảnh evidence). Báo cáo: bảng PASS/FAIL/未実施, KPI
