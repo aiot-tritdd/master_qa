@@ -1,0 +1,103 @@
+{
+  "cookies": [
+    {
+      "name": "cwr_u",
+      "value": "c6e7aeee-1ef6-482d-a70b-a1a8c53bd548",
+      "domain": ".develop.pro.threease.com",
+      "path": "/",
+      "expires": 1786014775,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Strict"
+    },
+    {
+      "name": "_ga_TWR2K643QV",
+      "value": "GS2.1.s1783422775$o1$g0$t1783422775$j60$l0$h0",
+      "domain": ".threease.com",
+      "path": "/",
+      "expires": 1817982775.844359,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "AMP_MKTG_ab06f8d060",
+      "value": "JTdCJTdE",
+      "domain": ".threease.com",
+      "path": "/",
+      "expires": 1814958775,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_ga",
+      "value": "GA1.2.1057021344.1783422776",
+      "domain": ".threease.com",
+      "path": "/",
+      "expires": 1817982775.888511,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_gid",
+      "value": "GA1.2.276164755.1783422776",
+      "domain": ".threease.com",
+      "path": "/",
+      "expires": 1783509175,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_gat_UA-191435935-1",
+      "value": "1",
+      "domain": ".threease.com",
+      "path": "/",
+      "expires": 1783422835,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "AMP_ab06f8d060",
+      "value": "JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjI4ZGIyYTI2OC05MGY0LTRkOTQtODAzMS05ZWZhYTYyMDAzYjQlMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjJzdGFmZl8xJTIyJTJDJTIyc2Vzc2lvbklkJTIyJTNBMTc4MzQyMjc3NTg3OSUyQyUyMm9wdE91dCUyMiUzQWZhbHNlJTJDJTIybGFzdEV2ZW50VGltZSUyMiUzQTE3ODM0MjI3NzY3NDglMkMlMjJsYXN0RXZlbnRJZCUyMiUzQTYlN0Q=",
+      "domain": ".threease.com",
+      "path": "/",
+      "expires": 1814958785,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "cwr_s",
+      "value": "eyJzZXNzaW9uSWQiOiJiY2MyNzNkZi02MTYxLTRjMDItOWZjMC02ZmYzZWRjZDIwM2UiLCJyZWNvcmQiOnRydWUsImV2ZW50Q291bnQiOjE4LCJwYWdlIjp7InBhZ2VJZCI6Ii9zaGlmdHMiLCJwYXJlbnRQYWdlSWQiOiIvbG9naW4iLCJpbnRlcmFjdGlvbiI6Miwic3RhcnQiOjE3ODM0MjI3ODUwNzR9fQ==",
+      "domain": ".develop.pro.threease.com",
+      "path": "/",
+      "expires": 1783424585,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Strict"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "https://develop.pro.threease.com",
+      "localStorage": [
+        {
+          "name": "user",
+          "value": "{\"id\":1,\"accessToken\":\"vNLaV8Yyln8izMZ0S4Li7g\",\"tokenType\":\"Bearer\",\"client\":\"ydirp85mnb7QqvMGWPxqtg\",\"expiry\":\"1784632379\",\"uid\":\"therapist@test.com\",\"name\":\"テスト先生\",\"activeBranch\":2}"
+        },
+        {
+          "name": "cwr_c",
+          "value": "{\"accessKeyId\":\"ASIA3TB6EZCWFXHINDQC\",\"secretAccessKey\":\"r5cjsma5zcCKsR1td2jQLjTCq+/R9fd3coAL78Dz\",\"sessionToken\":\"IQoJb3JpZ2luX2VjEKP//////////wEaDmFwLW5vcnRoZWFzdC0xIkcwRQIgTjyTis+ZnPuW1jeXX8bLqQgs0H+y9pv7Z99bJRUlNXQCIQCV3utvphcRDwZfFoOxlpsOoJRCLN9MFOFtFyfS6T5z4yqQAwhsEAUaDDc5Njg0Njc3MDM0OCIMnE+3yE0TfFhPi2sWKu0Caqr0lc351jWiHY0G4WFbK+t7k+V/CUW6jwiCGuBe+3cGvh/DEsVIRrW2mnSli9Db0VD5AQgXRraaafEOguEH1V8+kwDerk+sZXbkyj1XR1eYxJC5h1JgoXzfk4UTlrbVBqBfB8D7vfZpCh65UeQ8QJuNC6hFwfgeEXWbPgLRz/v6ttp6E5pfigiyxOn8H99FVu05UHWYP54ZgeFU7E4xvCZ3VFR6NYfI3scQ7ZA4k56JasGRR33j270V6D/dgra/7lnDshJQYIHx+iVbwZ5B05+r6lry+6Qnp0tP+Dkjp/WKrJyOUQPGbSluU1qKZe76qQOKK8pJyXtrTqEicxCv9I3WS9UDiLYmhpUXTeSnUeqKxJg5uF0rR5IUR4ZMjlpJy79b7qY0Aj++ZeRyoodCOThcU1vXmQPK+a9SGHvD3C4tP38/dHIV1q+wPA5PWqY0H8Bkms+YGgirjMtBFG1cCcUZpJsZpcMA9WYob5UwuL6z0gY6hQK53Iz5wwerW2KyAr4jP6CFMOsOGaLE32qmrj8/7aPw/UE5oGTNl78u7/kVLYDP23u7aDaq5KtCGNsYACsVxA/O1B1m9J6EeNDsa7b/xtZXha7tzczwHCevllMrZt2RKfixna42yZtXMF04YeeKjU5ydUlCbzQ8L9MbMHlF8L5QqQgPsOkf3I0DcFLMTg7WvDAWYyCTgKWg1T14RzRiLyImgwu9Lpg8L2xasIfxvymKSO3b7U98gQQHXdpWjBbDZpPgYMOrkPxsdVXkcFyU0kjKqjyrh4+lxXeEcjnZBqo1WiwnLQ7/r51Err19Xgr6dwk1F47CEyj0WqllBZetm/WKGkEm4oQ=\",\"expiration\":\"2026-07-07T12:12:56.000Z\"}"
+        },
+        {
+          "name": "AMP_unsent_ab06f8d060",
+          "value": "[]"
+        }
+      ]
+    }
+  ]
+}

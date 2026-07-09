@@ -1,0 +1,67 @@
+{
+  "_note": "Nguồn sự thật DUY NHẤT cho format file Test Case Evidence. Đổi template = sửa file này (không đụng tcs.json/code). Màu = ARGB hex 6 ký tự.",
+  "palette": {
+    "navy": "1F3864",
+    "blue": "2E75B6",
+    "lblue": "D6E4F0",
+    "green_bg": "E2EFDA",
+    "green_tx": "375623",
+    "red": "C00000",
+    "orange": "ED7D31",
+    "grey": "808080",
+    "yellow_bg": "FFF2CC",
+    "yellow_tx": "7F6000",
+    "fail_bg": "FCE4E4",
+    "note_bg": "FFFBE6",
+    "white": "FFFFFF",
+    "placeholder_bg": "F2F2F2",
+    "placeholder_tx": "AAAAAA",
+    "num_bg": "FAFAFA",
+    "num_tx": "888888",
+    "tester_tx": "595959",
+    "border": "D0D0D0"
+  },
+  "fonts": {
+    "cover_title": 18,
+    "cover_label": 10,
+    "cover_summary": 12,
+    "cover_count": 14,
+    "sheet_title": 16,
+    "header": 10,
+    "tc_id": 10,
+    "tc_title": 11,
+    "field_label": 10,
+    "detail": 10,
+    "num": 9,
+    "tester": 9,
+    "note_icon": 12,
+    "note_label": 10,
+    "placeholder": 11,
+    "checklist_title": 14
+  },
+  "layout": {
+    "detail_cols": {"A": 8, "B": 18, "C": 64, "D": 2},
+    "evidence_col_width": 12,
+    "evidence_before": [5, 12],
+    "evidence_after": [13, 20],
+    "checklist_cols": {"A": 5, "B": 10, "C": 93, "D": 10, "E": 14, "F": 57},
+    "row_heights": {"sheet_title": 28, "header": 22, "tc_title": 30, "detail_short": 42, "detail_long": 62, "note": 32, "spacer": 6},
+    "detail_long_fields": ["Pre-conditions", "Steps", "Actual Result"]
+  },
+  "labels": {
+    "fields": ["Test Case", "Pre-conditions", "Steps", "Expected Result", "Actual Result"],
+    "evidence_before": "Evidence (Before)",
+    "evidence_after": "Evidence (After)",
+    "detail_header": "Detail / Actual Result",
+    "tester": "Tester:  /  Date: ",
+    "placeholder_na": "（不要 / N/A）",
+    "placeholder_none": "—",
+    "note": "Note",
+    "status": {
+      "PASS": {"text": "✅ Pass", "bg": "green_bg", "tx": "green_tx", "count_match": "*Pass*"},
+      "FAIL": {"text": "❌ Fail", "bg": "red", "tx": "white", "count_match": "*Fail*"},
+      "未実施": {"text": "🔄 未実施", "bg": "yellow_bg", "tx": "yellow_tx", "count_match": "*未実施*"}
+    },
+    "priority": {"High": "red", "Medium": "orange", "_default": "grey"}
+  }
+}
