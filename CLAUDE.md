@@ -50,8 +50,9 @@ Playwright → **quan sát live** → chấm PASS/FAIL + evidence. Cộng pipeli
 - **Evidence chuẩn:** xlsx **3 sheet** (Cover/Test Cases/Checklist+Nguồn) · **mỗi case 2 ảnh (before+after) PNG rõ**.
 
 ## Maintenance khi 5 repo update
-`refresh-gitnexus.sh` (graph tươi — CHỈ graph) → **stale-check `source_hash`** → re-confirm CHỈ doc drift.
-(refresh KHÔNG tự update knowledge/ — luôn cần nhịp stale-check.)
+`refresh-gitnexus.sh` (graph tươi — CHỈ graph) → **stale-check `source_hash`** (`/testcase-stale`, hoặc
+`python3 .claude/skills-scripts/testcase-evidence/stale_check.py`) → re-confirm CHỈ doc drift.
+(refresh KHÔNG tự update knowledge/ — luôn cần nhịp stale-check.) Lệnh đầy đủ + `confidence`: `docs/KNOWLEDGE-STRATEGY.md` §3 GĐ-2.
 
 ## Nguyên tắc token
 1 session ấm nghĩ xuyên suốt + script sếp (xlsx/Playwright). KHÔNG `claude -p`, KHÔNG viết `.py` phụ trợ.

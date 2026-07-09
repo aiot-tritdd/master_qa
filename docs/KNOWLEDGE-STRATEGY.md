@@ -121,6 +121,20 @@ repo update → refresh-gitnexus.sh (graph tươi)  ← ĐIỀU KIỆN CẦN, ch
 ✅ **Surgical:** chỉ doc chạm code vừa đổi mới stale (nhờ `source_hash` per-symbol) — không re-scan toàn bộ.
 - INDEX/skeleton drift → rẻ (chạy lại route_map). Detail approved drift → cần re-UI-confirm (đắt hơn, ít hơn).
 
+**Lệnh cụ thể** (qua skill `/testcase-stale`, hoặc chạy thẳng `stale_check.py`):
+```bash
+# 1. Sau khi 5 repo update → SO hash cũ↔hiện tại, in ra doc nào STALE:
+python3 .claude/skills-scripts/testcase-evidence/stale_check.py
+
+# 2. Sau khi soạn doc mới HOẶC re-confirm xong doc stale → GHI lại source_hash gốc:
+python3 .claude/skills-scripts/testcase-evidence/stale_check.py --update
+```
+- Lệnh 1 = *đọc-only*, chỉ báo doc nào drift. Lệnh 2 (`--update`) = *ghi* hash vào front-matter từng doc.
+- ⚠️ Chỉ `--update` **sau khi đã re-confirm nội dung đúng** — nếu `--update` khi doc còn sai thì bạn vừa
+  "đóng dấu" cái sai thành "mới nhất", stale-check hết tác dụng.
+- ❗ `confidence` **không có lệnh** — nó là nhãn người tự khai (⭐🟢🟡🔴) trong front-matter, sửa tay.
+  (Máy đo được "code đổi chưa" = `source_hash`; "nội dung tin được không" thì người phải khai.)
+
 ### GĐ-3 (TƯƠNG LAI) — nâng lên wiki / RAG
 - `knowledge/` = markdown (human-readable, git-versioned) = **source of truth bất biến**.
 - **Wiki:** render `knowledge/` thành trang duyệt được (sếp từng có "viewer UI / living system doc";
