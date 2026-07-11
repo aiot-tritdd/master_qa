@@ -28,6 +28,10 @@ grown_from: "0119159:.claude-tester/knowledge/LESSONS.md (chỉ 9/11 mục — 2
 - Không chắc HOW hay WHAT? → hỏi: *"câu này giúp tôi BẤM đúng, hay giúp tôi CHẤM đúng?"*
   Giúp **bấm** → vào. Giúp **chấm** → không (chỉ SPEC được giúp chấm).
 
+- **2026/07/11 — [cleanup/coupon]** Coupon (Ticket **và** Pro) **KHÔNG có UI/API xoá**: list/detail/edit
+  không có nút 削除, `/coupons/<id>/delete/` → 404, Pro modal chỉ có 更新/編集. ⇒ data test coupon
+  (`AIOT-TEST-*`) + pack đã phát hành **không dọn được qua UI** → nhờ dev xoá ở DB (`name LIKE 'AIOT-TEST%'`).
+  `cleanup.js` chỉ quét preset/reservation Pro, KHÔNG đụng coupon.
 - **2026/07/10 — [ticket/coupon/create-edit]** Tạo coupon = route **`/coupons/add/`** (KHÔNG phải `/coupons/new/` → 404); sửa = `/coupons/<id>/edit/`. Vào bằng nút **登録** (list) / **編集** (detail). ⚠️ Nút 追加/更新 bị **thanh action (div.hstack) chắn pointer** → `page.click` retry vô hạn; phải `getByRole('button',{name:'追加'}).click({force:true})` (JS `.click()` submit KHÔNG ăn). Field form: name, branch_option(0=すべて/1=カスタム), custom_branches[], tax_category(included/excluded/none), tax_rate(0.08/0.10), sales_price, granted_credits, available_quantity, start_date, end_date, description.
 - **2026/07/10 — [ticket/quyền]** Nút 登録/編集 coupon + tab report **ẩn theo QUYỀN account** → account thiếu quyền thấy như "feature không tồn tại" (route 404 + không có nút). ⚠️ **"không thấy nút" ≠ "chưa build"** — phải thử ĐÚNG account (account.txt) trước khi kết luận. (STAFF001 sau deploy 2026/07/10 đã đủ quyền coupon 設定/登録/編集 + report.)
 - **2026/07/10 — [ticket/coupon/route]** Route coupon THẬT trên ticket-app khác URL trong mockup
