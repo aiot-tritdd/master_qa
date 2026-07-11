@@ -28,6 +28,25 @@ grown_from: "0119159:.claude-tester/knowledge/LESSONS.md (chỉ 9/11 mục — 2
 - Không chắc HOW hay WHAT? → hỏi: *"câu này giúp tôi BẤM đúng, hay giúp tôi CHẤM đúng?"*
   Giúp **bấm** → vào. Giúp **chấm** → không (chỉ SPEC được giúp chấm).
 
+- **2026/07/10 — [ticket/coupon/create-edit]** Tạo coupon = route **`/coupons/add/`** (KHÔNG phải `/coupons/new/` → 404); sửa = `/coupons/<id>/edit/`. Vào bằng nút **登録** (list) / **編集** (detail). ⚠️ Nút 追加/更新 bị **thanh action (div.hstack) chắn pointer** → `page.click` retry vô hạn; phải `getByRole('button',{name:'追加'}).click({force:true})` (JS `.click()` submit KHÔNG ăn). Field form: name, branch_option(0=すべて/1=カスタム), custom_branches[], tax_category(included/excluded/none), tax_rate(0.08/0.10), sales_price, granted_credits, available_quantity, start_date, end_date, description.
+- **2026/07/10 — [ticket/quyền]** Nút 登録/編集 coupon + tab report **ẩn theo QUYỀN account** → account thiếu quyền thấy như "feature không tồn tại" (route 404 + không có nút). ⚠️ **"không thấy nút" ≠ "chưa build"** — phải thử ĐÚNG account (account.txt) trước khi kết luận. (STAFF001 sau deploy 2026/07/10 đã đủ quyền coupon 設定/登録/編集 + report.)
+- **2026/07/10 — [ticket/coupon/route]** Route coupon THẬT trên ticket-app khác URL trong mockup
+  (`/backoffice/...`, `/coupons/new/`, `/coupons/1/edit/` đều **404/redirect** — chỉ là hình minh hoạ).
+  Route thật: danh sách `/coupons/` · chi tiết `/coupons/<id>/` · khách `/customer/<id>/` (**số ít**) ·
+  phát hành `/coupon-ops/issue/customer/<id>/` · dùng SC `/coupon-ops/use/customer/<id>/` ·
+  lịch sử `/customers/<id>/coupon-history/` (**số NHIỀU** `customers`, khác với chi tiết khách số ít).
+
+- **2026/07/10 — [ticket/login]** Màn quản lý coupon/顧客 cần `TK_STAFF=ticket-admin` (STAFF001 hạn chế,
+  như report). Sau login trang hiện dải chọn 治療院 + banner "開発環境" nhưng **đã** đăng nhập (Django trả
+  200/404 bình thường), không phải màn login.
+
+- **2026/07/10 — [ticket/DOM]** `body.innerText` các trang ticket-app nuốt **toàn bộ option của 2 `<select>`
+  khổng lồ** (danh sách 治療院 + staff バルク先生N) → dump text bị ngập. Khi đọc text: clone node rồi
+  `querySelectorAll('select').forEach(remove)` trước, hoặc `grep -avE '治療院|先生'`.
+
+- **2026/07/10 — [pw_lib/shot]** Trang chi tiết khách / lịch sử / use dài hơn viewport → `shot()` mặc định
+  chỉ chụp viewport (mất bảng dưới fold). Truyền `opts.screenshot={fullPage:true}` cho các màn dài.
+
 ---
 
 ## Bẫy đã gặp

@@ -15,7 +15,8 @@ const CFG = {
     basic: { username: process.env.BASIC_USER || 'threesides', password: process.env.BASIC_PASS || 'threesides' },
     login: {
       inst: process.env.INST || 'TESTSEED001',
-      ther: process.env.THER || 'STAFF001',
+      // ⚠️ 2026/07/10: Pro app login đổi therapist code STAFF001 → 'admin-test' (account.txt).
+      ther: process.env.THER || 'admin-test',
       pw:   process.env.PW   || 'password123',
     },
   },
@@ -42,7 +43,8 @@ const CFG = {
     basic: null,
     django_login: {
       inst:  process.env.TK_INST  || 'TESTSEED001',
-      // ⚠️ report ticket (/reports, /coupon-reports) cần 'ticket-admin'. STAFF001 KHÔNG có quyền.
+      // 2026/07/10: STAFF001 (account.txt) giờ ĐỦ quyền coupon 設定/登録/編集 + report (nav đủ tab).
+      //   (Trước deploy develop-aiot phải dùng 'ticket-admin'; nay STAFF001 dùng được — theo account.txt.)
       staff: process.env.TK_STAFF || 'STAFF001',
       pw:    process.env.TK_PW    || 'password123',
     },

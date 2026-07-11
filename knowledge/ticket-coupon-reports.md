@@ -6,10 +6,10 @@ spans_repos: [ticket]
 source_symbols:
   - "ticket: backoffice/urls.py (coupon-reports routes)"
   - "ticket: ReportService.get_coupon_metrics (CouponPack/CouponUsage/CouponTransaction)"
-source_hash: a84158fb392604ca
-ui_confirmed_at: 2026-07-08
-confidence: 🟡
-verify_by: "Navigation ĐÃ UI-confirm (tin được). NHƯNG source_symbols đang tranh chấp — xem OPEN-QUESTIONS.md#OQ-01 (một nguồn khẳng định get_coupon_metrics không tồn tại, trong khi black-box ra 9 PASS). => source_hash có thể đang hash file không chứa symbol => stale_check có thể MÙ với doc này."
+source_hash: efce575fd4e78cae
+ui_confirmed_at: 2026-07-10
+confidence: 🟢
+verify_by: "Navigation UI-confirm LẠI live 2026/07/10 (probe thật ticket-dev đã deploy develop-aiot): sales/usage/timeline/branches/sales·snapshots = 200; staff = 400 (route có, cần param); dashboard = 404. route_map (code) khớp. OQ-01 coi như đóng: coupon model/service CÓ thật (coupon-sc.md code-verified)."
 open_questions: [OQ-01]
 grown_from: "GitNexus route_map(threease_ticket, coupon-reports) + UI-confirm (TestCase-11)"
 ---
@@ -21,15 +21,20 @@ grown_from: "GitNexus route_map(threease_ticket, coupon-reports) + UI-confirm (T
 **Access:** `getPage('ticket')` với **`TK_STAFF=ticket-admin`** (account `TESTSEED001/ticket-admin/password123`).
 ⚠️ Account thường (STAFF001) **KHÔNG có quyền report** → nav thiếu tab, `/reports/` redirect home.
 
-**Route thực tế (GitNexus route_map — nguồn chính xác cho "đã build hay chưa"):**
-| Màn | Route | Trạng thái (route_map) |
+**Route thực tế (route_map code develop-aiot + probe LIVE ticket-dev 2026/07/10):**
+| Màn | Route | Live (ticket-dev) |
 |---|---|---|
-| チケットレポート | `/reports/` | ✅ có (5 sub-tab: ダッシュボード/販売/消費/月次/店舗別) |
-| クーポン・販売 | `/coupon-reports/sales/` | ✅ có |
-| クーポン・消費 | `/coupon-reports/usage/` | ✅ có |
-| クーポン・ダッシュボード/月次/店舗別/snapshots | `/coupon-reports/{dashboard,timeline,branch,snapshots}/` | ❌ **KHÔNG có route** (route_map chỉ trả 2) → chưa build |
+| チケットレポート | `/reports/` | ✅ (5 sub-tab: ダッシュボード/販売/消費/月次/店舗別) |
+| クーポン・販売 | `/coupon-reports/sales/` | ✅ 200 |
+| クーポン・消費 | `/coupon-reports/usage/` | ✅ 200 |
+| クーポン・タイムライン | `/coupon-reports/timeline/` | ✅ 200 (**MỚI** — trước ghi "chưa build") |
+| クーポン・店舗別 | `/coupon-reports/branches/` | ✅ 200 (**MỚI**) |
+| クーポン・snapshot | `/coupon-reports/sales/snapshots/` (+ `/<pk>/download`) | ✅ 200 (**MỚI**) |
+| クーポン・スタッフ別 | `/coupon-reports/staff/` | ⚠️ 400 (route CÓ nhưng vào trực tiếp lỗi — cần param) |
+| クーポン・ダッシュボード | `/coupon-reports/dashboard/` | ❌ 404 (không có route) |
+| クーポン・月次 | `/coupon-reports/monthly/` | ❌ không có trong route_map |
 
-**Cách vào:** top-nav → 「クーポンレポート」 (chỉ hiện với ticket-admin) → landing `/coupon-reports/sales/`; sub-tab bar có **販売 | 消費** (2 tab).
+**Cách vào:** top-nav → 「クーポンレポート」 (chỉ hiện với ticket-admin) → landing `/coupon-reports/sales/`. ⚠️ Sub-tab bar giờ NHIỀU hơn 2 (đã thêm timeline/店舗別/snapshots) — nhãn tab cụ thể cần UI-confirm khi test tới (chỉ mới probe route, chưa chụp sub-tab bar).
 
 **Nơi quan sát:** trực tiếp trên trang report (KPI card + bảng). 販売 = filter+KPI+販売記録; 消費 = filter+KPI+使用記録.
 

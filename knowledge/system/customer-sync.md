@@ -9,11 +9,11 @@ source_symbols:
   - "backend: app/controllers/api/webhooks/threease_ticket/sync_controller.rb (handle_customer_upserted/deleted)"
   - "ticket: admin_api/data_sync/handlers.py"
   - "ticket: th/services/pro_backend_sync.py + SyncOutboxEvent"
-source_hash: c487981641476afe
+source_hash: ecfe029379c521b2
 note: "MÔ TẢ code đang làm gì — KHÔNG phải oracle. Cần người duyệt. Là NHÀ của ground truth sync (workspace CLAUDE.md §8 chỉ trỏ về đây)."
 grown_from: "0119159:.claude-tester/.claude-knowledge/SYNC_MAP.md#1 + workspace CLAUDE.md §8"
 confidence: 🟡
-verify_by: "Code-derived (đọc 2026/07/08). Endpoint/outbox/cron đổi theo release → đọc lại threease_ticket_service.rb + handlers.py."
+verify_by: "Code-derived (đọc 2026/07/08). Endpoint/outbox/cron đổi theo release → đọc lại threease_ticket_service.rb + handlers.py. Re-check 2026/07/10 (develop-aiot): handlers.py chỉ đổi phần COUPON (thêm reconcile_remaining_credits) — handler customer_upserted/deleted + pro_backend_sync.py KHÔNG đổi; nội dung doc còn đúng."
 ---
 # Domain: Customer / Master sync (backend Rails ↔ ticket Django)
 

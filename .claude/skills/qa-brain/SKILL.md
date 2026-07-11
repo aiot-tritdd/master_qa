@@ -63,9 +63,15 @@ chắc — đừng suy diễn"*. Đó là thuốc giải cho suy diễn, không 
 ## Quy trình
 
 ### A. ĐỌC SPEC (oracle)
-Ưu tiên `specs.md`; chỉ có `specs.html` thì đọc thẳng HTML. Rút ra: màn hình, mỗi nhánh nghiệp vụ
-(happy / điều kiện-quyền / boundary / regression / toàn vẹn), và **kỳ vọng đúng/sai nguyên văn
-theo spec** (giữ tên màn/hàm JP/EN).
+**A0 — Chuẩn hoá oracle TRƯỚC.** Nếu `<F>` chỉ có `specs.html` / file mockup `*.html` (chưa có
+`specs.md`): **chạy logic `/specs-md` trước** (`.claude/commands/specs-md.md`) → sinh `<F>/specs.md`
+sạch, business-level (giữ nguyên văn tên màn + thông báo JP, bảng state/so sánh, để sẵn `## 4`
+changelog rỗng cho `/testcase-upspecschange`). Rồi mới đọc `specs.md` làm oracle.
+→ ĐỪNG bỏ bước này rồi đọc thẳng HTML: mất artifact oracle tái dùng được + `/testcase-upspecschange`
+mất chỗ bám. (Chỉ đọc thẳng khi KHÔNG thể sinh md — vd spec là ảnh/PDF thuần.)
+
+**A1 — Đọc oracle.** Từ `specs.md` rút ra: màn hình, mỗi nhánh nghiệp vụ (happy / điều kiện-quyền /
+boundary / regression / toàn vẹn), và **kỳ vọng đúng/sai nguyên văn theo spec** (giữ tên màn/hàm JP/EN).
 
 ### B. VIẾT CASE — MÙ CODE (oracle frozen)
 Với mỗi màn/nhánh, viết `title / pre / steps / expect` **chỉ từ spec**. Sau bước này **không sửa**
@@ -115,6 +121,72 @@ Gọi `/testcase-run <F>`: drive UI theo seam, chụp before/after **2 phía** (
 ## Output
 `<F>/tcs.json` + `<F>/<TênFolder>.xlsx` (kèm ảnh evidence). Báo cáo: bảng PASS/FAIL/未実施, KPI
 số case, và với FAIL là **mô tả hành vi lệch spec + ảnh** (KHÔNG vị trí code).
+
+## Kết thúc phiên — NHẮC command vòng đời (skill KHÔNG tự chạy)
+Skill này chỉ lo **A→D (specs.md → write → run → evidence)**. Các thao tác vòng đời là command RIÊNG,
+**cố ý KHÔNG auto** (vài cái phá huỷ / cần người duyệt). User hay không nhớ → **cuối MỖI báo cáo phải
+NHẮC** (chỉ nhắc, không tự gõ), theo điều kiện quan sát được trong phiên:
+
+| Điều kiện trong phiên | Nhắc |
+|---|---|
+| Đã tạo dữ liệu test `AIOT-TEST-*` / `AIOTTEST*` trên dev | `/testcase-cleanup` (khi hết cần đối chiếu evidence) |
+| Có FAIL / bug / SPEC-GAP | Ghi `specs.md ## 4` (BUG-xx/CHANGE-xx); spec đổi → `/testcase-upspecschange` |
+| Spec vừa có bản mới | `/testcase-upspecschange` → rồi `/testcase-retest` |
+| Muốn chạy lại sau khi dev fix | `/testcase-retest` |
+| Case ra `未実施`/`SPEC-GAP` vì flow dựng precondition CHƯA có trong `knowledge/` | `/testcase-systemdoc <flow>` (build-time, có người duyệt) |
+| 5 repo vừa refresh / nghi `knowledge/` lỗi thời | `/testcase-stale` |
+
+Format nhắc: 1 cụm ngắn cuối báo cáo — **"Bước tiếp có thể cần: …"** — chỉ liệt kê ĐÚNG điều kiện khớp
+phiên này + 1 dòng vì sao. KHÔNG liệt kê máy móc cả 6 khi không khớp.
+
+## CHẤT LƯỢNG TEST CASE (BẮT BUỘC — dev + Codex sẽ review lại)
+
+### 1. Đóng vai USER QUẬY PHÁ — không chỉ happy path
+Bộ case mà **toàn PASS + toàn happy path = YẾU**. QA giỏi **cố tình phá cho gãy**. Với mỗi feature
+PHẢI có nhóm **adversarial** (ngoài happy/permission/boundary/regression/integrity của METHOD):
+- **Input rác:** số âm, 0, thập phân, chữ, cực lớn, rỗng, khoảng trắng, emoji.
+- **Injection:** `<script>`/`<img onerror>` (XSS), `'; DROP`/`${}` vào MỌI ô text → phải escaped.
+- **Race / double-submit:** double-click nút, gửi 2 lần cực nhanh → không nhân đôi/âm.
+- **Chống-bypass:** bỏ guard client (xoá `max`/`disabled`, sửa value qua JS) hoặc gọi thẳng API →
+  **backend phải chặn** (METHOD golden). Số dư/tồn kho **không được âm**.
+- **Tampering / IDOR:** URL với id không tồn tại / của người khác / khác institute → 404/403 sạch,
+  **không 500/traceback/lộ dữ liệu**.
+- **State ngược đời:** ngày kết thúc < bắt đầu, hủy 2 lần, dùng khi hết hạn, sửa khi đang có người giữ.
+- ⚠️ Nhiều đòn quậy spec **im lặng** kỳ vọng → ra **`SPEC-GAP`** (finding giá trị cao nhất). ĐỪNG bịa
+  `expect`; ghi cái quan sát được + "hỏi BA/dev". Tìm được `SPEC-GAP`/`FAIL` ở nhóm này = QA đang làm đúng việc.
+
+### 2. Viết để DEV TÁI HIỆN ĐƯỢC BẰNG TAY (reproducibility)
+Dev/Codex sẽ mở file đọc + test lại tay. Mỗi case phải **tự đủ** — không bắt người đọc đoán:
+- **`pre`:** ghi RÕ precondition cần gì + **dựng thế nào** (account nào + URL login, institute/store nào,
+  khách/coupon nào + **giá trị số cụ thể**, dựng bằng flow nào). Không viết "khách có SC" chung chung →
+  ghi "khách 222 (院1), 残クレジット合計 = 10,151 SC (đọc ở /customer/222/)".
+- **`steps`:** đánh số, mỗi bước 1 hành động cụ thể: **URL đầy đủ + tên ô/nút chính xác + giá trị nhập**.
+- **`expect`:** kỳ vọng cụ thể + **trích spec** (mục nào). Spec im lặng → nói rõ "spec không định nghĩa → SPEC-GAP".
+- **`actual`:** bắt đầu bằng `PASS/FAIL/未実施/SPEC-GAP` + **số liệu THẬT** (trước→sau, mã HTTP, thông báo
+  nguyên văn JP, id bản ghi). Không mô tả mơ hồ.
+- **`note`:** seam (`[seam:ui] tạo:… xem:…`) + tên ảnh + cảnh báo data test cần cleanup (id nào).
+- **`before`/`after`:** ảnh PNG rõ. **Case có THAO TÁC (create/edit/issue/use/cancel) BẮT BUỘC có `before`** (trạng thái/số liệu TRƯỚC) + `after` (SAU) — thiếu `before` cho case mutation = evidence yếu, dev/Codex không đối chiếu được. Case chỉ QUAN SÁT (nav/list/detail) có thể `before=null` (build_evidence để N/A) nhưng nên chụp điểm-vào làm context nếu có ý nghĩa.
+  - ⚠️ **Chụp `before` NGAY trong lúc chạy case** (đừng để lấp sau — trạng thái đổi thì không tái hiện trung thực được, chụp sau = evidence SAI).
+  - ⚠️ **`before=null` thì `note` PHẢI ghi rõ lý do N/A** (vd "chỉ quan sát, after là bằng chứng" / "số dư lúc chạy đã đổi nên không tái hiện được"). Không để trống không giải thích — dev/Codex phải hiểu vì sao thiếu.
+
+### 3. Tư duy senior QA — CHỦ ĐỘNG SĂN BUG (không chờ bug tự lộ)
+Mặc định: **"hệ chắc chắn có chỗ hỏng, việc của tôi là tìm ra."** Bộ test toàn PASS = chưa đào đủ. Áp
+kỹ thuật kiểm thử bài bản để moi bug/gap (không phải bấm random):
+- **Boundary Value Analysis:** min−1 / min / min+1 / max−1 / max / max+1 cho MỌI ô số/ngày/độ dài
+  (0, âm, 1, đúng-số-dư, số-dư+1, cực lớn, chuỗi 255+ ký tự).
+- **Equivalence partitioning:** chia lớp hợp lệ/không hợp lệ, test 1 đại diện mỗi lớp.
+- **State-transition:** vòng đời đối tượng (active→used→expired→cancelled…). Thao tác ở trạng thái
+  "sai" (dùng coupon đã hết hạn/đã dùng hết; hủy 2 lần; sửa khi đang có người giữ).
+- **CRUD / cross-screen consistency:** số liệu 1 thực thể phải khớp giữa các màn (list ↔ detail ↔
+  history ↔ thống kê). Σ dòng phải = tổng. Đây là mỏ bug (vd cột hiển thị券面 nhưng tổng tính 残).
+- **Concurrency / idempotency:** double-submit, 2 request song song, retry, double-refund → không
+  nhân đôi / không âm.
+- **Chống-bypass tầng API:** bỏ guard client (xoá max/disabled, POST thẳng) → backend phải chặn.
+- **Cross-field / business-rule:** SC vs giá, 開始日 vs 終了日, thuế込/抜/免, quyền × trạng thái.
+- **Injection / tampering / IDOR:** XSS/SQL vào ô text; URL id lạ/của người khác/khác institute.
+- **Định lượng khi báo:** luôn ghi con số THẬT (trước→sau, Σ vs tổng, mã HTTP) để finding không cãi được.
+> Khi bí ý tưởng: tự hỏi *"một user ẩu / một kẻ phá hoại / một ca hiếm sẽ làm gì để làm hệ sai số?"*
+> và rà lại checklist trên cho từng màn/trường.
 
 ## Ranh giới token
 - 1 session ấm nghĩ xuyên suốt — không đẻ subprocess `claude -p`.

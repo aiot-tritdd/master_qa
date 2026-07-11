@@ -16,7 +16,7 @@ verify_by: "Mở từng kênh quan sát bằng pw_lib.getPage(<target>). Không 
 
 | Quan sát                                                      | Kênh (UI)                                                   | getPage()                   | Login                                                               |
 | -------------------------------------------------------------- | ------------------------------------------------------------ | --------------------------- | ------------------------------------------------------------------- |
-| Booking / hóa đơn / số dư vé (Pro)                       | https://develop.pro.threease.com                             | `getPage('pro')`          | TESTSEED001 / STAFF001 / password123 (basic: threesides/threesides) |
+| Booking / hóa đơn / số dư vé (Pro)                       | https://develop.pro.threease.com                             | `getPage('pro')`          | TESTSEED001 / admin-test / password123 (basic: threesides/threesides) — *cập nhật 2026/07/10, trước là STAFF001* |
 | **Gói vé + 使用履歴 + trạng thái pack** (per khách) | https://ticket-dev.threease.com/**customer/<id></id>** | `getPage('ticket')`       | TESTSEED001 / STAFF001 / password123                                |
 | Model**sync** (customer/institute/branch/staff)          | https://ticket-dev.threease.com/admin                        | `getPage('ticket_admin')` | admin / password123                                                 |
 

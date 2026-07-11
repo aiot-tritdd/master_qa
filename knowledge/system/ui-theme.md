@@ -7,7 +7,7 @@ source_symbols:
   - "pro: nuxt.config.js"
   - "pro: assets/variables.scss"
   - "admin: nuxt.config.js"
-source_hash: null
+source_hash: af8e737769688b58
 confidence: 🟡
 verify_by: "Màu/token đổi theo release → mở lại nuxt.config.js / variables.scss / colors.dart trước khi tin."
 grown_from: "0119159:.claude-tester/.claude-knowledge/UI_UX.md"

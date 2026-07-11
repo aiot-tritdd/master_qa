@@ -7,10 +7,10 @@ source_symbols:
   - "backend: app/jobs/threease_ticket_sync_job.rb"
   - "backend: app/controllers/api/webhooks/threease_ticket/sync_controller.rb (handle_pack_issued/used/cancelled)"
   - "ticket: admin_api/data_sync/handlers.py"
-source_hash: 8e034f0c8d478d29
+source_hash: eff096ec51c4de8e
 note: "MÔ TẢ code làm gì — KHÔNG phải oracle."
 confidence: 🟡
-verify_by: "Code-derived. Verify bằng sync_controller.rb + handlers.py; hành vi thật phải quan sát live 2 phía."
+verify_by: "Code-derived. Verify bằng sync_controller.rb + handlers.py; hành vi thật phải quan sát live 2 phía. Re-check 2026/07/10 (develop-aiot): handlers.py chỉ đổi phần COUPON (thêm reconcile_remaining_credits) — handler ticket-pack (issued/used/cancelled) KHÔNG đổi; nội dung doc còn đúng."
 ---
 # Domain: Ticket issue + sync (phát hành gói vé + đồng bộ Pro↔ticket)
 

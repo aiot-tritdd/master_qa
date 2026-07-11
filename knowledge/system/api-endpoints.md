@@ -5,7 +5,7 @@ kind: system-domain
 spans_repos: [backend, pro]
 source_symbols:
   - "pro: repository/*.ts"
-source_hash: null
+source_hash: 96ed7bd9328290cd
 confidence: 🔴
 verify_by: "CODE-DERIVED, CHƯA GỌI THẬT. Gọi bằng withApi() rồi mới tin. Endpoint đã verify live → chuyển sang knowledge/observation-channels.md (HOW, QA đọc được)."
 grown_from: "0119159:.claude-tester/knowledge/SYSTEM.md#endpoint-hay-dùng"
