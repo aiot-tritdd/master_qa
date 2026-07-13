@@ -2,7 +2,7 @@
 
 > File này là phần **cơ khí**: cách một doc tự khai độ tin, cách grow, cách phát hiện doc cũ, và lệnh
 > để làm. **Khái niệm** (3 tầng HOW/WHAT/chưa-biết, 2 pha, vì sao mù code) đã ở
-> [`README.md`](README.md) — file này giả định bạn đã hiểu chúng, không giải thích lại.
+> [`README.md`](../README.md) — file này giả định bạn đã hiểu chúng, không giải thích lại.
 > Tài liệu **sống**: có cái mới → sửa tại chỗ, không nối `## Cập nhật ngày…`.
 
 ---
@@ -73,7 +73,7 @@ repo nào.
 
 ## 3. Grow & maintain — cơ khí + lệnh
 
-Vòng lặp grow (demand-driven) và maintain (stale-check) đã mô tả ở [`README.md`](README.md) §10.
+Vòng lặp grow (demand-driven) và maintain (stale-check) đã mô tả ở [`README.md`](../README.md) §10.
 Đây là phần **lệnh + chi tiết**.
 
 **Lệnh stale-check** (qua skill `/testcase-stale`, hoặc chạy thẳng):
@@ -116,7 +116,7 @@ cùng nguồn đó (render `gitnexus wiki`; embed vector cho RAG), **không re-a
 ## 4. Ba cửa nhập tri thức — ví dụ định tuyến `.claude-tester`
 
 Mọi tri thức đi vào hệ phải trả lời *"nói HOW hay nói WHAT?"* rồi qua đúng một cửa (nguyên tắc ở
-[`README.md`](README.md) §12). Đây là bảng đã soi từng file của hệ sếp — làm mẫu cách phân loại:
+[`README.md`](../README.md) §12). Đây là bảng đã soi từng file của hệ sếp — làm mẫu cách phân loại:
 
 | Nguồn | → `knowledge/` (HOW) | → `knowledge/system/` (WHAT) | → `OPEN-QUESTIONS.md` |
 |---|---|---|---|

@@ -8,7 +8,7 @@
 ## 0. File này là gì
 
 Đây là **điểm hồi phục**: mở phiên mới, đọc file này là biết *đang đứng đâu, làm gì tiếp*.
-Nó **không** giải thích hệ thống — muốn hiểu hệ thống thì đọc [`README.md`](README.md) (1 file, đủ).
+Nó **không** giải thích hệ thống — muốn hiểu hệ thống thì đọc [`README.md`](../README.md) (1 file, đủ).
 
 QA senior **black-box** (skill `qa-brain` + commands `testcase-*`): SPEC → sinh+chạy test trên **dev** →
 evidence PNG/xlsx. Oracle = SPEC + quan sát live. **Mù code.** GitNexus chỉ ở build-time (soạn knowledge).

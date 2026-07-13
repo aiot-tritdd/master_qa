@@ -164,4 +164,4 @@ Track B:  B1 clone 5 repo ─► B2 gitnexus+MCP ─► B3 index+sync        # t
 ---
 
 **Muốn biết thêm** (triết lý · access nhanh dev · cơ khí knowledge · GitNexus) → bảng "muốn biết X → mở Y"
-ở [`README.md`](README.md) §13 và `STATE.md` §5.
+ở [`README.md`](../README.md) §13 và `STATE.md` §5.

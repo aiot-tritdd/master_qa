@@ -43,7 +43,7 @@ ui_confirmed_at: null
 | Nguồn | Phương pháp | Kết luận |
 |---|---|---|
 | `0119159:.claude-tester/.claude-knowledge/REPORTING.md:7-14` | đọc code (`grep -i coupon` → rỗng) | *"CHƯA TỒN TẠI TRONG CODE"* |
-| `README.md §11` + `TestCase-11` | quan sát live | **9 PASS** / 8 FAIL, khớp 100% list dev khai |
+| `../README.md §11` + `TestCase-11` | quan sát live | **9 PASS** / 8 FAIL, khớp 100% list dev khai |
 | `knowledge/ticket-coupon-reports.md` (của ta) | GitNexus + UI-confirm | `approved`, `source_symbols` **có** symbol này |
 
 **Đã thu hẹp bằng quan sát live (regression TestCase-11):** coupon report **CÓ tồn tại** —

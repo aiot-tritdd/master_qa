@@ -3,7 +3,7 @@
 > **Đọc file này là đủ hiểu trọn hệ thống** — nó là gì, nghĩ thế nào, vận hành ra sao, và lớn lên
 > ra sao sau mỗi lần chạy. Không cần mở file nào khác. Muốn đào sâu chỗ nào → bảng cuối trang chỉ đường.
 >
-> 🛠️ **Chỉ muốn CÀI ĐẶT cho chạy** (cài gì, theo thứ tự nào, lấy credentials ở đâu) → [`SETUP.md`](SETUP.md).
+> 🛠️ **Chỉ muốn CÀI ĐẶT cho chạy** (cài gì, theo thứ tự nào, lấy credentials ở đâu) → [`SETUP.md`](docs/SETUP.md).
 > File này giải thích *hệ nghĩ gì*; SETUP.md lo phần *máy trắng → chạy được test đầu tiên*.
 
 ---
@@ -57,7 +57,7 @@ Hai luật không được phá. Phá là sai từ gốc, không phải sai chi 
 
 > ⚠️ **Hiện tại hai tường này là VĂN BẢN, chưa phải CƠ CHẾ.** Chưa có gì kỹ thuật ngăn một phiên
 > `/testcase-run` đọc code. Biến nó thành cơ chế (PreToolUse hook) là việc lớn nhất còn lại — xem
-> `STATE.md` / `OPEN-QUESTIONS.md#OQ-09`.
+> `docs/STATE.md` / `OPEN-QUESTIONS.md#OQ-09`.
 
 ---
 
@@ -179,7 +179,7 @@ làm hỏng khâu dựng, và ta không phân biệt được *"bug ở feature"
 - FAIL → mô tả hành vi lệch spec + ảnh. Feature chưa build → **FAIL** (quan sát 404 / thiếu nút),
   **không** suy đoán "chưa code" (đó là code-knowledge).
 
-Truy cập dev + tài khoản: `STATE.md` §5.
+Truy cập dev + tài khoản: `docs/STATE.md` §5.
 
 ---
 
@@ -214,7 +214,7 @@ Spec mới về  ──►  qa-brain cần 1 flow để dựng precondition
 đổi mới bị đánh dấu stale — không phải quét lại toàn bộ.
 
 > Cơ khí đầy đủ (lệnh `stale_check.py`, front-matter, `confidence` vs `source_hash`, 3 loại stale):
-> **[`KNOWLEDGE-STRATEGY.md`](KNOWLEDGE-STRATEGY.md)**.
+> **[`KNOWLEDGE-STRATEGY.md`](docs/KNOWLEDGE-STRATEGY.md)**.
 
 ---
 
@@ -236,7 +236,7 @@ thay vì câu tiếng Nhật.
 > **`grep` không thấy ≠ không tồn tại.** Đã sai **2 lần**. Code có thể ở chỗ khác, tên khác, sinh động
 > lúc runtime, hoặc index code-graph yếu. Đây chính là lý do `knowledge/system/` bị cấm ở QA-runtime.
 
-*(Bản đối chứng đầy đủ + phân tích: [`SYSTEM-COMPARISON.md`](SYSTEM-COMPARISON.md) Phần III.)*
+*(Bản đối chứng đầy đủ + phân tích: [`SYSTEM-COMPARISON.md`](docs/SYSTEM-COMPARISON.md) Phần III.)*
 
 ---
 
@@ -256,12 +256,12 @@ qua đúng một trong ba cửa:
 
 | Muốn biết | Mở |
 |---|---|
-| **Cài đặt từ máy trắng → chạy được** (deps, credentials, GitNexus) | [`SETUP.md`](SETUP.md) |
-| Đang làm tới đâu, việc gì tiếp (dành cho Claude) | `STATE.md` |
-| Cơ khí kho tri thức: lệnh stale, front-matter, `confidence`, grow/maintain sâu | [`KNOWLEDGE-STRATEGY.md`](KNOWLEDGE-STRATEGY.md) |
-| Bản đối chứng 2 hệ + bằng chứng coupon 9 PASS đầy đủ | [`SYSTEM-COMPARISON.md`](SYSTEM-COMPARISON.md) (archived) |
-| 5 repo nối nhau ra sao · cách dùng GitNexus | `../../CLAUDE.md` (workspace) |
-| Luật cho Claude khi chạy test | `../CLAUDE.md` · `.claude/skills/qa-brain/SKILL.md` |
+| **Cài đặt từ máy trắng → chạy được** (deps, credentials, GitNexus) | [`SETUP.md`](docs/SETUP.md) |
+| Đang làm tới đâu, việc gì tiếp (dành cho Claude) | `docs/STATE.md` |
+| Cơ khí kho tri thức: lệnh stale, front-matter, `confidence`, grow/maintain sâu | [`KNOWLEDGE-STRATEGY.md`](docs/KNOWLEDGE-STRATEGY.md) |
+| Bản đối chứng 2 hệ + bằng chứng coupon 9 PASS đầy đủ | [`SYSTEM-COMPARISON.md`](docs/SYSTEM-COMPARISON.md) (archived) |
+| 5 repo nối nhau ra sao · cách dùng GitNexus | `../CLAUDE.md` (workspace) |
+| Luật cho Claude khi chạy test | `CLAUDE.md` · `.claude/skills/qa-brain/SKILL.md` |
 
 **Kho lưu — không nằm trên đường đọc:** `SYSTEM-COMPARISON.md` (⏳ merge đã xong, giữ làm nguồn khai
 thác) · `plans/` · `superpowers/`.

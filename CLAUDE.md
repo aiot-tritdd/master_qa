@@ -5,7 +5,7 @@ session Claude này thành **QA senior mù code**: từ 1 file **SPEC** → sinh
 Playwright → **quan sát live** → chấm PASS/FAIL + evidence. Cộng pipeline `.claude/commands/testcase-*.md`
 (specs-md / write / run / cleanup / retest / upspecschange / systemdoc).
 
-> 📘 **Hiểu hệ thống:** `docs/README.md` (cửa vào — 1 file là đủ, có bảng "muốn biết X → mở file Y").
+> 📘 **Hiểu hệ thống:** `README.md` (cửa vào — 1 file là đủ, có bảng "muốn biết X → mở file Y").
 > **Đang làm gì tiếp:** `docs/STATE.md` (đọc đầu mỗi phiên). Bối cảnh 5 repo: `/Users/tritdd/Work/ThreeSides/CLAUDE.md`.
 
 ## 2 BỨC TƯỜNG THÉP (đừng phá)
@@ -52,7 +52,7 @@ Playwright → **quan sát live** → chấm PASS/FAIL + evidence. Cộng pipeli
 ## Grow tri thức (demand-driven — đừng grow trước)
 Spec mới cần 1 flow để dựng precondition → **có** trong `knowledge/` (approved) thì dùng luôn; **chưa có**
 thì **DỪNG, KHÔNG tự đọc code để bù** → `/testcase-systemdoc <flow>` (build-time: GitNexus ra draft →
-UI-confirm → approved) → quay lại chạy test. Chỉ viết doc cho flow **thực sự test tới**. Chi tiết: `docs/README.md` §10.
+UI-confirm → approved) → quay lại chạy test. Chỉ viết doc cho flow **thực sự test tới**. Chi tiết: `README.md` §10.
 
 ## Maintenance khi 5 repo update
 `refresh-gitnexus.sh` (graph tươi — CHỈ graph) → **stale-check `source_hash`** (`/testcase-stale`, hoặc
