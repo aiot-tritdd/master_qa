@@ -2,51 +2,84 @@
 // getPage(target) -> { browser, context, page, BASE }. Mặc định đăng nhập Pro.
 // shot(page, path, readySelector) -> chụp AN TOÀN (chờ màn render xong). BẮT BUỘC dùng thay screenshot trần.
 //
-// Đổi hệ khác qua env: BASE_URL, BASIC_USER/PASS, INST/THER/PW, HEADED=1 để xem browser.
+// Creds đọc từ .env (repo root threease_qa/, gitignored) — KHÔNG hardcode trong file này.
+//   Xem .env.example cho danh sách biến. Override URL/hành vi: BASE_URL, HEADED=1, LOCALE…
 // Cache session: .state.<target>.json cạnh file này (KHÔNG phải deliverable, không leak ra <folder>).
 //   NO_STATE=1 để tắt cache (khi cần login sạch, vd đổi account giữa chừng).
 const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 
+// ── Nạp .env (repo root) vào process.env — KHÔNG ghi đè biến đã set sẵn ngoài shell, KHÔNG cần dependency.
+//    Creds THẬT sống ở .env (gitignored); danh sách biến xem .env.example.
+(() => {
+  const envPath = path.join(__dirname, '../../..', '.env');
+  if (!fs.existsSync(envPath)) return;
+  for (const raw of fs.readFileSync(envPath, 'utf8').split('\n')) {
+    const line = raw.trim();
+    if (!line || line.startsWith('#') || !line.includes('=')) continue;
+    const i = line.indexOf('=');
+    const k = line.slice(0, i).trim();
+    const v = line.slice(i + 1).trim().replace(/^["']|["']$/g, '');
+    if (k && !(k in process.env)) process.env[k] = v;
+  }
+})();
+
+// Biến bắt buộc theo target — thiếu thì báo RÕ (không hardcode creds làm fallback nữa).
+const REQ = {
+  pro:          ['BASIC_USER', 'BASIC_PASS', 'INST', 'THER', 'PW'],
+  reservation:  ['BASIC_USER', 'BASIC_PASS'],
+  admin:        [],
+  ticket_admin: ['TK_ADMIN_USER', 'TK_ADMIN_PASS'],
+  ticket:       ['TK_INST', 'TK_STAFF', 'TK_PW'],
+};
+function requireEnv(target) {
+  const missing = (REQ[target] || REQ.pro).filter((n) => !process.env[n]);
+  if (missing.length) {
+    throw new Error(
+      `[pw_lib] Thiếu biến môi trường cho target '${target}': ${missing.join(', ')}.\n` +
+      `→ Copy .env.example thành .env (repo root threease_qa/) rồi điền (xin team lead). Xem docs/SETUP.md §A3.`,
+    );
+  }
+}
+
 const CFG = {
   pro: {
     BASE: process.env.BASE_URL || 'https://develop.pro.threease.com',
-    basic: { username: process.env.BASIC_USER || 'threesides', password: process.env.BASIC_PASS || 'threesides' },
+    basic: { username: process.env.BASIC_USER, password: process.env.BASIC_PASS },
     login: {
-      inst: process.env.INST || 'TESTSEED001',
-      // ⚠️ 2026/07/10: Pro app login đổi therapist code STAFF001 → 'admin-test' (account.txt).
-      ther: process.env.THER || 'admin-test',
-      pw:   process.env.PW   || 'password123',
+      inst: process.env.INST,
+      // Pro login dùng therapist code (2026/07/10 đổi cơ chế). Giá trị ở .env (THER).
+      ther: process.env.THER,
+      pw:   process.env.PW,
     },
   },
   reservation: {
     BASE: process.env.BASE_URL || 'https://reservation-dev.threease.com',
-    basic: { username: process.env.BASIC_USER || 'threesides', password: process.env.BASIC_PASS || 'threesides' },
+    basic: { username: process.env.BASIC_USER, password: process.env.BASIC_PASS },
     login: null,
   },
   admin: {
     BASE: process.env.BASE_URL || 'https://admin-dev.threease.com',
     basic: null,
-    login: null, // admin@example.com/password123 — form riêng, điền trong script khi cần
+    login: null, // form login riêng, điền trong script khi cần (creds ở .env)
   },
   ticket_admin: {
     BASE: process.env.TICKET_ADMIN_URL || 'https://ticket-dev.threease.com',
     basic: null,
     django_admin: {
-      user: process.env.TK_ADMIN_USER || 'admin',
-      pass: process.env.TK_ADMIN_PASS || 'password123',
+      user: process.env.TK_ADMIN_USER,
+      pass: process.env.TK_ADMIN_PASS,
     },
   },
   ticket: {
     BASE: process.env.TICKET_URL || 'https://ticket-dev.threease.com',
     basic: null,
     django_login: {
-      inst:  process.env.TK_INST  || 'TESTSEED001',
-      // 2026/07/10: STAFF001 (account.txt) giờ ĐỦ quyền coupon 設定/登録/編集 + report (nav đủ tab).
-      //   (Trước deploy develop-aiot phải dùng 'ticket-admin'; nay STAFF001 dùng được — theo account.txt.)
-      staff: process.env.TK_STAFF || 'STAFF001',
-      pw:    process.env.TK_PW    || 'password123',
+      inst:  process.env.TK_INST,
+      // Staff mặc định đủ quyền coupon 設定/登録/編集 + report; vài màn report cần staff quyền cao hơn → đổi TK_STAFF (.env).
+      staff: process.env.TK_STAFF,
+      pw:    process.env.TK_PW,
     },
   },
 };
@@ -54,6 +87,7 @@ const CFG = {
 const stateFile = (target) => path.join(__dirname, `.state.${target}.json`);
 
 async function getPage(target = 'pro') {
+  requireEnv(target);
   const c = CFG[target] || CFG.pro;
   const browser = await chromium.launch({ headless: !process.env.HEADED });
 

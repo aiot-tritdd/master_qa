@@ -44,31 +44,32 @@ python3 -m pip install openpyxl   # stale_check.py chỉ dùng stdlib, không c�
 
 Yêu cầu nền: **Node ≥ 16**, **Python 3**, **Claude Code** (skill + harness chạy trong 1 session Claude).
 
-### A3. `account.txt` — credentials (XIN TEAM LEAD)
+### A3. Credentials — `.env` (XIN TEAM LEAD)
 
-File này **bị gitignore** (evidence + secret là local), nên **clone mới KHÔNG có sẵn**. Xin team lead
-rồi đặt tại `threease_qa/wtf-is-this/account.txt`. Format (mỗi target một khối `site` + `account`) —
-**giá trị thật xin team lead, ĐỪNG commit file này**:
+`pw_lib.js` đọc creds từ **`.env` ở repo root `threease_qa/`** (đã gitignore → clone mới KHÔNG có sẵn).
+Tạo bằng cách copy template rồi điền giá trị thật (xin team lead):
 
+```bash
+cd threease_qa
+cp .env.example .env
+# mở .env điền: BASIC_USER/PASS · INST/THER/PW · TK_INST/TK_STAFF/TK_PW · TK_ADMIN_USER/PASS
 ```
-site: <url dev của target>          # admin / ticket / pro / reservation
-account: <user>/<password>          # đúng target nào dùng field nào — xem pw_lib.js
-```
 
-> ⚠️ **Report ticket cần tài khoản quyền cao hơn** account mặc định (đặt qua env `TK_STAFF`). Nếu màn
-> report trả 403/404 là do thiếu quyền → hỏi team lead account report. Giá trị cụ thể **không** để trong doc.
+> ⚠️ **TUYỆT ĐỐI không commit `.env`.** Creds không còn hardcode trong `pw_lib.js` — thiếu biến nào,
+> harness **báo rõ tên biến** + trỏ về đây. Biến set sẵn ngoài shell (CI) sẽ thắng `.env`.
+> ⚠️ **Report ticket** có màn cần tài khoản quyền cao hơn → đổi `TK_STAFF` trong `.env` (hỏi team lead).
 
-### A4. (tuỳ nhu cầu) Env override
+### A4. (tuỳ nhu cầu) Env override hành vi
 
-Harness chạy được với **default** khớp `account.txt` ở trên — thường **không cần set gì**. Chỉ set khi lệch:
+Creds đã ở `.env` (A3). Bảng dưới là **override hành vi** — set khi cần (biến shell thắng `.env`):
 
-| Env                                                                   | Default          | Khi nào set                                                                                |
-| --------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------- |
-| `HEADED=1`                                                          | headless         | muốn**xem** browser lái                                                             |
-| `TK_STAFF`                                                          | `STAFF001`     | màn report ticket đòi`ticket-admin`                                                    |
-| `BRANCH_ID`                                                         | —               | **bắt buộc** cho `/testcase-cleanup` (= branch phiên hiện tại; sai → API 404) |
-| `NO_STATE=1`                                                        | cache on         | login sạch (đổi account giữa chừng)                                                    |
-| `BASE_URL`/`BASIC_USER`/`INST`/`THER`/`PW`/`TICKET_URL`… | xem`pw_lib.js` | trỏ sang hệ dev khác                                                                     |
+| Env                             | Default    | Khi nào set                                                                    |
+| ------------------------------- | ---------- | ------------------------------------------------------------------------------- |
+| `HEADED=1`                      | headless   | muốn **xem** browser lái                                                     |
+| `LOCALE`                        | `ja-JP`    | test UI tiếng Anh (spec tiếng Nhật → giữ `ja-JP`)                         |
+| `NO_STATE=1`                    | cache on   | login sạch (đổi account giữa chừng)                                        |
+| `BRANCH_ID`                     | —          | **bắt buộc** cho `/testcase-cleanup` (= branch phiên; sai → API 404) |
+| `BASE_URL`/`TICKET_URL`/… | URL dev    | trỏ sang hệ dev khác                                                         |
 
 ### A5. Verify track A chạy
 
@@ -146,7 +147,7 @@ Chi tiết: workspace `CLAUDE.md` §4–5. **Không** cần cho việc chạy te
 ## Thứ tự phụ thuộc (đừng đảo)
 
 ```
-Track A:  A1 vị trí ─► A2 deps ─► A3 account.txt ─► A5 verify        # đủ để chạy test
+Track A:  A1 vị trí ─► A2 deps ─► A3 .env (creds) ─► A5 verify       # đủ để chạy test
 Track B:  B1 clone 5 repo ─► B2 gitnexus+MCP ─► B3 index+sync        # trước khi /testcase-systemdoc
           (B phải xong TRƯỚC khi soạn knowledge; A độc lập với B)
 ```
