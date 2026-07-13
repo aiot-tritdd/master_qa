@@ -236,8 +236,6 @@ thay vì câu tiếng Nhật.
 > **`grep` không thấy ≠ không tồn tại.** Đã sai **2 lần**. Code có thể ở chỗ khác, tên khác, sinh động
 > lúc runtime, hoặc index code-graph yếu. Đây chính là lý do `knowledge/system/` bị cấm ở QA-runtime.
 
-*(Bản đối chứng đầy đủ + phân tích: [`SYSTEM-COMPARISON.md`](docs/SYSTEM-COMPARISON.md) Phần III.)*
-
 ---
 
 ## 12. Một câu luật vàng cho mọi tri thức đi vào hệ
@@ -259,12 +257,10 @@ qua đúng một trong ba cửa:
 | **Cài đặt từ máy trắng → chạy được** (deps, credentials, GitNexus) | [`SETUP.md`](docs/SETUP.md) |
 | Đang làm tới đâu, việc gì tiếp (dành cho Claude) | `docs/STATE.md` |
 | Cơ khí kho tri thức: lệnh stale, front-matter, `confidence`, grow/maintain sâu | [`KNOWLEDGE-STRATEGY.md`](docs/KNOWLEDGE-STRATEGY.md) |
-| Bản đối chứng 2 hệ + bằng chứng coupon 9 PASS đầy đủ | [`SYSTEM-COMPARISON.md`](docs/SYSTEM-COMPARISON.md) (archived) |
 | 5 repo nối nhau ra sao · cách dùng GitNexus | `../CLAUDE.md` (workspace) |
 | Luật cho Claude khi chạy test | `CLAUDE.md` · `.claude/skills/qa-brain/SKILL.md` |
 
-**Kho lưu — không nằm trên đường đọc:** `SYSTEM-COMPARISON.md` (⏳ merge đã xong, giữ làm nguồn khai
-thác) · `plans/` · `superpowers/`.
+**Kho lưu — không nằm trên đường đọc:** `plans/` · `superpowers/`.
 
 ---
 
@@ -275,5 +271,4 @@ thác) · `plans/` · `superpowers/`.
 
 > **Luật 2 — Mỗi khái niệm có đúng 1 nhà.** Chỗ khác chỉ được **link**, cấm chép lại.
 
-Ai thêm/sửa doc thì đọc lại 2 luật này trước. Ngoại lệ có chủ ý (đừng "dọn" đi): `SYSTEM-COMPARISON.md`
-cố tình đứng một mình đọc được để mang đi trình bày.
+Ai thêm/sửa doc thì đọc lại 2 luật này trước.

@@ -26,7 +26,7 @@ ui_confirmed_at: null
 > **Luật vàng (mượn `SYNC_MAP.md` của sếp):**
 > > *"Đây là khoảng trống **THÔNG TIN**, không phải khoảng trống **CODE**. CẦN HỎI DEV thay vì tự kết luận."*
 >
-> **`grep` không thấy ≠ không tồn tại.** Đã sai 2 lần (xem `docs/SYSTEM-COMPARISON.md` Phần III).
+> **`grep` không thấy ≠ không tồn tại.** Đã sai 2 lần (guard vé-đã-dùng; coupon report "chưa build").
 
 ## Cách dùng
 - **Thêm mục** khi: đã tra (GitNexus / doc / quan sát live) mà vẫn không kết luận được. KHÔNG ép nó

@@ -22,7 +22,7 @@ evidence PNG/xlsx. Oracle = SPEC + quan sát live. **Mù code.** GitNexus chỉ 
 - ✅ **Re-UI-confirm `pro-open-booking.md`** (2026-07-09, ja-JP) — phát hiện toạ độ cứng + nhãn EN đều mục rữa.
 - ✅ **Test đã chạy:** `TestCase_NEW` (thu hồi vé) 7 case verified ·
   `TestCase-11` (coupon report) **9 PASS / 8 FAIL**, khớp 100% scope dev.
-- ✅ **Phân tích + merge hệ của sếp** (`.claude-tester/`): xong Phase 0→4; hồ sơ ở `docs/SYSTEM-COMPARISON.md` (archived).
+- ✅ **Phân tích + merge hệ của sếp** (`.claude-tester/`): xong Phase 0→4 (hồ sơ `SYSTEM-COMPARISON.md` đã gỡ — tra `git log`/`git show`).
 
 ### ✅ MERGE Phase 0 — vá lệnh chết (2026-07-09, đã verify)
 Trước đó 4 lệnh trỏ vào file **không tồn tại**. Nay:
