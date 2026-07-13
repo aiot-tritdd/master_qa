@@ -2,6 +2,9 @@
 
 > **Đọc file này là đủ hiểu trọn hệ thống** — nó là gì, nghĩ thế nào, vận hành ra sao, và lớn lên
 > ra sao sau mỗi lần chạy. Không cần mở file nào khác. Muốn đào sâu chỗ nào → bảng cuối trang chỉ đường.
+>
+> 🛠️ **Chỉ muốn CÀI ĐẶT cho chạy** (cài gì, theo thứ tự nào, lấy credentials ở đâu) → [`SETUP.md`](SETUP.md).
+> File này giải thích *hệ nghĩ gì*; SETUP.md lo phần *máy trắng → chạy được test đầu tiên*.
 
 ---
 
@@ -253,6 +256,7 @@ qua đúng một trong ba cửa:
 
 | Muốn biết | Mở |
 |---|---|
+| **Cài đặt từ máy trắng → chạy được** (deps, credentials, GitNexus) | [`SETUP.md`](SETUP.md) |
 | Đang làm tới đâu, việc gì tiếp (dành cho Claude) | `STATE.md` |
 | Cơ khí kho tri thức: lệnh stale, front-matter, `confidence`, grow/maintain sâu | [`KNOWLEDGE-STRATEGY.md`](KNOWLEDGE-STRATEGY.md) |
 | Bản đối chứng 2 hệ + bằng chứng coupon 9 PASS đầy đủ | [`SYSTEM-COMPARISON.md`](SYSTEM-COMPARISON.md) (archived) |
