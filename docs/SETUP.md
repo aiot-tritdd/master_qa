@@ -9,12 +9,12 @@
 
 | Bạn muốn                                                                                          | Làm track      | Cần gì                                                                                 |
 | --------------------------------------------------------------------------------------------------- | --------------- | ---------------------------------------------------------------------------------------- |
-| **Chỉ chạy test** (viết case, drive app, ra evidence)                                      | **A**     | Node+Playwright · Python+openpyxl ·`account.txt` · Claude Code + skill `qa-brain` |
+| **Chỉ chạy test** (viết case, drive app, ra evidence)                                      | **A**     | Node+Playwright · Python+openpyxl ·`.env` (creds) · Claude Code + skill `qa-brain` |
 | **Grow/maintain knowledge** (soạn Living Business Doc, `/testcase-systemdoc`, stale-check) | **A + B** | thêm: clone 5 repo · GitNexus (index + group + MCP)                                    |
 
 > ⚠️ **QA chạy test lái dev server TỪ XA** (`develop.pro.threease.com`, `ticket-dev.threease.com`…),
 > **không** phải docker localhost. Nên track A **không cần** `docker compose up`, **không cần** GitNexus,
-> **không cần** clone 5 repo sản phẩm. Chỉ cần **mạng vào được dev + `account.txt`**.
+> **không cần** clone 5 repo sản phẩm. Chỉ cần **mạng vào được dev + `.env` (creds)**.
 > Docker/DB (workspace `CLAUDE.md` §4–5) chỉ cần nếu bạn muốn soi DB tay hoặc chạy sản phẩm cục bộ.
 
 ---
@@ -30,6 +30,11 @@
 - Mở Claude Code **tại thư mục `threease_qa/`** (hoặc workspace) → skill `qa-brain` tự xuất hiện
   (nguồn: `threease_qa/.claude/skills/qa-brain/`).
 
+> 🔴 **Bắt buộc có Claude Code.** Cả hệ (`qa-brain`, `/specs-md`, `/testcase-run`) **chỉ chạy trong
+> Claude Code** — đây KHÔNG phải CLI độc lập. Không có Claude Code thì không chạy được gì.
+> 🟠 **Clone mới KHÔNG có spec mẫu** (`wtf-is-this/` bị gitignore) → xin team **1 `specs.md` mẫu** để
+> chạy thử A5 (giống như xin creds).
+
 ### A2. Cài dependency của harness
 
 ```bash
@@ -40,6 +45,8 @@ npx playwright install chromium   # tải browser binary — KHÔNG có bước 
 
 # Python + openpyxl (build file Excel evidence)
 python3 -m pip install openpyxl   # stale_check.py chỉ dùng stdlib, không cần thêm
+# nếu báo "externally-managed-environment" (PEP 668): dùng venv →
+#   python3 -m venv .venv && source .venv/bin/activate && pip install openpyxl
 ```
 
 Yêu cầu nền: **Node ≥ 16**, **Python 3**, **Claude Code** (skill + harness chạy trong 1 session Claude).
@@ -74,9 +81,11 @@ Creds đã ở `.env` (A3). Bảng dưới là **override hành vi** — set khi
 ### A5. Verify track A chạy
 
 1. Bỏ 1 `specs.md` (hoặc `specs.html` → chạy `/specs-md <folder>`) vào `wtf-is-this/TestCase-XX/`.
+   *(Clone mới không có sẵn — xin team 1 spec mẫu, xem A1.)*
 2. Trong Claude Code: *"dùng skill qa-brain cho folder wtf-is-this/TestCase-XX"* → ra `tcs.json` + `.xlsx`.
 3. `/testcase-run …` → nếu lái được app dev + có `shots/*.png` → **track A OK**.
-   - Login fail → xem lại `account.txt` (A3).
+   - `Thiếu biến môi trường…` → chưa tạo `.env` hoặc điền thiếu (A3).
+   - Login fail (creds sai) → xem lại giá trị trong `.env` (A3).
    - Ảnh trắng / thiếu browser → chưa chạy `npx playwright install` (A2).
 
 ---
