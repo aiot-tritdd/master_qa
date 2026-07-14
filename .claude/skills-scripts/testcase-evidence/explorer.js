@@ -100,6 +100,12 @@ async function replay(target, url, steps, opts = {}) {
   }
 }
 
+// scrub(s): trung hoà token WHAT (kết quả kỳ vọng / pass-fail) trong text caller đưa vào — để TƯỜNG
+// HOW/WHAT là CẤU TRÚC (không caller nào nhét được WHAT vào doc HOW), không phải may rủi test-fixture.
+function scrub(s) {
+  return String(s == null ? '' : s).replace(/expect(ed)?|kỳ vọng|pass\/fail/gi, '⟨?⟩');
+}
+
 // emitNavBlock(flowId, steps, meta): sinh block navigation cho knowledge/<flow>.md.
 // TƯỜNG ép bằng CẤU TRÚC: template KHÔNG có ô "expected" -> máy vật lý không ghi WHAT được.
 // source_hash để TRỐNG (điền bằng stale_check.py --update) -> DRY, không tự hash lại.
@@ -109,12 +115,12 @@ function emitNavBlock(flowId, steps, meta = {}) {
   const lines = steps.map((s, i) => {
     const n = i + 1;
     if (s.action === 'coord') {
-      return `${n}. ⚠ [fragile:coordinate] click toạ độ (${s.x},${s.y}) — ${s.note || 'thay bằng locator khi có thể'}`;
+      return `${n}. ⚠ [fragile:coordinate] click toạ độ (${s.x},${s.y}) — ${scrub(s.note) || 'thay bằng locator khi có thể'}`;
     }
     if (s.action === 'fill') {
-      return `${n}. điền 「${s.label || s.name}」 = <giá trị test>${s.via === 'nearLabel' ? ' (nearLabel)' : ''}`;
+      return `${n}. điền 「${scrub(s.label || s.name)}」 = <giá trị test>${s.via === 'nearLabel' ? ' (nearLabel)' : ''}`;
     }
-    const sel = s.name || s.text;
+    const sel = scrub(s.name || s.text);
     return `${n}. click ${s.role ? s.role + ' ' : ''}「${sel}」`;
   }).join('\n');
   return `---
