@@ -1,7 +1,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
 const { chromium } = require('playwright');
-const { snapshot, act, nearLabel } = require('./explorer');
+const { snapshot, act, nearLabel, runSteps } = require('./explorer');
 
 async function withPage(html, fn) {
   const b = await chromium.launch({ headless: true });
@@ -57,5 +57,27 @@ test('nearLabel: chọn control NGAY DƯỚI nhãn, không dính control xa', as
     await loc.fill('X');
     assert.strictEqual(await p.locator('#near').inputValue(), 'X');
     assert.strictEqual(await p.locator('#far').inputValue(), '');
+  });
+});
+
+test('runSteps: chạy hết -> reached true', async () => {
+  await withPage(`<button onclick="this.textContent='x'">A</button>`, async (p) => {
+    const r = await runSteps(p, [{ action: 'click', role: 'button', name: 'A' }]);
+    assert.strictEqual(r.reached, true);
+    assert.strictEqual(r.results[0].ok, true);
+  });
+});
+
+test('runSteps: dừng ở bước gãy + đính snapshot bằng chữ', async () => {
+  await withPage('<button>A</button>', async (p) => {
+    const r = await runSteps(p, [
+      { action: 'click', role: 'button', name: 'A' },
+      { action: 'click', role: 'button', name: 'KHÔNG-CÓ', timeout: 300 },
+    ]);
+    assert.strictEqual(r.reached, false);
+    assert.strictEqual(r.results.length, 2);
+    assert.strictEqual(r.results[0].ok, true);
+    assert.strictEqual(r.results[1].ok, false);
+    assert.match(r.results[1].snapshot, /button "A"/); // Claude thấy trang lúc gãy
   });
 });

@@ -62,4 +62,20 @@ async function act(page, step) {
   }
 }
 
-module.exports = { snapshot, act, nearLabel };
+// runSteps(page, steps): chạy tuần tự. Bước fail -> DỪNG, đính snapshot tại chỗ gãy để Claude vá đúng bước đó.
+async function runSteps(page, steps) {
+  const results = [];
+  for (const step of steps) {
+    try {
+      await act(page, step);
+      results.push({ step, ok: true });
+    } catch (e) {
+      const snap = await snapshot(page).catch(() => '(snapshot lỗi)');
+      results.push({ step, ok: false, error: e.message, snapshot: snap });
+      return { reached: false, results };
+    }
+  }
+  return { reached: true, results };
+}
+
+module.exports = { snapshot, act, nearLabel, runSteps };
