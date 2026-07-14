@@ -100,4 +100,42 @@ async function replay(target, url, steps, opts = {}) {
   }
 }
 
-module.exports = { snapshot, act, nearLabel, runSteps, replay };
+// emitNavBlock(flowId, steps, meta): sinh block navigation cho knowledge/<flow>.md.
+// TƯỜNG ép bằng CẤU TRÚC: template KHÔNG có ô "expected" -> máy vật lý không ghi WHAT được.
+// source_hash để TRỐNG (điền bằng stale_check.py --update) -> DRY, không tự hash lại.
+function emitNavBlock(flowId, steps, meta = {}) {
+  const date = meta.uiConfirmedAt || new Date().toISOString().slice(0, 10);
+  const symbols = (meta.sourceSymbols || []).map((s) => `  - "${s}"`).join('\n') || '  - ""';
+  const lines = steps.map((s, i) => {
+    const n = i + 1;
+    if (s.action === 'coord') {
+      return `${n}. ⚠ [fragile:coordinate] click toạ độ (${s.x},${s.y}) — ${s.note || 'thay bằng locator khi có thể'}`;
+    }
+    if (s.action === 'fill') {
+      return `${n}. điền 「${s.label || s.name}」 = <giá trị test>${s.via === 'nearLabel' ? ' (nearLabel)' : ''}`;
+    }
+    const sel = s.name || s.text;
+    return `${n}. click ${s.role ? s.role + ' ' : ''}「${sel}」`;
+  }).join('\n');
+  return `---
+id: ${flowId}
+status: draft
+kind: flow
+source_symbols:
+${symbols}
+source_hash:            # điền bằng: python3 stale_check.py --update
+ui_confirmed_at: ${date}
+confidence: 🔴          # draft — người flip approved SAU KHI liếc ảnh replay
+---
+
+# ${flowId} — Navigation (HOW)
+
+## Các bước drive
+${lines}
+
+## Điểm quan sát
+- <màn tới đích>   # KẾT QUẢ ĐÚNG/SAI = SPEC, KHÔNG ghi ở đây
+`;
+}
+
+module.exports = { snapshot, act, nearLabel, runSteps, replay, emitNavBlock };

@@ -1,7 +1,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
 const { chromium } = require('playwright');
-const { snapshot, act, nearLabel, runSteps, replay } = require('./explorer');
+const { snapshot, act, nearLabel, runSteps, replay, emitNavBlock } = require('./explorer');
 
 async function withPage(html, fn) {
   const b = await chromium.launch({ headless: true });
@@ -90,4 +90,20 @@ test('replay: chạy trên page inject, báo reached (không cần app dev)', as
     { open: async () => ({ browser: null, page: p }) }); // browser:null -> replay không tự đóng
   assert.strictEqual(r.reached, true);
   await b.close();
+});
+
+test('emitNavBlock: CHỈ HOW — không có ô expected (tường HOW/WHAT)', () => {
+  const md = emitNavBlock('demo', [{ action: 'click', role: 'button', name: '追加' }],
+    { sourceSymbols: ['pro: X.vue'] });
+  assert.match(md, /status: draft/);
+  assert.match(md, /click button 「追加」/);
+  assert.match(md, /source_hash:.*stale_check/);        // để trống, chỉ đường điền bằng tool cũ
+  assert.doesNotMatch(md, /expect|expected|kỳ vọng|pass\/fail/i);
+  assert.match(md, /KẾT QUẢ ĐÚNG\/SAI = SPEC/);
+});
+
+test('emitNavBlock: bước toạ độ bị GẮN CỜ fragile', () => {
+  const md = emitNavBlock('demo', [{ action: 'coord', x: 1050, y: 620, fragile: true }], {});
+  assert.match(md, /\[fragile:coordinate\]/);
+  assert.match(md, /\(1050,620\)/);
 });
