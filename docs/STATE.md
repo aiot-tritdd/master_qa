@@ -1,7 +1,7 @@
 # STATE — điểm dừng & việc tiếp (đọc ĐẦU TIÊN mỗi phiên)
 
 > File **sống** — cập nhật cuối mỗi phiên. Mục đích: mở phiên mới là biết ngay *đang ở đâu, làm gì tiếp*.
-> Cập nhật: **2026-07-09**. Branch git: `qa-brain` (threease_qa).
+> Cập nhật: **2026-07-14**. Branch git: `qa-brain` (threease_qa).
 
 ---
 
@@ -15,6 +15,7 @@ evidence PNG/xlsx. Oracle = SPEC + quan sát live. **Mù code.** GitNexus chỉ 
 
 ## 2. ĐÃ XONG (đừng làm lại)
 
+- ✅ **`explorer.js`** (2026-07-14) — đồ **dò-đường build-time** cho UI-confirm: snapshot a11y-text + drive-by-name (role/label/text) + `nearLabel` + replay-nghiệm + emit HOW-only (tường WHAT ép bằng cấu trúc). Cắm vào `/testcase-systemdoc` bước 3. 13 unit test xanh (deterministic, fixture). ⚠️ **CÒN TREO: live smoke** (cần Docker dev + `.env`): `node explorer.js snapshot --target pro --url /reservations`. Spec/plan: `docs/superpowers/{specs,plans}/2026-07-14-build-time-explorer*`.
 - ✅ **Redesign black-box:** SKILL.md · commands · `build_evidence.py` (3-sheet) ·
   `pw_lib.js` (5 target: pro/ticket/ticket_admin/reservation/admin) · docs · 2× CLAUDE.md.
 - ✅ **Chuẩn evidence:** xlsx 3 sheet (Cover/Test Cases/Checklist+Nguồn), **mỗi case 2 ảnh before+after PNG rõ**.

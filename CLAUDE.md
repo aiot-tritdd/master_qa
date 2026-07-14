@@ -39,8 +39,8 @@ Playwright → **quan sát live** → chấm PASS/FAIL + evidence. Cộng pipeli
   hay phán quyết "đã/chưa build" — đó là WHAT. Bug **không** vào knowledge (bug ở `specs.md` + Excel).
 - **Precondition Protocol:** định-nghĩa-từ-SPEC → dựng-bằng-flow-CŨ (không dùng feature đang test)
   → verify-bằng-mắt.
-- **GitNexus CHỈ ở build-time** (`/testcase-systemdoc`, soạn knowledge — UI-confirm + duyệt).
-  **QA-runtime KHÔNG đụng GitNexus, không đọc code.** ⚠️ KHÔNG code-trace để phán "build/chưa-build"
+- **GitNexus CHỈ ở build-time** (`/testcase-systemdoc`, soạn knowledge — UI-confirm bằng `explorer.js` + duyệt).
+  **QA-runtime KHÔNG đụng GitNexus, không đọc code, KHÔNG chạy `explorer.js`.** ⚠️ KHÔNG code-trace để phán "build/chưa-build"
   (đã từng SAI) — dùng `route_map` (build-time) + quan sát live.
 
 ## Access dev + evidence

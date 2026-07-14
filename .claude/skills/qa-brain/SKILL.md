@@ -54,6 +54,7 @@ dùng để **định hướng**, KHÔNG tin selector/nhãn trong đó. Cần d�
 - `knowledge/system/**` — WHAT (mô tả code làm gì). Đọc = gián tiếp đọc code.
 - Mọi file trong 5 repo sản phẩm (`threease_backend|ticket|pro|admin|reservation`).
 - Mọi tool GitNexus (`query`/`context`/`impact`/`route_map`/…).
+- `explorer.js` (`.claude/skills-scripts/testcase-evidence/`) — đồ **dò-đường build-time** (soạn knowledge qua `/testcase-systemdoc`). QA-runtime KHÔNG chạy.
 - *(`.claude-tester/` đã bị xoá 2026-07-09 — không còn tồn tại để grep trúng. Tra nguồn gốc:
   `git show 0119159:.claude-tester/<path>` — **build-time only**.)*
 

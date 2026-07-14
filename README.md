@@ -198,7 +198,7 @@ Spec mới về  ──►  qa-brain cần 1 flow để dựng precondition
                        │
                        └── chưa có  ──►  DỪNG. KHÔNG tự đọc code để bù.
                                          /testcase-systemdoc <flow> (build-time)
-                                         → GitNexus ra draft → UI-confirm → approved
+                                         → GitNexus ra draft → UI-confirm (explorer.js tự-lái) → approved
                                          → quay lại chạy test
 ```
 
@@ -257,6 +257,7 @@ qua đúng một trong ba cửa:
 | **Cài đặt từ máy trắng → chạy được** (deps, credentials, GitNexus) | [`SETUP.md`](docs/SETUP.md) |
 | Đang làm tới đâu, việc gì tiếp (dành cho Claude) | `docs/STATE.md` |
 | Cơ khí kho tri thức: lệnh stale, front-matter, `confidence`, grow/maintain sâu | [`KNOWLEDGE-STRATEGY.md`](docs/KNOWLEDGE-STRATEGY.md) |
+| **Dò + UI-confirm một flow mới** (build-time, explorer tự-lái) | [`testcase-systemdoc.md`](.claude/commands/testcase-systemdoc.md) (`explorer.js`) |
 | 5 repo nối nhau ra sao · cách dùng GitNexus | `../CLAUDE.md` (workspace) |
 | Luật cho Claude khi chạy test | `CLAUDE.md` · `.claude/skills/qa-brain/SKILL.md` |
 

@@ -53,6 +53,7 @@ cho tới khi có người re-confirm.
 | Yếu | backend 0 HTTP contract · cross-repo 0 link · Nuxt(reservation/admin) 0 process | đắt: phải drive app |
 
 → **Graph tăng tốc, UI-confirm chốt.** Graph-derived = `draft`, chưa đủ tin.
+→ **Đồ nghề UI-confirm = `explorer.js`** (dò → drive-by-name → replay nghiệm → emit HOW-only; build-time). Cách dùng: `/testcase-systemdoc` bước 3.
 
 **Ngân sách GitNexus thật** (đo `list_repos`) — `processes = 0` **≠ graph rỗng**:
 
