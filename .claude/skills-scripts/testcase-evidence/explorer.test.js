@@ -1,7 +1,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
 const { chromium } = require('playwright');
-const { snapshot, act, nearLabel, runSteps, replay, emitNavBlock } = require('./explorer');
+const { snapshot, act, nearLabel, runSteps, replay, emitNavBlock, parseArgs } = require('./explorer');
 
 async function withPage(html, fn) {
   const b = await chromium.launch({ headless: true });
@@ -116,4 +116,9 @@ test('emitNavBlock: chặn WHAT nhét qua MỌI field caller (note/name/label/ro
   ], {});
   assert.doesNotMatch(md, /expect|expected|kỳ vọng|pass\/fail/i); // WHAT trung hoà ở MỌI field
   assert.match(md, /\[fragile:coordinate\]/);                     // vẫn render bước
+});
+
+test('parseArgs: --k v -> {k:v}', () => {
+  assert.deepStrictEqual(parseArgs(['--target', 'pro', '--url', '/reservations']),
+    { target: 'pro', url: '/reservations' });
 });

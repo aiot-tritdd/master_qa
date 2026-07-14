@@ -145,4 +145,46 @@ ${lines}
 `;
 }
 
-module.exports = { snapshot, act, nearLabel, runSteps, replay, emitNavBlock };
+// parseArgs(argv): ['--target','pro'] -> {target:'pro'}. CLI tối giản, không dep.
+function parseArgs(argv) {
+  const o = {};
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i].startsWith('--')) { o[argv[i].slice(2)] = argv[i + 1]; i++; }
+  }
+  return o;
+}
+
+module.exports = { snapshot, act, nearLabel, runSteps, replay, emitNavBlock, parseArgs };
+
+// ── CLI: node explorer.js <cmd> --k v .  Claude gọi từng lệnh, đọc stdout (chữ), quyết bước tiếp.
+if (require.main === module) {
+  (async () => {
+    const [cmd, ...rest] = process.argv.slice(2);
+    const a = parseArgs(rest);
+    if (cmd === 'snapshot') {
+      const { browser, page, BASE } = await getPage(a.target || 'pro');
+      await page.goto(BASE + (a.url || '/'), { waitUntil: 'domcontentloaded' });
+      await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
+      console.log(await snapshot(page, { region: a.region }));
+      await browser.close();
+    } else if (cmd === 'run') {
+      const steps = JSON.parse(fs.readFileSync(a.steps, 'utf8'));
+      const { browser, page, BASE } = await getPage(a.target || 'pro');
+      await page.goto(BASE + (a.url || '/'), { waitUntil: 'domcontentloaded' });
+      await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
+      console.log(JSON.stringify(await runSteps(page, steps), null, 2));
+      await browser.close();
+    } else if (cmd === 'replay') {
+      const steps = JSON.parse(fs.readFileSync(a.steps, 'utf8'));
+      const r = await replay(a.target || 'pro', a.url || '/', steps, { shot: a.shot });
+      console.log(JSON.stringify({ reached: r.reached, screenshot: r.screenshot }, null, 2));
+    } else if (cmd === 'emit') {
+      const steps = JSON.parse(fs.readFileSync(a.steps, 'utf8'));
+      const symbols = a.symbols ? a.symbols.split('||') : [];
+      console.log(emitNavBlock(a.flow, steps, { sourceSymbols: symbols }));
+    } else {
+      console.error('cmd: snapshot | run | replay | emit');
+      process.exit(1);
+    }
+  })().catch((e) => { console.error(e.message); process.exit(1); });
+}
