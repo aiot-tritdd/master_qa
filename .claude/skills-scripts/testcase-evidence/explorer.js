@@ -121,7 +121,8 @@ function emitNavBlock(flowId, steps, meta = {}) {
       return `${n}. điền 「${scrub(s.label || s.name)}」 = <giá trị test>${s.via === 'nearLabel' ? ' (nearLabel)' : ''}`;
     }
     const sel = scrub(s.name || s.text);
-    return `${n}. click ${s.role ? s.role + ' ' : ''}「${sel}」`;
+    const role = scrub(s.role);
+    return `${n}. click ${role ? role + ' ' : ''}「${sel}」`;
   }).join('\n');
   return `---
 id: ${flowId}

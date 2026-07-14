@@ -108,11 +108,12 @@ test('emitNavBlock: bước toạ độ bị GẮN CỜ fragile', () => {
   assert.match(md, /\(1050,620\)/);
 });
 
-test('emitNavBlock: chặn WHAT nhét qua note/name (tường CẤU TRÚC, không may rủi)', () => {
+test('emitNavBlock: chặn WHAT nhét qua MỌI field caller (note/name/label/role) — tường CẤU TRÚC', () => {
   const md = emitNavBlock('demo', [
     { action: 'coord', x: 1, y: 1, fragile: true, note: 'expected: PASS nếu thấy popup' },
-    { action: 'click', role: 'button', name: 'expected-result-btn' },
+    { action: 'click', role: 'expected-role', name: 'expected-result-btn' },
+    { action: 'fill', label: 'kỳ vọng field', value: 'x' },
   ], {});
-  assert.doesNotMatch(md, /expect|expected|kỳ vọng|pass\/fail/i); // WHAT bị trung hoà dù caller cố nhét
+  assert.doesNotMatch(md, /expect|expected|kỳ vọng|pass\/fail/i); // WHAT trung hoà ở MỌI field
   assert.match(md, /\[fragile:coordinate\]/);                     // vẫn render bước
 });
