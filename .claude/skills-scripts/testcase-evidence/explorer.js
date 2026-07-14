@@ -78,4 +78,26 @@ async function runSteps(page, steps) {
   return { reached: true, results };
 }
 
-module.exports = { snapshot, act, nearLabel, runSteps };
+// replay(target, url, steps, opts): nghiệm đường đi bằng THỰC THI trên session SẠCH (NO_STATE=1).
+// Neo an toàn cho "confirm nhẹ": người tin 1 lần chạy lại tái lập được, không tin lời máy.
+// opts.open cho test inject page; opts.shot = đường dẫn ảnh tới điểm quan sát.
+async function replay(target, url, steps, opts = {}) {
+  const open = opts.open || (async () => {
+    process.env.NO_STATE = '1';
+    const { browser, page, BASE } = await getPage(target);
+    await page.goto(BASE + url, { waitUntil: 'domcontentloaded' });
+    await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
+    return { browser, page };
+  });
+  const { browser, page } = await open();
+  try {
+    const r = await runSteps(page, steps);
+    let screenshot = null;
+    if (opts.shot) screenshot = await shot(page, opts.shot);
+    return { reached: r.reached, results: r.results, screenshot };
+  } finally {
+    if (browser) await browser.close();
+  }
+}
+
+module.exports = { snapshot, act, nearLabel, runSteps, replay };

@@ -1,7 +1,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
 const { chromium } = require('playwright');
-const { snapshot, act, nearLabel, runSteps } = require('./explorer');
+const { snapshot, act, nearLabel, runSteps, replay } = require('./explorer');
 
 async function withPage(html, fn) {
   const b = await chromium.launch({ headless: true });
@@ -80,4 +80,14 @@ test('runSteps: dừng ở bước gãy + đính snapshot bằng chữ', async (
     assert.strictEqual(r.results[1].ok, false);
     assert.match(r.results[1].snapshot, /button "A"/); // Claude thấy trang lúc gãy
   });
+});
+
+test('replay: chạy trên page inject, báo reached (không cần app dev)', async () => {
+  const b = await chromium.launch({ headless: true });
+  const p = await (await b.newContext()).newPage();
+  await p.setContent(`<button onclick="this.textContent='x'">A</button>`);
+  const r = await replay('pro', '/', [{ action: 'click', role: 'button', name: 'A' }],
+    { open: async () => ({ browser: null, page: p }) }); // browser:null -> replay không tự đóng
+  assert.strictEqual(r.reached, true);
+  await b.close();
 });
