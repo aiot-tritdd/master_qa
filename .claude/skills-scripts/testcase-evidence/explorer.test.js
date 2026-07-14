@@ -1,7 +1,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
 const { chromium } = require('playwright');
-const { snapshot, act } = require('./explorer');
+const { snapshot, act, nearLabel } = require('./explorer');
 
 async function withPage(html, fn) {
   const b = await chromium.launch({ headless: true });
@@ -45,5 +45,17 @@ test('act: click theo text', async () => {
 test('act: toạ độ KHÔNG fragile -> ném lỗi (ép luật gắn cờ)', async () => {
   await withPage('<div></div>', async (p) => {
     await assert.rejects(act(p, { action: 'coord', x: 10, y: 10 }), /fragile/);
+  });
+});
+
+test('nearLabel: chọn control NGAY DƯỚI nhãn, không dính control xa', async () => {
+  await withPage(`
+    <div style="position:absolute;top:0px;left:0">お客様</div>
+    <input id="near" style="position:absolute;top:30px;left:0">
+    <input id="far"  style="position:absolute;top:300px;left:0">`, async (p) => {
+    const loc = await nearLabel(p, 'お客様');
+    await loc.fill('X');
+    assert.strictEqual(await p.locator('#near').inputValue(), 'X');
+    assert.strictEqual(await p.locator('#far').inputValue(), '');
   });
 });

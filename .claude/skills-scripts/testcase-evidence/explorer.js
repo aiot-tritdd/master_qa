@@ -10,6 +10,26 @@ async function snapshot(page, opts = {}) {
   return await page.locator(region).ariaSnapshot();
 }
 
+// nearLabel(page, label): tìm control (input/combobox/arrow/select) gần NHẤT nằm DƯỚI nhãn.
+// Giải ca "nhiều dropdown giống nhau" (obs 3687): định vị theo hình học thay vì đoán index.
+async function nearLabel(page, label) {
+  const lab = page.getByText(label, { exact: false }).first();
+  const box = await lab.boundingBox();
+  if (!box) throw new Error(`nearLabel: không thấy nhãn "${label}"`);
+  const cands = page.locator('input, [role=combobox], [role=button], .mdi-menu-down, select');
+  const n = await cands.count();
+  let best = null, bestDy = Infinity;
+  for (let i = 0; i < n; i++) {
+    const c = cands.nth(i);
+    const b = await c.boundingBox();
+    if (!b) continue;
+    const dy = b.y - box.y;           // control nằm dưới/ngang nhãn
+    if (dy >= -5 && dy < bestDy) { bestDy = dy; best = c; }
+  }
+  if (!best) throw new Error(`nearLabel: không thấy control gần "${label}"`);
+  return best;
+}
+
 // resolve(page, step): step ngữ nghĩa -> Locator. Ưu tiên nearLabel > role+name > label > text.
 async function resolve(page, step) {
   if (step.via === 'nearLabel') return nearLabel(page, step.label);
@@ -42,4 +62,4 @@ async function act(page, step) {
   }
 }
 
-module.exports = { snapshot, act };
+module.exports = { snapshot, act, nearLabel };
