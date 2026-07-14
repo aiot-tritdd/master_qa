@@ -12,9 +12,18 @@
    luồng xuyên hệ (Pro→backend→ticket) graph **0 link** → trám bằng `CLAUDE.md` system-docs.
 2. **Distill → nháp** `knowledge/<flow-id>.md`, `kind: flow` hoặc `channels`, `status: draft`,
    điền `source_symbols` + `source_hash` (metadata provenance).
-3. **BẮT BUỘC UI-confirm mỏng:** dùng `pw_lib.getPage(...)` click thật qua flow 1 lần để xác
-   nhận các bước/nút đúng app thật. Điền `ui_confirmed_at`.
-4. **Người duyệt** → đổi `status: draft → approved`. Chỉ doc `approved` mới cho QA tin.
+3. **UI-confirm bằng explorer (tự-lái, thay cho click tay):**
+   - `node explorer.js snapshot --target <t> --url <path>` → Claude THẤY trang bằng chữ (a11y-tree).
+   - Claude soạn step-list JSON (role/name/label/text; toạ độ CHỈ khi bất khả kháng + `fragile:true`).
+   - `node explorer.js run --steps steps.json --target <t> --url <path>` → per-step báo chỗ gãy → vá → lặp.
+   - `node explorer.js replay --steps steps.json --target <t> --url <path> --shot shots/confirm.png`
+     → nghiệm từ session SẠCH → **1 ảnh tới điểm quan sát** (người liếc để duyệt).
+   - `node explorer.js emit --flow <flow-id> --steps steps.json --symbols "repo: path||repo: path2"`
+     → nhả navigation block (HOW-only) vào `knowledge/<flow-id>.md`. Điền `ui_confirmed_at`.
+   - Chạy `python3 stale_check.py --update` để điền `source_hash`.
+   (explorer = `.claude/skills-scripts/testcase-evidence/explorer.js`, BUILD-TIME only; cấm ở `/testcase-run`.)
+4. **Người duyệt** → liếc `shots/confirm.png` + block → đổi `status: draft → approved`.
+   Chỉ doc `approved` mới cho QA tin.
 
 ## FIREWALL (bắt buộc)
 Doc CHỈ ghi **cách vận hành (HOW) + nơi quan sát**. **CẤM** ghi kết quả kỳ vọng / luật pass-fail
