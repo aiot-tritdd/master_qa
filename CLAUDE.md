@@ -49,6 +49,18 @@ Playwright → **quan sát live** → chấm PASS/FAIL + evidence. Cộng pipeli
 - Dữ liệu test tạo ra: prefix `AIOT-TEST-*`/`AIOTTEST*` → `/testcase-cleanup` quét.
 - **Evidence chuẩn:** xlsx **3 sheet** (Cover/Test Cases/Checklist+Nguồn) · **mỗi case 2 ảnh (before+after) PNG rõ**.
 
+## Sổ bug hệ thống — `wtf-is-this/bug-he-thong.xlsx` (append qua JSON, CẤM sửa Excel tay)
+Bug + SPEC-GAP đã **confirm với dev là bug hệ thống** (out-of-scope spec đang test) thì chuyển vào sổ này,
+file update của spec chỉ giữ PASS (vd `TestCase-12-update.xlsx` sinh từ `TestCase-12/tcs-update.json`;
+`tcs.json` gốc 54 case giữ nguyên). **Mọi `.xlsx` evidence = bản in từ `.tcs.json`** qua
+`build_evidence.py` — nguồn sự thật là JSON, không phải Excel.
+- **Append bug mới:** thêm case vào mảng `tcs` của `wtf-is-this/bug-he-thong.tcs.json`, set
+  `"source": "TestCase-XX"` (spec lộ ra bug); ảnh ghi `"TestCase-XX/shots/ten.png"`
+  (file này `shots_dir: "."` → resolve từ root `wtf-is-this`, nên gom được ảnh nhiều folder).
+- **In lại:** `python3 .claude/skills-scripts/testcase-evidence/build_evidence.py wtf-is-this/bug-he-thong.tcs.json wtf-is-this/bug-he-thong.xlsx`
+- **Vì sao cấm sửa Excel trực tiếp:** merge cells + ảnh anchor theo dòng + COUNTIF theo range →
+  chèn dòng tay là lệch ảnh, sai số đếm. Sửa JSON rồi build lại, luôn.
+
 ## Grow tri thức (demand-driven — đừng grow trước)
 Spec mới cần 1 flow để dựng precondition → **có** trong `knowledge/` (approved) thì dùng luôn; **chưa có**
 thì **DỪNG, KHÔNG tự đọc code để bù** → `/testcase-systemdoc <flow>` (build-time: GitNexus ra draft →
