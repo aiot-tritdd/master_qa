@@ -135,6 +135,22 @@ grown_from: "0119159:.claude-tester/knowledge/LESSONS.md (chỉ 9/11 mục — 2
   → **Luôn xác nhận `BRANCH_ID` của phiên hiện tại** trước khi gọi API theo branch. Không tin giá trị lịch sử.
   (`cleanup.js` không set thì tự bỏ qua Staff+Reservation thay vì đoán bừa.)
 
+- **2026/07/13 — [pro/nav]** Mũi tên đổi NGÀY ở `/reservations` là 2 icon **cạnh nhãn ngày** (đo bbox:
+  `.mdi-chevron-left` x≈684/y≈59 · `.mdi-chevron-right` x≈837/y≈59). Các `.mdi-chevron-*` ở **y≈120** là
+  nút cuộn CỘT unit/bed trên lưới — click chúng KHÔNG đổi ngày. `.first()` của chevron-left tình cờ trúng
+  cái đúng, nhưng nên lọc theo y≈59 cho chắc.
+
+- **2026/07/13 — [pro/store]** Bộ chọn store ở toolbar: click phần tử `.v-toolbar__content *` có text khớp
+  `/院\d/` (KHÔNG `getByText(/AIOT院/)` — trúng logo, timeout). Menu ra list `AIoT院1..4 / テスト院5.. / threease院1..`.
+  ⚠️ Store hiển thị ở toolbar KHÔNG map 1-1 với `branch_id` API: phiên hiện tại luôn phát request
+  `/branches/2/reservations` dù đổi store sang AIoT院1/院3 → xác định branch bằng cách nghe request thật, đừng suy từ tên 院.
+
+- **2026/07/13 — [pro/api]** `GET /branches/{b}/reservations?start_date=YYYYMMDD&end_date=YYYYMMDD&session=all`
+  trả `{reservations:[...]}` (OBJECT, không phải array trần) — parse `body.reservations`. Thêm `&per=200`
+  → trả **rỗng** (giới hạn per); range > ~1 tháng cũng trả rỗng → query từng tháng, đừng set per lớn.
+  Detail: `GET /branches/{b}/reservations/{id}`; item vé nằm ở `reservation_items[].ticket_packs=[{id,quantity}]`
+  (booking DÙNG vé) — pack id ticket-app ≥ **200000**. Phiên đo: branch có booking vé = **4, 5** (branch 2 không có).
+
 - **2026/07/08 — [observe/vé]** Số dư vé hiển thị bên **Hệ thống Vé** không đủ làm bằng chứng duy nhất.
   → Đối chiếu thêm **Hệ thống Lõi** (`GET /branches/{b}/customers/{c}/ticket_packs`). Quan sát **2 phía**.
   *(Vì sao 2 phía có thể lệch → `knowledge/system/`, không ghi ở đây.)*
