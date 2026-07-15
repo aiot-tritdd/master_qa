@@ -50,16 +50,22 @@ Playwright → **quan sát live** → chấm PASS/FAIL + evidence. Cộng pipeli
 - **Evidence chuẩn:** xlsx **3 sheet** (Cover/Test Cases/Checklist+Nguồn) · **mỗi case 2 ảnh (before+after) PNG rõ**.
 
 ## Sổ bug hệ thống — `wtf-is-this/bug-he-thong.xlsx` (append qua JSON, CẤM sửa Excel tay)
+> 📘 **Quy trình đầy đủ (field, vòng đời status, build, trang trí): `docs/BUG-LOG.md`.** Dưới đây chỉ là bản rút gọn.
+
 Bug + SPEC-GAP đã **confirm với dev là bug hệ thống** (out-of-scope spec đang test) thì chuyển vào sổ này,
-file update của spec chỉ giữ PASS (vd `TestCase-12-update.xlsx` sinh từ `TestCase-12/tcs-update.json`;
-`tcs.json` gốc 54 case giữ nguyên). **Mọi `.xlsx` evidence = bản in từ `.tcs.json`** qua
-`build_evidence.py` — nguồn sự thật là JSON, không phải Excel.
-- **Append bug mới:** thêm case vào mảng `tcs` của `wtf-is-this/bug-he-thong.tcs.json`, set
-  `"source": "TestCase-XX"` (spec lộ ra bug); ảnh ghi `"TestCase-XX/shots/ten.png"`
-  (file này `shots_dir: "."` → resolve từ root `wtf-is-this`, nên gom được ảnh nhiều folder).
-- **In lại:** `python3 .claude/skills-scripts/testcase-evidence/build_evidence.py wtf-is-this/bug-he-thong.tcs.json wtf-is-this/bug-he-thong.xlsx`
-- **Vì sao cấm sửa Excel trực tiếp:** merge cells + ảnh anchor theo dòng + COUNTIF theo range →
-  chèn dòng tay là lệch ảnh, sai số đếm. Sửa JSON rồi build lại, luôn.
+file update của spec chỉ giữ PASS (vd `TestCase-12-update.xlsx` sinh từ `TestCase-12/tcs-update.json`).
+Sổ bug là **bản in từ `bug-he-thong.tcs.json`** qua **`build_bug_report.py`** (KHÁC `build_evidence.py` —
+file kia in evidence 1 spec). Nguồn sự thật là JSON, không phải Excel.
+- **Append bug mới:** thêm object vào mảng `tcs` của `wtf-is-this/bug-he-thong.tcs.json`. Bắt buộc:
+  `bug_id` (BUG-NNN duy nhất) · `found_at` (YYYY-MM-DD) · `status` ∈ {Mở, Chờ retest, Đã đóng, Tái phát}.
+  `source` = spec lộ ra bug. Thiếu/sai → guard **raise, không in file**.
+- **Vòng đời:** Mở →(dev fix: `fix_note`)→ Chờ retest →(QA test lại)→ Đã đóng (`retested_at`) / Tái phát.
+  "Đã fix" là lời khai dev; "Đã pass" là QA quan sát lại thật.
+- **In lại:** `python3 .claude/skills-scripts/testcase-evidence/build_bug_report.py wtf-is-this/bug-he-thong.tcs.json wtf-is-this/bug-he-thong.xlsx`
+- **Vì sao cấm sửa Excel trực tiếp:** merge cell + shape trang trí neo theo dòng + COUNTIF theo range →
+  chèn dòng tay là lệch trang trí, sai số đếm. Sửa JSON rồi build lại, luôn.
+- **Trang trí** (trời/kem/đồi cỏ) đã nhúng trong script; tắt về bản sạch: `theme.json → …bug_report.decor.enabled=false`.
+- Mở xem trên **OneDrive/Excel Online** — Excel desktop hết-license render lỗi (View Only).
 
 ## Grow tri thức (demand-driven — đừng grow trước)
 Spec mới cần 1 flow để dựng precondition → **có** trong `knowledge/` (approved) thì dùng luôn; **chưa có**

@@ -18,9 +18,18 @@
     "pending_bg": "FFF2CC", "pending_tx": "7F6000",
     "specgap_bg": "EAE3F7", "specgap_tx": "5B3E96",
 
+    "_reopen_note": "Màu cho '🔁 Tái phát' (sổ bug). ĐO bằng dataviz/validate_palette.js: cam cháy 8A3B00 cạnh fail_tx 9C0006 ra ΔE 1.8 (deutan) = TRÙNG MÀU với người mù màu → LOẠI. Hồng đậm B02A6E PASS. Cấm tái dùng specgap_* (1 màu 2 nghĩa).",
+    "reopen_bg": "F9D9E7", "reopen_tx": "B02A6E",
+
     "pri_high": "C00000",
     "pri_medium": "BF8F00",
-    "pri_low": "548235"
+    "pri_low": "548235",
+
+    "_chart_note": "Màu RIÊNG cho CHART, khác màu chữ/chip trong bảng. Lý do: chart là 'large block', màu bão hoà đọc ra loud/childish (luật dataviz). Bản dịu ĐO ĐƯỢC tốt hơn cả 2 mặt — CVD ΔE 20.0 (ALL PASS) so với bản bão hoà 8.4 (FAILED). Đẹp hơn VÀ an toàn mù màu hơn, không đánh đổi.",
+    "ch_open": "B5484D", "ch_wait": "B08A2E", "ch_closed": "5E8B4A", "ch_reopen": "B0567F",
+
+    "_ordinal_note": "High/Medium/Low là thang CÓ THỨ TỰ (tier) => ordinal ramp: MỘT hue, đậm→nhạt. KHÔNG dùng đèn giao thông đỏ/vàng/lục (3 hue rời rạc cho 1 thang bậc = sai loại mã hoá). Validate --ordinal: ALL PASS, hue spread 5°.",
+    "ord_1": "1F3864", "ord_2": "4A6FA5", "ord_3": "8FA9CC"
   },
 
   "fonts": {
@@ -78,6 +87,82 @@
       ["⚠️ SPEC-GAP", "SPEC-GAP*", "C", "specgap_bg"]
     ],
 
-    "priority": { "High": "pri_high", "Medium": "pri_medium", "Low": "pri_low", "_default": "blue" }
+    "priority": { "High": "pri_high", "Medium": "pri_medium", "Low": "pri_low", "_default": "blue" },
+
+    "_bug_note": "Khoá RIÊNG cho SỔ BUG (build_bug_report.py). build_evidence.py không đọc → 4 tcs.json cũ build lại phải ra Y HỆT.",
+    "_status_lifecycle_note": "KHÔNG emoji trong giá trị: chip đã có MÀU + CHỮ, emoji là kênh thứ 3 thừa — và đọc ra 'mùi AI'. Chữ vẫn gánh danh tính khi mù màu (luật dataviz: never color alone). COUNTIF khớp CHÍNH XÁC, không wildcard.",
+    "status_lifecycle": {
+      "Mở":         { "bg": "fail_bg",    "tx": "fail_tx" },
+      "Chờ retest": { "bg": "pending_bg", "tx": "pending_tx" },
+      "Đã đóng":    { "bg": "pass_bg",    "tx": "pass_tx" },
+      "Tái phát":   { "bg": "reopen_bg",  "tx": "reopen_tx" }
+    },
+    "bug_report": {
+      "title": "SỔ BUG QA · TOÀN HỆ THỐNG",
+      "_sheets_note": "3 sheet. KHÔNG có 'Chi tiết': steps/expect/actual đã nằm nguyên ở TestCase-XX.xlsx, chép lại là nhân bản; cột 'TC ref' hyperlink thẳng sang. Sheet 3 SPEC-GAP = FILTER của 'Danh sách Bug' nơi Kết quả=SPEC-GAP — tách riêng vì đó là việc của BA (đính chính tài liệu), không phải bug của dev.",
+      "sheet_names": ["Tổng quan", "Danh sách Bug", "SPEC-GAP"],
+      "hero_suffix": "bug đang mở",
+      "_hero_note": "Số hero = COUNTIF status 'Mở' (không phải tổng bug). Sếp mở ra thấy NGAY còn bao nhiêu con chưa xử lý. Màu = fail_tx (đang mở = cần chú ý). Sub-line + banner cảnh báo cũng là FORMULA, không hardcode.",
+      "alert_tail": "bug mức High đang mở — ưu tiên xử lý",
+      "_placeholder_note": "Panel GIỮ KHUNG nhưng data chưa có (user chọn) => in ô 'Chưa có dữ liệu' thay vì số bịa. {n} = ngưỡng tuần (chart_min_periods). Xu hướng chỉ hiện khi found_at trải ≥ ngưỡng kỳ; Người xử lý chỉ hiện khi JSON có field assignee.",
+      "placeholder": {
+        "trend_title": "6.  XU HƯỚNG THEO THỜI GIAN",
+        "trend_body": "Chưa đủ dữ liệu — các bug rơi vào cùng một kỳ. Đường xu hướng (tồn cuối kỳ) sẽ hiện khi found_at/retested_at trải ra ≥ {n} tuần.",
+        "assignee_title": "7.  NGƯỜI XỬ LÝ",
+        "assignee_body": "Chưa có dữ liệu — JSON chưa có trường người xử lý (assignee). Thêm trường này khi team bắt đầu phân công thì panel top-handler sẽ tự hiện."
+      },
+      "specgap": {
+        "title": "SPEC-GAP — LỖ HỔNG TÀI LIỆU (dành cho BA / PM)",
+        "info": "Lọc tự động từ 'Danh sách Bug' nơi Kết quả = SPEC-GAP. Quan sát được rõ ràng nhưng SPEC không định nghĩa kỳ vọng → KHÔNG phải bug của dev, là việc của BA đính chính tài liệu. Đây là finding giá trị nhất của QA mù code.",
+        "header": ["Bug ID", "Màn / Chức năng", "TC ref", "Tiêu đề", "Quan sát được (từ SPEC)", "Trạng thái tài liệu"],
+        "cols": [2.8, 11, 26, 16, 40, 60, 20, 2.8],
+        "default_doc_status": "Chưa cập nhật"
+      },
+      "_top_open_note": "Bảng DỮ LIỆU THẬT lấp khối phải: bug đang mở, High trước. Đây KHÔNG phải nhân bản 'Danh sách Bug' — nó lọc sẵn (chỉ đang mở) + xếp hạng sẵn, trả lời đúng câu sếp hỏi 'giờ phải fix con nào trước'. Cột Tiêu đề rộng => bề ngang được lấp bằng nội dung, không bằng cột rỗng phình to.",
+      "top_open_title": "TOP BUG ĐANG MỞ  ·  ưu tiên fix từ trên xuống",
+      "top_open_header": ["Bug ID", "Mức độ", "Tiêu đề", "TC ref"],
+      "top_open_max": 12,
+
+      "_decor_note": "SKIN trang trí rút TỪ FILE SẾP VẼ (bug-he-thong-dep-de.xlsx): nền kem + banner trời + mặt trời/mây + đồi cỏ/cây + data-bar xanh lá. Hình vector nằm ở asset bug_report_decor.xml (script splice vào drawing1.xml sau khi save — openpyxl không đẻ preset shape được). Màu ĐO TỪ styles.xml của file đó. enabled=false => quay lại bản navy/trắng sạch. land_base_row/land_gap: script SHIFT dải đồi cỏ xuống đáy nội dung thật (neo dòng 38 gốc -> last_row+gap) nên KHÔNG lệch khi thêm bug/spec.",
+      "decor": {
+        "enabled": true,
+        "cream": "FBF3E0",
+        "sky_top": "8FBEDC",
+        "sky_bot": "A9D0E6",
+        "title_tx": "1F3864",
+        "subtitle_tx": "3A5A72",
+        "databar": ["6E8B4E", "93AC6E", "B4C795"],
+        "land_base_row": 38,
+        "land_gap": 1
+      },
+
+      "service_title": "3.  THEO SERVICE",
+      "_service_note": "Service KHÔNG phải field riêng trong JSON — tách từ tiền tố cột 'screen' (trước ' —' hoặc ' ('): 'Pro — Hóa đơn'→Pro, 'Backend/API (Hold…)'→Backend/API. Nhãn tách ở Python (như 'spec'); SỐ vẫn COUNTIF wildcard 'prefix*' trên cột screen ⇒ không hardcode. Bar 1 hue (nominal, so-magnitude ⇒ sequential một màu, KHÔNG rainbow).",
+      "_list_header_note": "KHÔNG có 'Hiện tượng quan sát' / 'Ghi chú' — text dài, đã có ở TestCase-XX.xlsx. List bug để QUÉT (lọc/sort), không để đọc. Header SONG NGỮ VI/JA theo đúng mẫu công ty ({Project_Name}_テスト報告書) — khách Nhật.",
+      "list_header": ["STT", "Bug ID", "TC ref", "Spec", "Màn / Chức năng", "Loại", "Mức độ",
+                      "Kết quả", "Tiêu đề", "Status", "Fix note",
+                      "Ngày phát hiện", "Ngày retest", "Bug age"],
+      "list_header_ja": ["No.", "バグID", "テストケースID", "仕様書", "画面／機能", "バグ種別", "影響度",
+                         "判定", "バグ内容", "ステータス", "修正内容",
+                         "発見日", "再テスト日", "経過日数"],
+      "list_cols":   [2.8, 5, 11, 21, 14, 30, 11, 10, 11, 54, 13, 34, 13, 13, 10, 2.8],
+
+      "_grid_note": "Lưới ĐO TỪ TEMPLATE THẬT của Microsoft (Book 2/3/4/7): MÁNG LỀ HAI BÊN (A và cột cuối = 2.5) · MỌI thanh tiêu đề section rộng đúng bằng bảng dưới nó. LƯỚI 2+1: KHỐI TRÁI B..H (hai cột bảng B,C | E,F; bảng spec 7 cột B..H) · KHE I · KHỐI PHẢI J..M (chart trên, bảng 'bug đang mở' dưới — cột Tiêu đề L rộng 58 nên lấp hết bề ngang bằng DỮ LIỆU THẬT, không phải cột phình rỗng). Trước đây panel xếp chồng dọc thành dải 805px rồi thả chart lơ lửng ngoài vùng nội dung => nửa màn phải trống trơn.",
+      "report_cols": { "A": 2.5, "B": 28, "C": 14, "D": 14, "E": 18, "F": 14, "G": 14,
+                       "H": 18, "I": 4, "J": 12, "K": 12, "L": 58, "M": 14, "N": 2.5 },
+
+      "_font_note": "HAI font — đo từ template thật: Book 3 = Verdana (tiêu đề) + Trebuchet MS (data); Book 4 = Century Gothic + Segoe UI. Chọn cặp Book 3 vì Century Gothic/Segoe UI/Calibri KHÔNG có trên macOS này (đã kiểm system_profiler) → Excel thay bừa. Verdana + Trebuchet MS có sẵn cả Mac lẫn Win. Microsoft phân biệt header/data bằng FONT + MÀU CHỮ, KHÔNG bằng tô nền.",
+      "font_head": "Verdana",
+      "font_body": "Trebuchet MS",
+
+      "_row_h_note": "Đo từ template thật: data 24-36 (tui từng để 17 => chật), tiêu đề 50-66 (tui để 30), dòng đệm riêng 9-14.",
+      "row_h": { "banner": 54, "subtitle": 20, "section": 26, "data": 24, "kpi_num": 40, "kpi_label": 18, "gap": 10 },
+      "table_style": "TableStyleMedium2",
+      "_thresholds_note": "Điều kiện VẼ CHART nằm ở đây, không nằm trong trí nhớ ai. Dưới ngưỡng → bảng/stat-tile đứng thay (dataviz: 'a one-bar chart, or a 2-slice pie → a stat tile'). ĐẾM HẠNG MỤC KHÁC 0, không đếm số dòng — High/Medium/Low là 3 dòng nhưng nếu Low=0 thì chỉ có 2 lát => pie 2 lát = anti-pattern.",
+      "chart_min_slices": 3,
+      "chart_min_categories": 2,
+      "chart_min_periods": 4,
+      "age_warn_days": 14
+    }
   }
 }
