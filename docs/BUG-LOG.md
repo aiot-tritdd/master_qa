@@ -46,13 +46,17 @@ Phần lớn field copy thẳng từ file test `wtf-is-this/TestCase-XX/TestCase
 | `source` | | spec **lộ ra** bug (`TestCase-XX`) — KHÔNG phải "của ai", chỉ là nơi soi thấy |
 | `screen` | | màn/chức năng. Cột **Service** tự cắt từ đây (chữ trước ` — ` hoặc ` (`) |
 | `pri` | | `High` / `Medium` / `Low` |
-| `bug_type` | | `Function` / `UI` / `Text` |
+| `bug_type` | | `Function` / `UI` / `Text` / `Accessibility` |
 | `result` | | `FAIL` (chấm được, sai spec) hoặc `SPEC-GAP` (spec im lặng → việc BA) |
 | `title` | | mô tả 1 câu — báo **hành vi** (spec X / màn Y), KHÔNG file:line |
 | `fix_note` | | để rỗng lúc mới; điền khi dev fix (xem §2) |
 | `retested_at` | | để rỗng lúc mới; điền khi QA test lại (xem §2). **Bug age** tự tính từ 2 mốc này |
 | `pre/steps/expect/actual/note` | | copy từ file test — chi tiết không in vào sổ (đã có ở TestCase-XX.xlsx) |
 | `before/after` | | đường dẫn ảnh, hoặc `null` (test mức API không có ảnh) |
+
+> **Bug Accessibility** (do `/testcase-a11y` sinh): `result` luôn `FAIL` (không bao giờ SPEC-GAP — WCAG
+> luôn định nghĩa kỳ vọng) · `before=null` + `after`=ảnh phần tử lỗi (ghi lý do N/A vào `note`) ·
+> lệnh a11y đã **dedup 1 bug/(màn×rule)** trước khi append, không tự append tay từng phần tử.
 
 ---
 
