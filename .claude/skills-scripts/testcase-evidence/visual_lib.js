@@ -64,8 +64,8 @@ async function detectDynamic(page, opts = {}) {
     }
   }
   const box = { x: minX, y: minY, width: maxX - minX + 1, height: maxY - minY + 1 };
-  const dsf = Number(process.env.DSF || 2);
-  const cx = (box.x + box.width / 2) / dsf, cy = (box.y + box.height / 2) / dsf; // ảnh scale theo DSF -> CSS px
+  const dsf = await page.evaluate(() => window.devicePixelRatio) || 1;
+  const cx = (box.x + box.width / 2) / dsf, cy = (box.y + box.height / 2) / dsf; // ảnh scale theo DSF thật -> CSS px
   const selector = await page.evaluate(([x, y]) => {
     const el = document.elementFromPoint(x, y);
     if (!el) return null;

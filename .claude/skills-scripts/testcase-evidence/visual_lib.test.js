@@ -77,5 +77,9 @@ test('detectDynamic: bắt được phần tử tự đổi giữa 2 lần chụ
     assert.ok(regions.length >= 1, 'phải tìm ra ≥1 vùng động');
     // vùng động phải nằm ở nửa dưới (clock), không phải static ở trên
     assert.ok(regions.some(r => r.y >= 30), 'vùng động phải ở khu #clock: ' + JSON.stringify(regions));
+    // selector phải trỏ vùng động (#clock), KHÔNG phải #static
+    const sel = regions.map(r => r.selector).join(',');
+    assert.ok(!regions.some(r => r.selector === '#static'), 'không được map nhầm vào #static: ' + sel);
+    assert.ok(regions.some(r => r.selector === '#clock' || r.selector === null), 'selector nên là #clock (hoặc null nếu không map được): ' + sel);
   } finally { await browser.close(); }
 });
