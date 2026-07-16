@@ -24,6 +24,8 @@ evidence PNG/xlsx. Oracle = SPEC + quan sát live. **Mù code.** GitNexus chỉ 
 - ✅ **Test đã chạy:** `TestCase_NEW` (thu hồi vé) 7 case verified ·
   `TestCase-11` (coupon report) **9 PASS / 8 FAIL**, khớp 100% scope dev.
 - ✅ **Phân tích + merge hệ của sếp** (`.claude-tester/`): xong Phase 0→4 (hồ sơ `SYSTEM-COMPARISON.md` đã gỡ — tra `git log`/`git show`).
+- ✅ **Track Accessibility** (`/testcase-a11y`) — axe-core black-box, report `.a11y.xlsx` + sổ bug
+  (`bug_type: Accessibility`). Type test thứ 2 (sau Functional). Spec/plan: `docs/superpowers/{specs,plans}/2026-07-16-a11y-track*`.
 
 ### ✅ MERGE Phase 0 — vá lệnh chết (2026-07-09, đã verify)
 Trước đó 4 lệnh trỏ vào file **không tồn tại**. Nay:

@@ -1,4 +1,4 @@
-# threease_qa — QA senior tự động, mù code
+# threease_qa — QA senior tự động **E2E**, mù code
 
 > **Đọc file này là đủ hiểu trọn hệ thống** — nó là gì, nghĩ thế nào, vận hành ra sao, và lớn lên
 > ra sao sau mỗi lần chạy. Không cần mở file nào khác. Muốn đào sâu chỗ nào → bảng cuối trang chỉ đường.
@@ -20,6 +20,28 @@ lúc chạy test — kể cả khi được phép.
 specs.md  ──►  viết test case  ──►  lái app dev  ──►  quan sát  ──►  PASS/FAIL + 2 ảnh/case + Excel
  (oracle)       (mù code)          (Playwright)     (bằng mắt)
 ```
+
+### Tầng test: **E2E (End-to-End) / System** — đỉnh của kim tự tháp test
+
+threease_qa test ở **tầng cao nhất**: nó lái **cả hệ thống thật đang chạy** (dev) từ ngoài như một
+user. Một test đi xuyên **mọi tầng, không mock tầng nào**:
+
+```
+màn Pro/Vé (Nuxt)  ──►  API hub (Rails)  ──►  service vé (Django)  ──►  DB  ──►  quay lại màn hình
+     UI thật              API thật               service thật          thật        quan sát thật
+```
+
+Ba dấu hiệu định nghĩa E2E — threease_qa dính đủ cả ba:
+
+| Dấu hiệu định nghĩa E2E | threease_qa |
+|---|---|
+| Lái **cả hệ thật**, không phải mảnh cô lập | Playwright mở app dev thật, bấm nút thật |
+| Đi hết **chuỗi tầng, KHÔNG stub/mock** | Pro → Rails → Django → DB → màn, mọi tầng đều thật |
+| Chấm **từ ngoài** như user (không nhìn code) | đối chiếu màn hình + response API, quan sát **2 phía** (Pro + Vé) |
+
+⇒ Chính vì **nhìn từ ngoài + mù code** mà nó **không thể** là Unit/Integration (hai tầng đó bắt buộc
+đọc/đụng code từ bên trong). "Mù code" ép nó nằm đúng **đỉnh pyramid**. Muốn mở rộng thì đi **ngang**
+(thêm loại kiểm: accessibility, visual, performance…) chứ không tụt xuống tầng thấp.
 
 Toàn bộ chạy trong **một session Claude ấm** — không đẻ subprocess, không sinh file phụ. Suy nghĩ là
 việc của model; script chỉ làm phần cơ khí (Playwright, xuất Excel).
@@ -168,6 +190,8 @@ làm hỏng khâu dựng, và ta không phân biệt được *"bug ở feature"
    │                        đọc SPEC → viết case (mù code) → tcs.json + xlsx
 /testcase-run               lái app live → evidence → chấm điểm → build Excel
    │
+/testcase-a11y <folder>     quét accessibility (WCAG) các màn spec đụng → report a11y + sổ bug
+   │
 /testcase-cleanup           dọn dữ liệu test trên dev (prefix AIOT-TEST-*)
    │
 /testcase-upspecschange → (dev fix) → /testcase-retest
@@ -258,6 +282,7 @@ qua đúng một trong ba cửa:
 | Đang làm tới đâu, việc gì tiếp (dành cho Claude) | `docs/STATE.md` |
 | Cơ khí kho tri thức: lệnh stale, front-matter, `confidence`, grow/maintain sâu | [`KNOWLEDGE-STRATEGY.md`](docs/KNOWLEDGE-STRATEGY.md) |
 | **Dò + UI-confirm một flow mới** (build-time, explorer tự-lái) | [`testcase-systemdoc.md`](.claude/commands/testcase-systemdoc.md) (`explorer.js`) |
+| **Test accessibility** một TestCase (WCAG, black-box) | `.claude/commands/testcase-a11y.md` |
 | 5 repo nối nhau ra sao · cách dùng GitNexus | `../CLAUDE.md` (workspace) |
 | Luật cho Claude khi chạy test | `CLAUDE.md` · `.claude/skills/qa-brain/SKILL.md` |
 

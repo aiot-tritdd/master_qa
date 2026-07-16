@@ -24,6 +24,8 @@ Playwright → **quan sát live** → chấm PASS/FAIL + evidence. Cộng pipeli
    seam từ SPEC + Living Business Doc → `tcs.json` + `.xlsx`.
 3. `/testcase-run …` → drive app dev + quan sát live + evidence → PASS/FAIL.
 4. FAIL → báo hành vi lệch spec + ảnh. Feature chưa build → FAIL (quan sát 404/thiếu nút).
+5. (tuỳ chọn) `/testcase-a11y wtf-is-this/TestCase-XX` → quét accessibility (WCAG) các màn → report + sổ bug.
+   Track RIÊNG, oracle = WCAG, vẫn mù code (axe chỉ đọc DOM).
 
 ## Chìa khoá + tri thức (black-box)
 - **HOW vs WHAT:** navigation (bấm gì) tách khỏi đúng/sai (WHAT). Bug ở WHAT (logic), không ở HOW
