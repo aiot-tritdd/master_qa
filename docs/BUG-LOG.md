@@ -46,7 +46,7 @@ Phần lớn field copy thẳng từ file test `wtf-is-this/TestCase-XX/TestCase
 | `source` | | spec **lộ ra** bug (`TestCase-XX`) — KHÔNG phải "của ai", chỉ là nơi soi thấy |
 | `screen` | | màn/chức năng. Cột **Service** tự cắt từ đây (chữ trước ` — ` hoặc ` (`) |
 | `pri` | | `High` / `Medium` / `Low` |
-| `bug_type` | | `Function` / `UI` / `Text` / `Accessibility` |
+| `bug_type` | | `Function` / `UI` / `Text` / `Accessibility` / `Visual` |
 | `result` | | `FAIL` (chấm được, sai spec) hoặc `SPEC-GAP` (spec im lặng → việc BA) |
 | `title` | | mô tả 1 câu — báo **hành vi** (spec X / màn Y), KHÔNG file:line |
 | `fix_note` | | để rỗng lúc mới; điền khi dev fix (xem §2) |
@@ -57,6 +57,9 @@ Phần lớn field copy thẳng từ file test `wtf-is-this/TestCase-XX/TestCase
 > **Bug Accessibility** (do `/testcase-a11y` sinh): `result` luôn `FAIL` (không bao giờ SPEC-GAP — WCAG
 > luôn định nghĩa kỳ vọng) · `before=null` + `after`=ảnh phần tử lỗi (ghi lý do N/A vào `note`) ·
 > lệnh a11y đã **dedup 1 bug/(màn×rule)** trước khi append, không tự append tay từng phần tử.
+
+> **Bug Visual** (do `/testcase-visual` sinh): `result` luôn `FAIL` (diff > ngưỡng; NEW-BASELINE/未実施 KHÔNG vào sổ) ·
+> `before`=baseline · `after`=ảnh diff (tô đỏ) · dedup **1 bug/màn** (không tách theo vùng).
 
 ---
 
