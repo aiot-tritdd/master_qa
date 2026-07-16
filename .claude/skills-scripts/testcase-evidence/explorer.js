@@ -142,7 +142,9 @@ ${lines}
 
 ## Điểm quan sát
 - <màn tới đích>   # KẾT QUẢ ĐÚNG/SAI = SPEC, KHÔNG ghi ở đây
-`;
+${(meta.mask && meta.mask.length)
+  ? `\n## Mask (che vùng ĐỘNG khi chụp Visual — HOW: quan sát ổn định, KHÔNG phải WHAT)\nmask:\n${meta.mask.map((m) => `  - ${scrub(m)}`).join('\n')}\n`
+  : ''}`;
 }
 
 // parseArgs(argv): ['--target','pro'] -> {target:'pro'}. CLI tối giản, không dep.
@@ -178,12 +180,21 @@ if (require.main === module) {
       const steps = JSON.parse(fs.readFileSync(a.steps, 'utf8'));
       const r = await replay(a.target || 'pro', a.url || '/', steps, { shot: a.shot });
       console.log(JSON.stringify({ reached: r.reached, screenshot: r.screenshot }, null, 2));
+    } else if (cmd === 'dynamic') {
+      // Auto-detect vùng động (đồng hồ/tên/số dư) để sinh mask: cho Visual regression.
+      const { detectDynamic } = require('./visual_lib');
+      const { browser, page, BASE } = await getPage(a.target || 'pro');
+      await page.goto(BASE + (a.url || '/'), { waitUntil: 'domcontentloaded' });
+      await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
+      console.log(JSON.stringify(await detectDynamic(page), null, 2));
+      await browser.close();
     } else if (cmd === 'emit') {
       const steps = JSON.parse(fs.readFileSync(a.steps, 'utf8'));
       const symbols = a.symbols ? a.symbols.split('||') : [];
-      console.log(emitNavBlock(a.flow, steps, { sourceSymbols: symbols }));
+      const mask = a.mask ? a.mask.split('||') : [];
+      console.log(emitNavBlock(a.flow, steps, { sourceSymbols: symbols, mask }));
     } else {
-      console.error('cmd: snapshot | run | replay | emit');
+      console.error('cmd: snapshot | run | replay | emit | dynamic');
       process.exit(1);
     }
   })().catch((e) => { console.error(e.message); process.exit(1); });

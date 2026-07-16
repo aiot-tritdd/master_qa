@@ -18,8 +18,13 @@
    - `node explorer.js run --steps steps.json --target <t> --url <path>` → per-step báo chỗ gãy → vá → lặp.
    - `node explorer.js replay --steps steps.json --target <t> --url <path> --shot shots/confirm.png`
      → nghiệm từ session SẠCH → **1 ảnh tới điểm quan sát** (người liếc để duyệt).
-   - `node explorer.js emit --flow <flow-id> --steps steps.json --symbols "repo: path||repo: path2"`
-     → nhả navigation block (HOW-only) vào `knowledge/<flow-id>.md`. Điền `ui_confirmed_at`.
+   - `node explorer.js dynamic --target <t> --url <path>` → liệt kê vùng ĐỘNG (đồng hồ/tên/số dư — chụp
+     màn 2 lần cùng-trạng-thái, diff pixel) kèm best-effort selector. Claude liếc + chọn selector che.
+     Đây là cách sinh `mask:` cho **Visual regression** (KHÔNG mask tay lúc `/testcase-visual`). Mask là HOW
+     (quan sát ổn định) → KHÔNG phá FIREWALL. Động xuyên-phiên (số dư mai khác) → Claude bổ sung tay lúc duyệt.
+   - `node explorer.js emit --flow <flow-id> --steps steps.json --symbols "repo: path||repo: path2" --mask "sel1||sel2"`
+     → nhả navigation block (HOW-only) + khối `mask:` vào `knowledge/<flow-id>.md`. Điền `ui_confirmed_at`.
+     (`--mask` tuỳ chọn — bỏ qua nếu màn không có vùng động.)
    - Chạy `python3 stale_check.py --update` để điền `source_hash`.
    (explorer = `.claude/skills-scripts/testcase-evidence/explorer.js`, BUILD-TIME only; cấm ở `/testcase-run`.)
 4. **Người duyệt** → liếc `shots/confirm.png` + block → đổi `status: draft → approved`.

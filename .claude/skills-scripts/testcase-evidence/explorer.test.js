@@ -122,3 +122,17 @@ test('parseArgs: --k v -> {k:v}', () => {
   assert.deepStrictEqual(parseArgs(['--target', 'pro', '--url', '/reservations']),
     { target: 'pro', url: '/reservations' });
 });
+
+test('emitNavBlock: có meta.mask -> block chứa mask: + danh sách selector (HOW)', () => {
+  const out = emitNavBlock('pro-open-booking',
+    [{ action: 'click', role: 'button', name: 'X' }],
+    { mask: ['#clock', '.balance'] });
+  assert.match(out, /mask:/);
+  assert.match(out, /#clock/);
+  assert.match(out, /\.balance/);
+});
+
+test('emitNavBlock: KHÔNG có mask -> không sinh khối mask (tránh block rỗng)', () => {
+  const out = emitNavBlock('f', [{ action: 'click', role: 'button', name: 'X' }], {});
+  assert.ok(!/mask:/.test(out), 'không mask thì không được có mask:');
+});
