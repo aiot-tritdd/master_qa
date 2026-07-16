@@ -26,6 +26,8 @@ Playwright → **quan sát live** → chấm PASS/FAIL + evidence. Cộng pipeli
 4. FAIL → báo hành vi lệch spec + ảnh. Feature chưa build → FAIL (quan sát 404/thiếu nút).
 5. (tuỳ chọn) `/testcase-a11y wtf-is-this/TestCase-XX` → quét accessibility (WCAG) các màn → report + sổ bug.
    Track RIÊNG, oracle = WCAG, vẫn mù code (axe chỉ đọc DOM).
+6. (tuỳ chọn) `/testcase-visual wtf-is-this/TestCase-XX` → so ảnh màn với baseline người-duyệt (regression UI).
+   Track RIÊNG, oracle = baseline, mù code. Baseline ở `baselines/` (commit git), mask từ knowledge.
 
 ## Chìa khoá + tri thức (black-box)
 - **HOW vs WHAT:** navigation (bấm gì) tách khỏi đúng/sai (WHAT). Bug ở WHAT (logic), không ở HOW

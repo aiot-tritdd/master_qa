@@ -53,7 +53,7 @@ Type:  Functional      ✅ có
 | Security (gom) | 🟡 rút thành checklist OWASP | phần lớn suy được (no 500/leak, 4xx đúng) | `withApi` sẵn |
 | Compatibility | ⏳ hợp vision (0 baseline) | cùng-kết-quả + không-vỡ-layout | Playwright multi-context |
 | Performance | ⏳ hợp vision (ngưỡng chuẩn web mặc định) | LCP/timing < ngưỡng phổ quát | `withApi` timing |
-| **Visual** | ⏸️ **HOÃN — chỉ hợp dự án MATURE** | baseline PNG đã người-duyệt | `shot()` sẵn + khuôn a11y |
+| **Visual** | 🔨 **đang build v1** (chỉ hợp dự án MATURE) | baseline PNG đã người-duyệt | `shot()` sẵn + khuôn a11y |
 
 **Vì sao HOÃN Visual (quyết 2026-07-16 theo vision multi-project):** Visual là track **kém "drop-in" nhất**,
 ngược vision "engine đa dự án ít setup":
