@@ -37,6 +37,24 @@ def build(results_path, out_path):
         ws.cell(2, 1, "Không có vi phạm a11y nào ở các màn đã quét.")
     for col, w in zip("ABCDEFGHI", (16, 12, 22, 18, 10, 8, 10, 40, 34)):
         ws.column_dimensions[col].width = w
+
+    # Sheet 2: bản ghi ĐỘ PHỦ — mỗi màn + verdict (phân biệt "quét & sạch" vs "chưa quét")
+    sw = wb.create_sheet("Màn quét")
+    meta = data.get("meta", {})
+    sw.cell(1, 1, f"A11Y · {meta.get('case','')} · {meta.get('date','')} · {meta.get('tester','')}").font = Font(bold=True)
+    for c, h in enumerate(["Màn", "App", "URL", "Verdict", "Vi phạm crit+serious"], 1):
+        cell = sw.cell(3, c, h); cell.font = Font(bold=True, color="FFFFFF")
+        cell.fill = PatternFill("solid", fgColor="2C3E50")
+    rr = 4
+    for scr in data.get("screens", []):
+        vs = scr.get("violations", [])
+        cs = sum(1 for v in vs if v.get("impact") in ("critical", "serious"))
+        sw.cell(rr, 1, scr.get("name", "")); sw.cell(rr, 2, scr.get("app", "")); sw.cell(rr, 3, scr.get("url", ""))
+        sw.cell(rr, 4, scr.get("result", "")); sw.cell(rr, 5, cs)
+        rr += 1
+    for col, w in zip("ABCDE", (18, 12, 24, 10, 20)):
+        sw.column_dimensions[col].width = w
+
     wb.save(out_path)
     print(f"✅ a11y report: {out_path} ({r - 2} vi phạm)")
 

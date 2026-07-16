@@ -44,10 +44,33 @@ def test_empty_screens_message():
     ws = _run({"meta": {"case": "E"}, "screens": []})
     assert ws.cell(2, 1).value == "Không có vi phạm a11y nào ở các màn đã quét."
 
+def test_coverage_sheet():
+    results = {"meta": {"case": "T", "date": "2026-07-16", "tester": "QA"},
+        "screens": [
+            {"name": "Đặt lịch", "app": "reservation", "url": "/booking", "result": "FAIL",
+             "violations": [{"rule": "image-alt", "impact": "critical", "wcag": "1.1.1", "help": "h",
+                             "nodes": [{"target": "img", "html": "<img>"}]}]},
+            {"name": "Login", "app": "pro", "url": "/login", "result": "PASS", "violations": []},
+        ]}
+    d = tempfile.mkdtemp()
+    rp = os.path.join(d, "r.json")
+    with open(rp, "w", encoding="utf-8") as f:
+        json.dump(results, f, ensure_ascii=False)
+    out = os.path.join(d, "c.xlsx")
+    subprocess.run([sys.executable, SCRIPT, rp, out], check=True)
+    from openpyxl import load_workbook as _lw
+    wb = _lw(out)
+    assert "Màn quét" in wb.sheetnames, wb.sheetnames
+    sw = wb["Màn quét"]
+    rows = {sw.cell(r, 1).value: (sw.cell(r, 4).value, sw.cell(r, 5).value) for r in range(4, 6)}
+    assert rows.get("Login") == ("PASS", 0), rows
+    assert rows.get("Đặt lịch")[0] == "FAIL", rows
+
 def main():
     test_violations_rendered_and_sorted()
     test_empty_screens_message()
-    print("✅ test_build_a11y_report PASS (2 tests)")
+    test_coverage_sheet()
+    print("✅ test_build_a11y_report PASS (3 tests)")
 
 if __name__ == "__main__":
     main()

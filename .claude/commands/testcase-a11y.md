@@ -40,8 +40,10 @@ Dùng lại helper `.claude/skills-scripts/testcase-evidence/`: `pw_lib.js` (`ge
    ⚠️ Chỉ `runAxe` **sau khi trang render xong** (dùng `shot()`/chờ selector + networkidle), không quét lúc còn spinner.
 4. **Verdict mỗi màn:** `PASS` (0 critical/serious) · `FAIL` (≥1) · `未実施` (không vào được màn).
    ⚠️ a11y **KHÔNG BAO GIỜ** dùng `SPEC-GAP` — WCAG luôn định nghĩa kỳ vọng, nên mọi vi phạm chấm được là FAIL. (Đừng mang mental-model "SPEC-GAP là finding cao nhất" của qa-brain sang đây.)
-5. **Viết `<folder>/a11y.results.json`** đúng schema (xem `build_a11y_report.py`): meta + screens[] với
-   violations[] = {rule, impact, wcag (từ tag `wcagXYZ`), help, nodes[{target,html}], shot}.
+5. **Viết `<folder>/a11y.results.json`**: `runAxe(...).violations` giờ đã CHUẨN HOÁ sẵn
+   (`{rule, impact, wcag, help, helpUrl, tags, nodes:[{target,html}]}`) — KHÔNG tự map `id→rule`,
+   KHÔNG tự parse `wcagXYZ` nữa. Với mỗi màn: lấy `violations`, gắn thêm `shot` (path ảnh element)
+   vào từng violation critical/serious, rồi gom thành `{meta:{case,date,tester}, screens:[{name,app,url,result,violations}]}`.
 6. **Build report:** `python3 .claude/skills-scripts/testcase-evidence/build_a11y_report.py \
    <folder>/a11y.results.json <folder>/<TênFolder>.a11y.xlsx`.
 7. **Đẩy sổ bug** (chỉ critical+serious): **dedup 1 bug/(màn×rule)** → mỗi nhóm 1 object append vào
