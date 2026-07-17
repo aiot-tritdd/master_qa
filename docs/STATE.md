@@ -31,12 +31,11 @@ evidence PNG/xlsx. Oracle = SPEC + quan sát live. **Mù code.** GitNexus chỉ 
   report `.visual.xlsx` + sổ bug (`bug_type: Visual`). Mask sinh tự động ở build-time (explorer `dynamic`). Type test thứ 3.
   ✅ **LIVE-VERIFIED 2026-07-17**: capture/compare/NEW-BASELINE chạy e2e; **bless baseline 3 màn ticket** (`baselines/ticket/{coupons,customer-700006,coupon-reports-sales}.png`, commit). ⚠️ Giới hạn auto-mask (không bắt churn xuyên-phiên) đã ghi ROADMAP → 3 màn data-heavy này sẽ cần re-bless khi data đổi.
   Spec/plan: `docs/superpowers/{specs,plans}/2026-07-16-visual-track*`.
-- ✅ **Track Security** (`/testcase-security`) — **10 họ phủ phần black-box OWASP** (Injection/XSS · IDOR · Client-bypass guard-parity ·
+- ✅ **Track Security** (`/testcase-security`) — **13 họ phủ phần black-box OWASP 2025** (Injection/XSS · IDOR · Client-bypass guard-parity ·
   Error-disclosure · Security-headers · Open-redirect · CSRF · Mass-assignment · Force-browse/traversal · Session-after-logout),
-  oracle = **bất biến an ninh phổ quát** (code-blind, no SPEC-GAP). `security_lib.js` (**21 test**) + `build_security_report.py` + `bug_type:Security`. Type track thứ 4.
+  oracle = **bất biến an ninh phổ quát** (code-blind, no SPEC-GAP). `security_lib.js` (**25 test**) + `build_security_report.py` + `bug_type:Security`. Type track thứ 4.
   **Consolidation:** security RÚT khỏi qa-brain functional (SKILL.md) → tập trung ở track này.
   ✅ **LIVE-VERIFIED 2026-07-17** (10 họ trên TestCase-11 ticket): **6 PASS** (error-disclosure/force-browse/injection-escaped/CSRF-403/session-logout-302/**client-bypass end<start chặn server-side**) · 1 FAIL security-headers CSP+HSTS → **BUG-020** · 4 未実施 (IDOR *hoãn — account chỉ 1 institute TESTSEED001, cần institute thứ 2* · mass-assignment *whitebox — cần model* · open-redirect *không có param* · SSRF *N/A — scope coupon không có feature fetch-URL*). KHÔNG data rác (mutating bị reject). Live lộ + vá 3 probe (IDOR/force-browse HTML-oracle, session-logout cần POST). Whitebox handoff (OWASP A02/04/06/08/09/10) ghi ROADMAP §4.
-  ⚠️ **CÒN TREO: live-verify** (cần dev): chạy `/testcase-security wtf-is-this/TestCase-11`, cleanup `AIOT-TEST-SEC-*` sau.
   Spec/plan: `docs/superpowers/{specs,plans}/2026-07-17-security-track*`.
 - ✅ **Harvest qa-skills** (kindlmann, MIT — 2026-07-17, ĐÃ đọc file skill thật):
   - **HICCUPS** → `qa-brain/SKILL.md §3.4`: bộ 10 kính oracle nhận diện bug (code-blind; Claims=SPEC chốt đúng/sai, Standards=a11y, World=Compatibility).
@@ -46,7 +45,7 @@ evidence PNG/xlsx. Oracle = SPEC + quan sát live. **Mù code.** GitNexus chỉ 
   - **Breadcrumb whitebox/chiến-lược** vào ROADMAP §4 + harvest log §5 (security-auditor/test-automator/qa-expert + phần DAST/SCA/SAST của qa-skills security-testing = whitebox; không bê cho con đen).
   - ✅ **Queue harvest con đen ĐÓNG**: HICCUPS + security_lib v2 (live-verified) + fact-check. 3 nguồn whitebox/strategy đã park (ROADMAP §4).
 - ✅ **Type-track trên Pro + Reservation** (2026-07-17) — lần đầu ra ngoài ticket-app:
-  - **a11y**: 3 màn quét, **cả 3 FAIL** → **BUG-021..034 (14 bug)**. Pro `/reservations` (aria-allowed-attr×4, button-name×16, color-contrast×14, nested-interactive) · Pro `/accounting` (button-name×9, label×4, color-contrast×7, nested-interactive×4) · Reservation `/reservation` (button-name×3 = **hamburger + 2 mũi tên đổi ngày** → screen-reader không đặt lịch nổi, label×2, link-name, aria-command-name, color-contrast×3). Report: `TestCase-12.a11y.xlsx` + `Reservation-widget.a11y.xlsx`.
+  - **a11y**: 3 màn quét, **cả 3 FAIL** → **BUG-021..034 → còn 13 bug** (BUG-033 link-name bị XOÁ, xem dưới). Pro `/reservations` (aria-allowed-attr×4, button-name×16, color-contrast×14, nested-interactive) · Pro `/accounting` (button-name×9, label×4, color-contrast×7, nested-interactive×4) · Reservation **`/2`** (button-name×3 = **hamburger + 2 mũi tên đổi ngày** → screen-reader không đặt lịch nổi, label×2, aria-command-name, color-contrast×5). Report: `TestCase-12.a11y.xlsx` + `Reservation-widget.a11y.xlsx`.
   - **security Reservation** (6 họ read-only — widget công khai, KHÔNG ghi data): headers **FAIL** → **BUG-036** (thiếu cả 5; widget CÔNG KHAI nên thiếu X-Frame-Options = clickjack được luồng đặt lịch). CORS/error-disclosure/open-redirect/force-browse PASS. Họ cần login (session-*) = **N/A** (widget không có login). Họ mutating **chưa chạy** (ghi = đẻ booking rác, user chốt chỉ chạy Pro).
   - **security Pro — ĐỦ 13 họ** (user chốt "A": cho ghi data trên Pro). **14 PASS / 3 FAIL / 4 未実施**:
     · **FAIL**: headers ×2 màn → **BUG-035** (thiếu CẢ 5) · **error-disclosure tầng API** → **BUG-037**.
@@ -57,7 +56,31 @@ evidence PNG/xlsx. Oracle = SPEC + quan sát live. **Mù code.** GitNexus chỉ 
   - ⚠️ **Bài học phương pháp**: mass-assignment lần đo đầu ra **422 = PASS may rủi** (gửi kèm `id`/`institute_id` lạ nên bị chặn vì lý do KHÁC). Test lại **tách biến + có đối chứng** (A hợp lệ→201 / B chỉ thêm `default_preset:true`→201 nhưng field bị bỏ qua) mới là PASS có căn cứ. **Không có đối chứng thì PASS vô nghĩa.**
   - 🐞 **Live bắt + vá 1 bug oracle THẬT** (`security_lib`, 21→**24 test**): probe force-browse/IDOR chấm `../../../../etc/passwd` = **"200 + lộ data" trên CẢ pro lẫn reservation** → **FAIL GIẢ**. Bằng chứng: body path cấm **===** body path hợp lệ (từng byte), không có `root:x:`, DOM sau render = **404** ⇒ app chặn đúng. Nguyên nhân: SPA trả cùng vỏ cho mọi path, `context.request` không chạy JS. Vá: `probeIDOR/probeForceBrowse(result, {baselineBody})` → giống baseline ⇒ `inconclusive` (so byte, app-agnostic, **cửa mạnh nhất**) + `looksLikeSpaShell()` dự phòng. ⚠️ Bản vá đầu (chỉ đo độ dài text) bị **chính unit test bắt**: nuốt luôn trang lộ thật nhưng ngắn ⇒ false-NEGATIVE → phải đòi thêm vân tay hydration SPA. Vỏ Pro có 56 ký tự text nên heuristic **trượt**, chỉ baseline bắt được. Doc: `/testcase-security` §"App SPA".
   - Bẫy cơ khí SPA (route thật, thời gian render, soft-404, 200≠tồn-tại) → `knowledge/lessons.md`.
-  - **Sổ bug: 20 → 37** (14 a11y + BUG-035/036 headers + BUG-037 error-disclosure). Data test đã dọn trong script, dev verify sạch → không cần `/testcase-cleanup`.
+  - **Sổ bug: 20 → 36** (13 a11y + BUG-035/036 headers + BUG-037 error-disclosure). Data test đã dọn trong script, dev verify sạch → không cần `/testcase-cleanup`.
+- ✅ **Track Compatibility** (`/testcase-compat`) — **type track thứ 5**, 2026-07-17. `compat_lib.js` (**12 test**) +
+  `build_compat_report.py` (sheet **Ma trận** engine × viewport) + `bug_type:"Compatibility"`.
+  **3 oracle, 0 setup, KHÔNG cần baseline** (khác Visual — vì so giữa các engine **cùng thời điểm**, không so ảnh cũ
+  ⇒ không mục rữa theo ngày): ① **WCAG 1.4.10 Reflow** (mốc **320 CSS px** do W3C công bố) · ② **parity affordance**
+  giữa engine · ③ **0 `pageerror`**. Engine: chromium · firefox · webkit. Viewport: 320/390/768/1280.
+  ✅ **LIVE-VERIFIED 2026-07-17** (reservation widget `/2`): **8 PASS / 4 未実施** — chromium + firefox **4/4 viewport
+  PASS** (reflow ok @320px, parity **19 affordance khớp y hệt** cả 4 cỡ, 0 lỗi JS). **0 bug.**
+  ⚠️ **LỖ CÒN LẠI: webkit/Safari = 未実施** — `playwright 1.61` + **macOS 13.7.8** → `does not support webkit on mac13`.
+  Đây là engine QUAN TRỌNG NHẤT với widget công khai (khách đặt lịch bằng iPhone). ⛔ **KHÔNG giả lập** bằng
+  chromium+UA rồi báo "đã test Safari" (giả lập đổi viewport/UA, KHÔNG đổi engine ⇒ PASS rỗng). Phủ được nếu:
+  macOS ≥14 hoặc webkit trong Docker/CI.
+  - 🐞 **Live bắt + vá 2 bug oracle nữa**: ① `probeConsole` đếm **resource-404** là lỗi JS → chromium ghi 404 ra
+    console, **firefox KHÔNG** ⇒ chromium FAIL/firefox PASS = **bịa** (đang đo *cách browser ghi log*). Vá: chỉ nhận
+    `pageerror`; 404 tách sang `networkFailures` (chuyện functional). ② `probeParity` nhiễu vì **dialog chớp nhoáng**:
+    `button::閉じる` lúc firefox *thiếu* (320px) lúc *thừa* (390px) — tự mâu thuẫn ⇒ `detectTransient()` + `{transient}`,
+    luôn báo `ignored` (dao 2 lưỡi: nhét bừa = nuốt diff thật).
+  - 🎯 **BẪY ĐẮT NHẤT ĐỢT NÀY — đo SAI URL suốt**: `/reservation` **KHÔNG phải** đường vào widget. App hiểu path là
+    **slug phòng khám** → đi tìm院 tên "reservation" → **404 toàn bộ API** → widget render vỏ nhưng **rỗng data**.
+    Đúng là **`/2`** (5 API 200, hiện `AIoT院1` + SĐT). Vì `コース選択` có mặt ở CẢ trạng thái lỗi nên nó **không**
+    phân biệt được → tưởng vào đúng. ⇒ **Đo lại a11y trên `/2`: BUG-033 (link-name) là bug MA của trang lỗi → XOÁ;
+    BUG-031 color-contrast 3→5.** Sổ 37→36. **Luật: xác nhận vào đúng màn bằng API 200 + DATA THẬT hiện ra, KHÔNG
+    bằng HTTP 200 / "thấy chữ gì đó".**
+  - ⚠️ Phạm lại luật cũ: `waitForTimeout(7000)` → desktop bị chấm **未実施 OAN** (giây 7 vẫn đang loading, spinner +
+    lớp phủ). Sửa: chờ **điều kiện** (`waitFor visible` + `networkidle`). `pw_lib.shot()` đã ghi luật này từ lâu.
   - ⚠️ **Reservation KHÔNG có SPEC** → functional **không chạy được** (không oracle, không bịa). Chỉ type-track (oracle phổ quát). Folder `wtf-is-this/Reservation-widget/` chứa evidence type-track, không phải folder spec.
 
 ### ✅ MERGE Phase 0 — vá lệnh chết (2026-07-09, đã verify)
@@ -120,12 +143,13 @@ Chạy thật trên dev, không phải syntax check:
    ⛔ **Chặn: cần user chốt kênh giao** (OneDrive / tạo issue / gửi sếp?).
    → Sau khi giao: chạy thử **1 vòng retest** để nghiệm thu pipeline.
    💡 *Vấn đề bây giờ không phải "tìm thêm bug" — là bug không tới tay dev.*
-2. **[Type-track kế] Compatibility.** 0 setup, oracle phổ quát (cùng-kết-quả + không-vỡ-layout), Playwright
-   multi-context có sẵn. **Đáng nhất cho `reservation`**: widget CÔNG KHAI, khách đặt lịch bằng **điện thoại**,
-   mà mới test **1 browser 1 cỡ desktop**. (Không chặn.)
+2. **[Type-track kế] Performance** — oracle đã gỡ (Core Web Vitals: LCP<2.5s · CLS<0.1 · INP<200ms — ngưỡng
+   Google công bố, phổ quát, **không cần ai đặt số**). 0 setup, hợp vision đa dự án. (Không chặn.)
+   ⚠️ **[Compat — lỗ còn lại] webkit/Safari `未実施`**: `playwright 1.61` + **macOS 13.7.8** → không chạy được.
+   Đây là engine QUAN TRỌNG NHẤT với widget công khai (khách dùng iPhone). Phủ được nếu: macOS ≥14, hoặc
+   webkit trong **Docker/CI**. ⛔ TUYỆT ĐỐI không giả lập bằng chromium+UA rồi báo "đã test Safari".
 3. **[App] Admin (8081)** — mảng trắng cuối cùng (4/5 app đã đụng). Để **sau #1**: thêm bug vào đống chưa ai đọc = vô nghĩa.
-4. **[Type-track] Performance** — oracle **đã gỡ** 2026-07-17: **Core Web Vitals** (LCP<2.5s · CLS<0.1 · INP<200ms)
-   là ngưỡng Google công bố, phổ quát, **không cần người đặt budget** (ROADMAP cũ nói ngược → đã sửa).
+4. **[Compat] Phủ nốt webkit** bằng Docker/CI (xem #2) — hoặc chấp nhận lỗ Safari và ghi rõ trong báo cáo.
 5. **[Security] IDOR** — họ DUY NHẤT còn `未実施` trên cả ticket lẫn pro. Access-control là loại nặng nhất mà đang **mù**.
    ⛔ **Chặn: cần account institute THỨ HAI** (`TESTSEED002`) → xin dev/sếp.
 6. **[Grow knowledge/system]** Còn 3 domain: **6 Booking** · **7 Reservation widget** · **8 Admin** (OQ-02 đã đóng, hết bị chặn).

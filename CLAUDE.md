@@ -36,6 +36,11 @@ Playwright → **quan sát live** → chấm PASS/FAIL + evidence. Cộng pipeli
    ⚠️ **App SPA (pro/reservation/admin — Nuxt): BẮT BUỘC cấp `baselineBody`** cho probe IDOR/force-browse,
    nếu không **FAIL giả hàng loạt** (server trả cùng vỏ cho mọi path, chữ 404 do JS vẽ sau). Xem command doc §"App SPA".
 
+8. (tuỳ chọn) `/testcase-compat wtf-is-this/TestCase-XX` → quét **compatibility**: engine (chromium/firefox/webkit)
+   × viewport (320/390/768/1280). Track RIÊNG, oracle = **WCAG 1.4.10 Reflow** (mốc 320px do W3C công bố) +
+   **parity affordance giữa engine** + **0 lỗi JS**, mù code. KHÔNG cần baseline (so giữa engine cùng thời điểm).
+   ⛔ Engine không chạy được → **`未実施` + lý do**, TUYỆT ĐỐI không giả lập bằng engine khác rồi báo "đã test".
+
 ## Chìa khoá + tri thức (black-box)
 - **HOW vs WHAT:** navigation (bấm gì) tách khỏi đúng/sai (WHAT). Bug ở WHAT (logic), không ở HOW
   (nút/màn) → navigation miễn nhiễm bug logic.

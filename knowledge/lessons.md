@@ -47,9 +47,22 @@ grown_from: "0119159:.claude-tester/knowledge/LESSONS.md (chỉ 9/11 mục — 2
 - **2026/07/17 — [pro/route]** Route đặt lịch thật là **`/reservations`** (số nhiều, KHÔNG có prefix branch).
   `/branches/2/reservations/` trả **200 nhưng ra màn ホーム** (vỏ SPA) → tưởng vào đúng màn là sai.
   Calendar Nuxt cần **~7-8s** mới render (2.5s là chưa xong → quét axe/probe lúc đó = đo vỏ rỗng).
-- **2026/07/17 — [reservation/route]** Widget đặt lịch ở **`/reservation`** (số ÍT). `/` ra `リクエストページが存在しません`
-  (soft-404, HTTP 200). Widget **không có login** (chỉ basic-auth `BASIC_USER/BASIC_PASS`) → các họ cần cắt phiên
-  (session-after-logout / session-fixation) **không áp dụng được**. Đặc trưng màn để chờ: `text=コース選択`.
+- **2026/07/17 — [reservation/route] ⛔ SỬA LẠI: đường vào widget là `/<mã院>` (vd `/2`), KHÔNG phải `/reservation`.**
+  App hiểu path là **slug phòng khám** → `/reservation` khiến nó đi tìm院 tên "reservation" → **404 TOÀN BỘ API**
+  (`/api/v1/home/providers/reservation/{calendar,courses,therapists,web_reservation_setting}`) → widget render vỏ
+  nhưng **rỗng data** + dialog `クリニックの予約ページに接続できませんでした`. `/` ra `リクエストページが存在しません` (soft-404, HTTP 200).
+  ✅ **`/2` = đúng**: 5 API đều **200**, hiện tên院 **`AIoT院1`** + SĐT `03-0000-0000`.
+  ⇒ **Cách xác nhận vào ĐÚNG màn = API 200 + DATA hiện ra**, KHÔNG phải HTTP 200 (SPA trả 200 cho mọi path).
+  ⚠️ Ghi chú cũ ("widget ở `/reservation`, chờ `text=コース選択`") **SAI** — `コース選択` có mặt CẢ ở trạng thái lỗi
+  nên nó **không phân biệt được** đúng/sai màn. Đặc trưng đúng để chờ: **`text=AIoT院1`** (tên院 = data thật).
+  Widget **không có login** (chỉ basic-auth) → họ cần cắt phiên (session-after-logout/fixation) **N/A**.
+- **2026/07/17 — [compat/engine] webkit KHÔNG chạy được trên máy này.** `playwright 1.61` + **macOS 13.7.8** →
+  `Playwright does not support webkit on mac13`. ⇒ Safari/iPhone = **未実施**, KHÔNG giả lập bằng chromium+UA
+  (giả lập đổi viewport/UA, KHÔNG đổi engine). Muốn phủ: macOS ≥14 hoặc webkit trong Docker/CI.
+  Cài firefox/webkit phải dùng binary LOCAL (`./node_modules/.bin/playwright install`), `npx playwright` lấy bản khác → lệch version.
+- **2026/07/17 — [compat/console] chromium ghi resource-404 ra console, firefox KHÔNG.** Cùng một API 404,
+  chromium in `Failed to load resource: ... 404`, firefox im lặng. ⇒ **Đừng dùng `console.error` để so engine** —
+  đó là đo *cách browser ghi log*, không phải *app có vỡ không*. Chỉ `pageerror` (JS exception) mới so được.
 - **2026/07/11 — [cleanup/coupon]** Coupon (Ticket **và** Pro) **KHÔNG có UI/API xoá**: list/detail/edit
   không có nút 削除, `/coupons/<id>/delete/` → 404, Pro modal chỉ có 更新/編集. ⇒ data test coupon
   (`AIOT-TEST-*`) + pack đã phát hành **không dọn được qua UI** → nhờ dev xoá ở DB (`name LIKE 'AIOT-TEST%'`).

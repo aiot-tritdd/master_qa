@@ -38,25 +38,26 @@ Type:  Functional      ✅ có
        Accessibility   ✅ DONE + live-verify (ticket · pro · reservation) — oracle=WCAG
        Security        ✅ DONE + live-verify (13 họ; đủ 13/13 trên pro) — oracle=bất biến an ninh
        Visual          ✅ DONE + live-verify — nhưng CHỈ hợp màn TĨNH (xem cảnh báo §3)
-       Compatibility   ❌ ỨNG VIÊN KẾ ← rẻ, oracle phổ quát, 0 setup
-       Performance     ❌ oracle ĐÃ GIẢI (Core Web Vitals) — xem §3
+       Compatibility   ✅ DONE + live-verify (reservation widget) — oracle=WCAG 1.4.10 + parity engine
+                       ⚠️ webkit/Safari 未実施: macOS 13 không chạy được (KHÔNG giả lập)
+       Performance     ❌ ỨNG VIÊN KẾ — oracle ĐÃ GIẢI (Core Web Vitals), xem §3
 ```
 
 **Độ phủ app (2026-07-17)** — type-track ≠ app đã quét. 5 app thì mới đụng 3:
 
-| App | Functional | a11y | Visual | Security |
-|---|---|---|---|---|
-| ticket | ✅ TestCase-11 | ✅ | ✅ (3 baseline) | ✅ 13 họ |
-| pro | ✅ TestCase-12 | ✅ 2 màn | ❌ | ✅ **13/13 họ** |
-| reservation | ⛔ **không có SPEC** → không chấm được | ✅ 1 màn | ❌ | ✅ 6 họ read-only |
-| **admin** | ❌ | ❌ | ❌ | ❌ ← **mảng trắng hoàn toàn** |
-| backend | — (không có UI; quét gián tiếp qua API của pro) | — | — | — |
+| App | Functional | a11y | Visual | Security | Compat |
+|---|---|---|---|---|---|
+| ticket | ✅ TestCase-11 | ✅ | ✅ (3 baseline) | ✅ 13 họ | ❌ |
+| pro | ✅ TestCase-12 | ✅ 2 màn | ❌ | ✅ **13/13 họ** | ❌ |
+| reservation | ⛔ **không có SPEC** → không chấm được | ✅ 1 màn | ❌ | ✅ 6 họ read-only | ✅ **2/3 engine × 4 cỡ** |
+| **admin** | ❌ | ❌ | ❌ | ❌ | ❌ ← **mảng trắng hoàn toàn** |
+| backend | — (không có UI; quét gián tiếp qua API của pro) | — | — | — | — |
 
 > ⚠️ **reservation không có SPEC** ⇒ functional **cấu trúc không chấm được** (không oracle → không bịa `expect`).
 > Muốn test functional widget: phải có spec trước. Type-track thì chạy được vì oracle phổ quát.
 
 **🔴 Nút thắt lớn nhất hiện nay KHÔNG phải thiếu test — mà là bug không tới tay dev.**
-Sổ: **37 bug · Mở 37 · Chờ retest 0 · Đã đóng 0**. Chưa cái nào được sửa, và `wtf-is-this/` thì **gitignored**
+Sổ: **36 bug · Mở 36 · Chờ retest 0 · Đã đóng 0**. Chưa cái nào được sửa, và `wtf-is-this/` thì **gitignored**
 (evidence local) ⇒ team **chưa từng thấy** sổ. Vòng đời `Mở → Chờ retest → Đã đóng` (BUG-LOG §2) + `/testcase-retest`
 **dựng sẵn nhưng chưa chạy lần nào**. Thêm bug vào đống chưa ai đọc = giá trị biên tiến về 0.
 → Ưu tiên: chốt kênh giao bug với team, rồi chạy thử 1 vòng retest để biết pipeline có thật sự sống.
@@ -71,10 +72,10 @@ Sổ: **37 bug · Mở 37 · Chờ retest 0 · Đã đóng 0**. Chưa cái nào 
 | **Accessibility** | ✅ **DONE — live-verified** (ticket 2026-07-17 · pro + reservation 2026-07-17) | WCAG (axe-core) | `shot()`, khuôn command |
 | **Security (gom)** | ✅ **DONE — live-verified** (**13 họ**; ticket 13 · **pro đủ 13/13** · reservation 6 read-only) | bất biến an ninh phổ quát (XSS escaped, no 500/leak, IDOR 403/404, guard-parity, cookie/CORS/fixation) | `withApi`, khuôn a11y |
 | **Visual** | ✅ **DONE — live-verified** (bless 3 baseline ticket) · ⚠️ CHỈ dùng cho màn **TĨNH** | baseline PNG đã người-duyệt | `shot()` sẵn + khuôn a11y |
-| **Compatibility** | ⏳ **ỨNG VIÊN KẾ** (0 baseline, 0 setup) | cùng-kết-quả + không-vỡ-layout | Playwright multi-context |
-| Performance | ⏳ oracle **đã giải** (Core Web Vitals) | LCP/CLS/INP < ngưỡng Google công bố | `withApi` timing + CDP |
+| **Compatibility** | ✅ **DONE — live-verified** (`/testcase-compat`, 12 test, reservation widget 8 PASS / 4 未実施) | **WCAG 1.4.10 Reflow** (mốc 320px, W3C công bố) + parity affordance giữa engine + 0 `pageerror` | Playwright multi-context |
+| **Performance** | ⏳ **ỨNG VIÊN KẾ** — oracle **đã giải** (Core Web Vitals) | LCP/CLS/INP < ngưỡng Google công bố | `withApi` timing + CDP |
 
-**🔬 Live-verify là thật, không phải thủ tục — 4 bug ORACLE bị bắt nhờ nó** (không có nó thì cả 4 đã lọt thành
+**🔬 Live-verify là thật, không phải thủ tục — 6 bug ORACLE + 1 bug URL bị bắt nhờ nó** (không có nó thì cả 4 đã lọt thành
 bug bịa gửi cho dev, hoặc PASS rỗng che lỗi thật):
 
 | # | Ngày | Probe bịa gì | Sự thật | Vá |
@@ -83,12 +84,20 @@ bug bịa gửi cho dev, hoặc PASS rỗng che lỗi thật):
 | 2 | 07-17 | IDOR/force-browse "200 + lộ data" (ticket) | oracle HTML sai | vá HTML-oracle |
 | 3 | 07-17 | **`/etc/passwd` lộ trên pro + reservation** | body path cấm **=== body path hợp lệ từng byte**; không có `root:x:`; DOM sau render = **404** ⇒ app chặn ĐÚNG. SPA trả cùng vỏ cho mọi path, `context.request` không chạy JS | `probeIDOR(r,{baselineBody})` → giống baseline = `inconclusive`; + `looksLikeSpaShell()` dự phòng |
 | 4 | 07-17 | error-disclosure "không rò" (pro) | 422 rò `Couldn't find Therapists::Preset … WHERE "therapists_presets"."institute_id"` = **model + bảng + cột tenant**. Oracle cũ chỉ tìm **tên class** exception nên trượt | +2 pattern `rails-record-not-found`, `sql-fragment` |
+| 5 | 07-17 | compat: chromium FAIL / firefox PASS (6 "lỗi JS") | 6 "lỗi" là **resource-404**, mà chromium ghi ra console còn **firefox KHÔNG** ⇒ đang đo *cách browser ghi log*, không phải app vỡ | `probeConsole` chỉ nhận `pageerror`; 404 tách sang `networkFailures` (chuyện functional) |
+| 6 | 07-17 | compat parity: firefox lệch nút `閉じる` | Lúc firefox **thiếu** (320px), lúc **thừa** (390px) — **tự mâu thuẫn** ⇒ dialog chớp nhoáng, không phải khác biệt engine | `detectTransient()` (vừa-thiếu-vừa-thừa) + `probeParity(…,{transient})`, luôn báo `ignored` |
+| 🎯 | 07-17 | **a11y/security widget: đo SAI URL suốt** | `/reservation` **không phải** đường vào — app hiểu path là **slug phòng khám** → đi tìm院 tên "reservation" → **404 toàn bộ API** → đo widget **rỗng data**. Đúng là **`/2`** (5 API 200, hiện `AIoT院1`) | Đo lại: **BUG-033 (link-name) là bug MA** của trang lỗi → xoá; BUG-031 color-contrast **3→5**. Sổ 37→36 |
 
 ⇒ **Luật rút ra:** ① *unit-test khoá oracle, live-verify khoá "probe có chạm app thật"* — thiếu vế nào cũng chết.
 ② **PASS không có đối chứng = PASS vô nghĩa** (mass-assignment lần đầu ra 422 vì gửi kèm `id` lạ → bị chặn vì
 lý do KHÁC; phải tách biến: A hợp lệ→201, B chỉ thêm `default_preset:true`→201 nhưng field bị bỏ qua).
 ③ **Vá false-positive rất dễ đẻ false-negative** — bản vá SPA đầu tiên (chỉ đo độ dài text) bị chính unit test
 bắt vì nó nuốt luôn trang lộ thật nhưng ngắn. Ở security, **bỏ sót nguy hiểm hơn báo nhầm**.
+④ **HTTP 200 + màn có render ≠ vào ĐÚNG màn.** Bẫy đắt nhất đợt này: quét cả a11y lẫn security trên `/reservation`
+suốt, widget *có* hiện `コース選択` nên tưởng đúng — thật ra API 404 hết, đang đo **trạng thái lỗi**. ⇒ Xác nhận vào
+đúng bằng **API 200 + DATA thật hiện ra** (tên phòng khám), KHÔNG bằng status/“nhìn thấy chữ gì đó”.
+⑤ **Chờ ĐIỀU KIỆN, không chờ ĐỒNG HỒ** — `waitForTimeout(7000)` chấm 未実施 OAN cho desktop (giây 7 vẫn đang
+loading). Luật này `pw_lib.shot()` đã ghi từ lâu mà vẫn phạm lại.
 
 **⚡ Performance — ROADMAP cũ nói "vướng oracle, cần người đặt budget". SAI, đã gỡ (2026-07-17):**
 **Core Web Vitals** (LCP < 2.5s · CLS < 0.1 · INP < 200ms) là ngưỡng **Google công bố công khai** — phổ quát,
@@ -134,7 +143,7 @@ phải re-bless. Muốn hết noise phải **mask vùng-data tay** (điều user
 
 | # | Việc | Vì sao đứng đây | Chặn gì |
 |---|---|---|---|
-| **1** | **Giao 37 bug cho team + chạy thử 1 vòng retest** | Bug nằm trong file **local gitignored**, chưa ai đọc. Test không tới dev = **công cốc**. Vòng đời bug + `/testcase-retest` dựng sẵn **chưa chạy lần nào** ⇒ chưa biết có sống không | ⛔ cần user chốt **kênh giao** (OneDrive? issue? gửi sếp?) |
+| **1** | **Giao 36 bug cho team + chạy thử 1 vòng retest** | Bug nằm trong file **local gitignored**, chưa ai đọc. Test không tới dev = **công cốc**. Vòng đời bug + `/testcase-retest` dựng sẵn **chưa chạy lần nào** ⇒ chưa biết có sống không | ⛔ cần user chốt **kênh giao** (OneDrive? issue? gửi sếp?) |
 | **2** | **Compatibility track** | Type kế hợp vision nhất: 0 setup, oracle phổ quát. Và `reservation` là **widget CÔNG KHAI khách dùng trên điện thoại**, mà mới test **1 browser 1 cỡ desktop** → chỗ rủi ro cao nhất lại mỏng nhất | không |
 | **3** | **Admin app** | Mảng trắng cuối cùng (4/5 app đã đụng) | không — nhưng để sau #1, thêm bug vào đống chưa ai đọc thì vô nghĩa |
 | **4** | **Performance track** | Oracle đã gỡ (Core Web Vitals) | không |
