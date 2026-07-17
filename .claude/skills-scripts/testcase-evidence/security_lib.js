@@ -62,9 +62,25 @@ async function probeInjection(page, fieldLocator, payload, submit) {
   return { payload, fired, serverError: isServerError(status), reflectedAsText };
 }
 
+// looksDenied: body TRÔNG NHƯ trang từ chối/không-thấy (403/404/redirect-login) — access-control OK.
+const DENY_MARKERS = [
+  /forbidden|unauthorized|access denied|not found|permission/i,
+  /権限|見つかりません|アクセスできません|ログイン(?:して|が必要)|ページが存在/,
+  /\b(403|404|401)\b/,
+];
+function looksDenied(body) {
+  const s = typeof body === 'string' ? body : JSON.stringify(body || '');
+  return DENY_MARKERS.some(re => re.test(s));
+}
+
+// probeIDOR: request tài nguyên KHÔNG được phép. status≠200 (403/404/302) = access-control OK.
+// status===200: JSON → looksLikeData; HTML → 200 mà KHÔNG phải trang deny = nghi lộ (evidence xác nhận).
 function probeIDOR(result) {
   const { status, body } = result || {};
-  return { status, leak: status === 200 && looksLikeData(body) };
+  if (status !== 200) return { status, leak: false };
+  const isObj = body && typeof body === 'object';
+  const leak = isObj ? looksLikeData(body) : !looksDenied(body);
+  return { status, leak };
 }
 
 function probeBypass({ uiBlocks, apiStatus }) {
@@ -132,7 +148,7 @@ function finding({ family, payloadClass, where, url, severity, observed, fix, sh
 }
 
 module.exports = {
-  PAYLOADS, isServerError, hasStackLeak, looksLikeData, EXPECTED_HEADERS,
+  PAYLOADS, isServerError, hasStackLeak, looksLikeData, looksDenied, EXPECTED_HEADERS,
   xssFired, resetXss, probeInjection, probeIDOR, probeBypass, probeErrorDisclosure,
   checkSecurityHeaders, probeOpenRedirect, probeCsrf, probeMassAssignment, probeForceBrowse, probeSessionAfterLogout,
   finding,

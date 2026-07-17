@@ -61,10 +61,18 @@ test('probeInjection: XSS bơm vào ô CÓ execute → fired=true; ô escaped �
   }
 });
 
-test('probeIDOR: 200+data → leak; 403 → không leak', () => {
+test('probeIDOR: JSON 200+data → leak; 403 → không leak', () => {
   assert.equal(probeIDOR({ status: 200, body: { id: 9, name: 'người khác' } }).leak, true);
   assert.equal(probeIDOR({ status: 403, body: { error: 'forbidden' } }).leak, false);
   assert.equal(probeIDOR({ status: 404, body: 'Not Found' }).leak, false);
+});
+
+test('probeIDOR HTML: 200 trang thật (không deny) → leak; 200 trang deny → không; 302 → không', () => {
+  const realPage = '<html><body><h1>顧客詳細</h1><div>顧客ID AIOTT99 お名前 KH-KHÁC</div></body></html>';
+  assert.equal(probeIDOR({ status: 200, body: realPage }).leak, true);
+  // 200 nhưng render trang "権限がありません" (app dùng 200 cho deny)
+  assert.equal(probeIDOR({ status: 200, body: '<html><body>権限がありません</body></html>' }).leak, false);
+  assert.equal(probeIDOR({ status: 302, body: '' }).leak, false);
 });
 
 test('probeBypass: UI chặn mà API KHÔNG chặn → parityOk=false (FAIL)', () => {
