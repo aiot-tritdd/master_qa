@@ -25,20 +25,46 @@ def test_violations_rendered_and_sorted():
                  "nodes": [{"target": "button.v-btn", "html": "<button></button>"}]},
                 {"rule": "image-alt", "impact": "critical", "wcag": "1.1.1",
                  "help": "Images must have alternate text",
-                 "nodes": [{"target": "img.a", "html": "<img>"}, {"target": "img.b", "html": "<img>"}]},
+                 "description": "Ensure <img> elements have alternate text",
+                 "helpUrl": "https://dequeuniversity.com/rules/axe/4.x/image-alt",
+                 "nodes": [{"target": "img.a", "html": "<img>",
+                            "failureSummary": "Fix any of the following:\n  Element has no alt attribute"},
+                           {"target": "img.b", "html": "<img>"}]},
             ]
         }]
     }
     ws = _run(results)
-    assert ws.cell(1, 4).value == "Rule"
+    # layout cột: mã → WCAG → mức → số chỗ → lỗi gì → CHI TIẾT → CÁCH FIX (tách) → tài liệu → file ảnh → evidence
+    assert ws.cell(1, 4).value == "Mã lỗi (rule)", ws.cell(1, 4).value
+    assert ws.cell(1, 9).value == "Chi tiết (axe đo được)"
+    assert ws.cell(1, 10).value == "Cách fix"
+    assert ws.cell(1, 12).value == "File ảnh"
     # critical phải sắp TRƯỚC serious (impact-sort)
     assert ws.cell(2, 4).value == "image-alt", ws.cell(2, 4).value
-    assert ws.cell(2, 5).value == "critical"
-    assert ws.cell(2, 6).value == "1.1.1"                             # WCAG
-    assert ws.cell(2, 7).value == 2                                   # Số phần tử = len(nodes)
-    assert ws.cell(2, 8).value == "Images must have alternate text"   # Gợi ý fix
+    assert ws.cell(2, 5).value == "1.1.1"                             # WCAG (cột 5)
+    assert ws.cell(2, 6).value == "critical"                         # Mức (cột 6)
+    assert ws.cell(2, 7).value == 2                                   # Số chỗ = len(nodes)
+    assert ws.cell(2, 8).value == "Ensure <img> elements have alternate text"   # Lỗi gì = description
+    # image-alt CÓ trong RULE_GUIDE → Chi tiết + Cách fix TÁCH RIÊNG, khác nhau, không phải cùng 1 chuỗi
+    detail, fix = ws.cell(2, 9).value, ws.cell(2, 10).value
+    assert "alt" in detail.lower(), detail                            # chi tiết: thiếu alt
+    assert "alt" in fix.lower() and detail != fix, (detail, fix)      # cách fix: thêm alt — KHÁC cột chi tiết
+    assert ws.cell(2, 11).value == "https://dequeuniversity.com/rules/axe/4.x/image-alt"  # tài liệu (cột 11)
+    assert ws.cell(2, 12).value in ("", None)                        # file ảnh trống khi không có shot
+    # button-name cũng trong guide → có detail + fix riêng
     assert ws.cell(3, 4).value == "button-name"
-    assert ws.cell(3, 5).value == "serious"
+    assert ws.cell(3, 6).value == "serious"
+    assert ws.cell(3, 9).value and ws.cell(3, 10).value               # có cả chi tiết lẫn cách fix
+
+def test_shot_filename_shown_for_traceability():
+    results = {"meta": {"case": "TC11"}, "screens": [{
+        "name": "① クーポン一覧", "app": "ticket", "url": "/coupons/", "result": "FAIL",
+        "violations": [{"rule": "select-name", "impact": "critical", "wcag": "4.1.2", "help": "h",
+                        "shot": "shots/a11y-TC11__coupon-list__select-name.png",
+                        "nodes": [{"target": "select", "html": "<select>"}]}]}]}
+    ws = _run(results)
+    # File ảnh = basename (dò ngược Excel → shots/), KHÔNG phải path đầy đủ
+    assert ws.cell(2, 12).value == "a11y-TC11__coupon-list__select-name.png", ws.cell(2, 12).value
 
 def test_empty_screens_message():
     ws = _run({"meta": {"case": "E"}, "screens": []})
@@ -68,9 +94,10 @@ def test_coverage_sheet():
 
 def main():
     test_violations_rendered_and_sorted()
+    test_shot_filename_shown_for_traceability()
     test_empty_screens_message()
     test_coverage_sheet()
-    print("✅ test_build_a11y_report PASS (3 tests)")
+    print("✅ test_build_a11y_report PASS (4 tests)")
 
 if __name__ == "__main__":
     main()

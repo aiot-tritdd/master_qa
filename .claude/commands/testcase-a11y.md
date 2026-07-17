@@ -10,7 +10,7 @@ vào PASS/FAIL functional. Oracle = **WCAG** (không phải spec). Mù code — 
 
 ## TIẾT KIỆM TOKEN — đọc trước
 Dùng lại helper `.claude/skills-scripts/testcase-evidence/`: `pw_lib.js` (`getPage`+`shot`),
-`a11y_lib.js` (`runAxe`), `build_a11y_report.py`. KHÔNG viết lại. Không in script/ảnh vào chat.
+`a11y_lib.js` (`runAxe` + `shotViolation`), `build_a11y_report.py`. KHÔNG viết lại. Không in script/ảnh vào chat.
 **Setup 1 lần:** `cd .claude/skills-scripts/testcase-evidence && npm i`.
 
 ## Nguyên tắc (2 tường)
@@ -26,14 +26,20 @@ Dùng lại helper `.claude/skills-scripts/testcase-evidence/`: `pw_lib.js` (`ge
    ```js
    const P='<repo>/.claude/skills-scripts/testcase-evidence/';
    const { getPage, shot } = require(P+'pw_lib');
-   const { runAxe } = require(P+'a11y_lib');
+   const { runAxe, shotViolation } = require(P+'a11y_lib');
    (async () => {
      const { browser, page, BASE } = await getPage('reservation'); // app theo màn
      await page.goto(BASE + '/booking');
      await shot(page, '<folder>/shots/a11y_booking_context.png', 'text=<đặc trưng màn>'); // chờ render xong
      const { violations, counts } = await runAxe(page);
-     // với mỗi violation critical/serious: chụp phần tử lỗi làm evidence
-     // await page.locator(v.nodes[0].target).first().screenshot({path:'<folder>/shots/a11y_<màn>_<rule>.png'});
+     // evidence: 1 ảnh FULL màn / (màn×rule), KHOANH ĐỎ MỌI element vi phạm (shotViolation).
+     // ⛔ KHÔNG crop element lẻ (`locator(target[0]).screenshot()`) — rời khỏi màn = vô nghĩa,
+     //    nhất là rule N-phần-tử (color-contrast 20-50 chỗ, crop 1/50 chả nói gì).
+     for (const v of violations) {
+       if (v.impact === 'critical' || v.impact === 'serious') {
+         v.shot = await shotViolation(page, v.nodes, `<folder>/shots/a11y_<màn>_${v.rule}.png`);
+       }
+     }
      await browser.close();
    })();
    ```
@@ -41,8 +47,10 @@ Dùng lại helper `.claude/skills-scripts/testcase-evidence/`: `pw_lib.js` (`ge
 4. **Verdict mỗi màn:** `PASS` (0 critical/serious) · `FAIL` (≥1) · `未実施` (không vào được màn).
    ⚠️ a11y **KHÔNG BAO GIỜ** dùng `SPEC-GAP` — WCAG luôn định nghĩa kỳ vọng, nên mọi vi phạm chấm được là FAIL. (Đừng mang mental-model "SPEC-GAP là finding cao nhất" của qa-brain sang đây.)
 5. **Viết `<folder>/a11y.results.json`**: `runAxe(...).violations` giờ đã CHUẨN HOÁ sẵn
-   (`{rule, impact, wcag, help, helpUrl, tags, nodes:[{target,html}]}`) — KHÔNG tự map `id→rule`,
-   KHÔNG tự parse `wcagXYZ` nữa. Với mỗi màn: lấy `violations`, gắn thêm `shot` (path ảnh element)
+   (`{rule, impact, wcag, help, description, helpUrl, tags, nodes:[{target, html, failureSummary}]}`) —
+   KHÔNG tự map `id→rule`, KHÔNG tự parse `wcagXYZ` nữa. `description` = rule kiểm cái gì;
+   `failureSummary` = axe đo được VÌ SAO fail (màu #hex, tỉ lệ tương phản, cái còn thiếu) → report tự
+   hiện, ĐỪNG tự đoán số. Với mỗi màn: lấy `violations`, gắn thêm `shot` (path ảnh full-màn khoanh đỏ)
    vào từng violation critical/serious, rồi gom thành `{meta:{case,date,tester}, screens:[{name,app,url,result,violations}]}`.
 6. **Build report:** `python3 .claude/skills-scripts/testcase-evidence/build_a11y_report.py \
    <folder>/a11y.results.json <folder>/<TênFolder>.a11y.xlsx`.
