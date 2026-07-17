@@ -187,6 +187,22 @@ kỹ thuật kiểm thử bài bản để moi bug/gap (không phải bấm rand
 > Khi bí ý tưởng: tự hỏi *"một user ẩu / một kẻ phá hoại / một ca hiếm sẽ làm gì để làm hệ sai số?"*
 > và rà lại checklist trên cho từng màn/trường.
 
+### 4. Bộ kính oracle HICCUPS — NHẬN DIỆN bug (bổ trợ, không thay SPEC)
+Checklist §3 nói *đào ở đâu*; HICCUPS nói *nhìn thế nào để biết đó là bug*. 10 "kính lúp" — rà mỗi màn
+qua từng kính, thấy gợn thì quy về `PASS/FAIL/未実施/SPEC-GAP`. **Tất cả từ QUAN SÁT LIVE — không đọc code.**
+- **H** History — hành vi giờ có khớp lần chạy/bản trước không? (đổi ngầm = nghi regression)
+- **I** Image — có chỉn chu, đúng chất sản phẩm? (vỡ layout, chữ tràn, icon sai)
+- **C** Comparable — sản phẩm tương tự xử ca này ra sao?
+- **C** Claims — khớp điều đã hứa? → **đây CHÍNH LÀ SPEC oracle**, vế duy nhất chốt đúng/sai.
+- **U** User-expectation — user thật thấy khó hiểu/bực không?
+- **P** Product — nhất quán với phần khác cùng app? (thông báo lỗi, format số/ngày, style nút)
+- **S** Standards — chuẩn áp dụng? → **WCAG = track `/testcase-a11y`**; an ninh = `/testcase-security`.
+- **F** Familiarity — user lần đầu có hiểu mà không cần chỉ?
+- **E** Explainability — giải thích được hành vi cho người khác không? Không → khả nghi bug.
+- **W** World — chạy thật ngoài đời: locale/JP, múi giờ, mạng yếu, kích thước màn → **hợp track Compatibility**.
+> ⚠️ HICCUPS chỉ để *phát hiện chỗ nghi*. Chốt đúng/sai vẫn là **Claims=SPEC** (Tường thép #1); kính khác
+> ra gợn mà SPEC im lặng → **SPEC-GAP**, đừng tự bịa `expect`. Nguồn: qa-skills (kindlmann, MIT).
+
 ## Ranh giới token
 - 1 session ấm nghĩ xuyên suốt — không đẻ subprocess `claude -p`.
 - Living Business Doc (đã duyệt) cho sẵn cách drive — không mò UI củ chuối, không đọc code.

@@ -117,6 +117,19 @@ A05 misconfig · A07-phần session) — 10 họ. **Những category sau BẤT K
 - **Neo oracle:** security whitebox vẫn KHÔNG được "code nói an toàn nên an toàn" — oracle = chuẩn an ninh
   (OWASP/CWE) + threat-model, code chỉ để *biết chỗ cần soi* (đúng cạm bẫy tautology §dưới).
 
+**🍞 Breadcrumb cho whitebox/chiến-lược (chốt 2026-07-17, ĐÃ đọc file skill thật):**
+Mấy nguồn dưới đây khảo rồi, **cố tình KHÔNG bê cho con đen** vì là whitebox/strategy — để sẵn cho con sau nhặt,
+khỏi khảo lại:
+| Nguồn (đã đọc) | Món cụ thể bê được | Cho ai |
+|---|---|---|
+| `qa-skills/security-testing` (references: `scanning-and-ci.md`, `auth-tests.md`, `owasp-tests.md`) | **ZAP (DAST)** baseline scan · **OSV-Scanner (SCA/gate)** + SBOM/provenance (A03) · **Semgrep `p/owasp-top-ten` (SAST)** · secret-scan (TruffleHog) · JWT tests (`alg:none`/expiry/wrong-key) · 5-layer CI pipeline | whitebox — security |
+| **security-auditor** (VoltAgent) | audit config/policy/log theo SOC2/ISO/PCI/HIPAA/NIST (Read/Grep/Glob) | whitebox — security/compliance |
+| **test-automator** (VoltAgent) | dựng framework unit/IT/perf + CI, mục tiêu >80% coverage, flaky <1% | whitebox — lõi |
+| `qa-skills` nhánh trắng: `unit-testing`·`coverage-analysis`·`database-testing`·`contract-testing` | test tầng đáy pyramid theo runner từng repo | whitebox — lõi |
+| **qa-expert** (VoltAgent) | test-strategy/plan · quality-metrics (defect-density, coverage, quality-score) · điều phối test-automator/security-auditor | **chiến-lược** — trùm 2 con |
+- ⚠️ **Neo lại tautology:** whitebox bê mấy cái trên vẫn phải giữ oracle = SPEC/chuẩn (OWASP/CWE), KHÔNG để "test sinh từ code". Chi tiết 3 cạm bẫy ở cuối §4.
+- Bản đối chiếu đầy đủ + phần ĐÃ bê cho con đen: xem **§5 Harvest log (2026-07-17)**.
+
 **3 cạm bẫy phải giải trước khi build whitebox:**
 1. **Tautology áp thẳng vào whitebox.** Test sinh từ code = "code làm đúng cái code làm" = vô nghĩa (đúng cái
    README black-box chửi). ⇒ whitebox vẫn phải neo oracle vào **SPEC** (test tầng unit/IT nhưng kỳ vọng từ spec);
@@ -141,3 +154,19 @@ A05 misconfig · A07-phần session) — 10 họ. **Những category sau BẤT K
 | VoltAgent **security-auditor** | — (white-box) | 🟢 nhánh security |
 | VoltAgent **qa-expert** | metrics (đã có breakdown xlsx) | strategy |
 | **Testsigma** | ý 5-agent (đã rút) | — |
+
+### Harvest log (2026-07-17) — đọc file skill thật rồi mới chốt
+Sau khi **đọc nội dung thật** (không đoán mô tả) 3 skill của `qa-skills` (kindlmann, MIT):
+- ✅ **BÊ NGAY — con đen:** `exploratory-testing` → **HICCUPS/FEW HICCUPS** đã nhét vào `qa-brain` §3.4
+  (bộ 10 oracle-lens nhận diện bug; Claims=SPEC, Standards=WCAG, World=Compatibility — code-blind, không phá tường).
+- ⏳ **QUEUE — con đen (chưa làm):**
+  - `security-testing` → nâng `security_lib`: **OWASP remap 2021→2025** (A03=Supply-Chain, A10=Exceptional-Conditions,
+    SSRF gộp A01/A06), thêm probe **cookie-flags / path-traversal / CORS / session-fixation**, đổi sang
+    **acceptable-status-set** (`expect([...]).toContain`), **meta-verify bằng OWASP Juice Shop** (chĩa probe vào app
+    cố-tình-lỗi để chứng minh probe bắt thật, không PASS rỗng).
+  - `qa-report-humanizer` → **fact-preservation grep** (số trong report ⊆ số đã-quan-sát, chống bịa) + anti-pattern checklist + filler-blocklist.
+- 🔵 **PARK cho whitebox/chiến-lược (KHÔNG bê cho con đen):**
+  - **security-auditor** (VoltAgent) → nhánh security con whitebox (đọc config/SAST/compliance) — đã có ở §4.
+  - **test-automator** (VoltAgent) → lõi con whitebox (framework unit/API/CI, coverage) — đã có ở §4.
+  - **qa-expert** (VoltAgent) → lớp **strategy/metrics** trùm 2 con (test-plan, defect-density, quality-score) — dùng khi dựng chiến lược, không phải track.
+  - **testsigma** → chỉ khái niệm (5-agent, Healer/Analyzer) — đã rút, không có code bê được.
