@@ -159,12 +159,12 @@ khỏi khảo lại:
 Sau khi **đọc nội dung thật** (không đoán mô tả) 3 skill của `qa-skills` (kindlmann, MIT):
 - ✅ **BÊ NGAY — con đen:** `exploratory-testing` → **HICCUPS/FEW HICCUPS** đã nhét vào `qa-brain` §3.4
   (bộ 10 oracle-lens nhận diện bug; Claims=SPEC, Standards=WCAG, World=Compatibility — code-blind, không phá tường).
-- ⏳ **QUEUE — con đen (chưa làm):**
-  - `security-testing` → nâng `security_lib`: **OWASP remap 2021→2025** (A03=Supply-Chain, A10=Exceptional-Conditions,
-    SSRF gộp A01/A06), thêm probe **cookie-flags / path-traversal / CORS / session-fixation**, đổi sang
+- ✅ **BÊ RỒI — con đen (đã live-verify / test):**
+  - `security-testing` → nâng `security_lib` **v2 (LIVE-VERIFIED 2026-07-17)**: **OWASP remap 2021→2025** (A03=Supply-Chain, A10=Exceptional-Conditions,
+    SSRF gộp A01/A06), thêm probe **cookie-flags / path-traversal / CORS / session-fixation** (3 họ v2 đều PASS), đổi sang
     **acceptable-status-set** (`expect([...]).toContain`), **meta-verify bằng OWASP Juice Shop** (chĩa probe vào app
     cố-tình-lỗi để chứng minh probe bắt thật, không PASS rỗng).
-  - `qa-report-humanizer` → **fact-preservation grep** (số trong report ⊆ số đã-quan-sát, chống bịa) + anti-pattern checklist + filler-blocklist.
+  - ✅ `qa-report-humanizer` → **`factcheck_report.py`** (+7 test): GATE filler/AI-tell + tally-bịa (số PASS/FAIL summary khớp đếm thật), WARN passive/vague. Chạy TRƯỚC build mọi report-source JSON (BUG-LOG §3 + command doc).
 - 🔵 **PARK cho whitebox/chiến-lược (KHÔNG bê cho con đen):**
   - **security-auditor** (VoltAgent) → nhánh security con whitebox (đọc config/SAST/compliance) — đã có ở §4.
   - **test-automator** (VoltAgent) → lõi con whitebox (framework unit/API/CI, coverage) — đã có ở §4.

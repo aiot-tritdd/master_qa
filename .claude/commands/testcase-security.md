@@ -66,7 +66,7 @@ Setup 1 lần: `cd .claude/skills-scripts/testcase-evidence && npm i`.
    ⚠️ Security **KHÔNG BAO GIỜ** `SPEC-GAP` (bất biến an ninh luôn định nghĩa kỳ vọng).
 5. **Viết `<folder>/security.results.json`**: `{meta:{case,date,tester}, screens:[{name,app,url,result,
    findings:[finding(...)]}]}`. XSS-fired / bypass-thành-công / IDOR-leak → severity `High`; error-disclosure/500 → `Medium`.
-6. **Build report:** `python3 .../build_security_report.py <folder>/security.results.json <folder>/<Tên>.security.xlsx`.
+6. **Factcheck rồi build report:** `python3 .../factcheck_report.py <folder>/security.results.json` (gate: filler/AI-tell + tally bịa; sạch mới build) → `python3 .../build_security_report.py <folder>/security.results.json <folder>/<Tên>.security.xlsx`.
 7. **Đẩy sổ bug** (chỉ FAIL): dedup **1 bug/(màn×họ×payload-class)** → append `bug-he-thong.tcs.json`
    (`bug_type:"Security"`, `result:"FAIL"`, `pri`=High cho XSS-fired/bypass/IDOR-leak, Medium cho error-disclosure/500,
    `screen`="<App> — <Màn>", `source`=TestCase-XX, `title`="<Họ>: <hành vi>", `before:null`+`note`, `after`=ảnh).

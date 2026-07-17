@@ -90,6 +90,14 @@ Tự nhảy sang **sheet SPEC-GAP** riêng trong sổ.
 
 ## 3. Build lại (mỗi lần sửa JSON)
 
+**TRƯỚC khi build — factcheck (chống bịa/văn AI):**
+```bash
+python3 .claude/skills-scripts/testcase-evidence/factcheck_report.py wtf-is-this/bug-he-thong.tcs.json
+```
+Gate (exit≠0): **filler/AI-tell** (viết cụ thể cái gì gãy, không "Moving forward…") + **tally bịa** (số PASS/FAIL
+trong field summary phải khớp đếm thật). Warn: passive/vague. Sạch (0 lỗi) mới build. Áp cho MỌI report-source
+JSON (`*.results.json` a11y/security + `tcs.json` evidence). Nguồn: qa-report-humanizer (kindlmann, MIT).
+
 ```bash
 python3 .claude/skills-scripts/testcase-evidence/build_bug_report.py \
   wtf-is-this/bug-he-thong.tcs.json wtf-is-this/bug-he-thong.xlsx

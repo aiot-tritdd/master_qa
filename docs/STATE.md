@@ -42,8 +42,9 @@ evidence PNG/xlsx. Oracle = SPEC + quan sát live. **Mù code.** GitNexus chỉ 
   - **HICCUPS** → `qa-brain/SKILL.md §3.4`: bộ 10 kính oracle nhận diện bug (code-blind; Claims=SPEC chốt đúng/sai, Standards=a11y, World=Compatibility).
   - **`security_lib` v2** (+5 test → 21): 3 probe mới **cookie-flags · CORS · session-fixation** (họ 11-13) + `PAYLOADS.pathTraversal` + helper **acceptable-status-set** (`isDenied`/`statusIn`). Command doc remap **OWASP 2025** + recipe **Juice-Shop meta-verify** (chống PASS rỗng).
   - ✅ **LIVE-VERIFIED 3 họ v2 2026-07-17** (ticket-dev, read-only, không cleanup): **cả 3 PASS** — cookie-flags (sessionid HttpOnly+Secure+SameSite; csrftoken Secure+SameSite) · session-fixation (cắm id giả → server xoay sang id mới) · CORS (không phản chiếu Origin lạ). Live **bắt + vá 1 false-positive**: probe đòi HttpOnly trên csrftoken (SAI — CSRF cookie by-design để JS đọc) → chừa csrf khỏi luật HttpOnly. TestCase-11 security = **16 dòng: 9 PASS / 3 FAIL (=BUG-020 headers) / 4 未実施**.
+  - ✅ **Fact-preservation checker** (`factcheck_report.py` + 7 test) — bê phần mechanical của qa-report-humanizer: GATE **filler/AI-tell** + **tally bịa** (số PASS/FAIL trong summary phải khớp đếm thật), WARN passive/vague. Chạy trên MỌI report-source JSON TRƯỚC build (pointer ở BUG-LOG §3 + command doc). Data thật (security.results + sổ 20 bug) đều 0 lỗi.
   - **Breadcrumb whitebox/chiến-lược** vào ROADMAP §4 + harvest log §5 (security-auditor/test-automator/qa-expert + phần DAST/SCA/SAST của qa-skills security-testing = whitebox; không bê cho con đen).
-  - ⏳ Còn queue con đen: **fact-preservation grep** cho report (humanizer).
+  - ✅ **Queue harvest con đen ĐÓNG**: HICCUPS + security_lib v2 (live-verified) + fact-check. 3 nguồn whitebox/strategy đã park (ROADMAP §4).
 
 ### ✅ MERGE Phase 0 — vá lệnh chết (2026-07-09, đã verify)
 Trước đó 4 lệnh trỏ vào file **không tồn tại**. Nay:
