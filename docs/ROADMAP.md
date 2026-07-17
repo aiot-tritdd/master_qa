@@ -135,9 +135,10 @@ phải re-bless. Muốn hết noise phải **mask vùng-data tay** (điều user
 ⇒ **Luật dùng Visual:** chỉ bless màn **TĨNH** (form, cài đặt, login). Màn có ngày/tiền/danh sách → **đừng**.
 
 **Bỏ qua (quyết 2026-07-16 · rà lại 2026-07-17):**
-- **Analyzer** (gom cụm bug) — ⚠️ *lý do cũ đã lỗi thời*: viết khi sổ "11 bug/1 nguồn"; **nay 37 bug/3 nguồn**.
-  Rà lại 2026-07-17: **vẫn hoãn** — dedup hiện làm bằng tay lúc đẩy sổ (1 bug/(màn×họ×payload-class), gom
-  site-wide cho headers) và vẫn ổn. Mốc xét lại: **sổ > ~80 bug** hoặc khi cụm trùng bắt đầu lọt.
+- **Analyzer** (gom cụm bug) — ⚠️ *lý do cũ đã lỗi thời*: viết khi sổ "11 bug/1 nguồn"; **nay 39 bug / 4 loại**
+  (a11y 21 · Function 11 · Security 4 · Perf 3). Rà lại 2026-07-17: **vẫn hoãn** — dedup hiện làm bằng tay lúc
+  đẩy sổ (1 bug/(màn×họ×payload-class), gom site-wide cho headers) và vẫn ổn. Mốc xét lại: **sổ > ~80 bug**
+  hoặc khi cụm trùng bắt đầu lọt.
 - **PreToolUse hook** (biến tường thép thành cơ chế) — OQ-09. **User bác lại 2026-07-17** khi được đề xuất → giữ hoãn.
   ⚠️ Rủi ro còn nguyên: "QA mù code" hiện **chỉ là chữ**, không có gì chặn kỹ thuật.
 

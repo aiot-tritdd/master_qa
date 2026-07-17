@@ -1,7 +1,10 @@
 # STATE — điểm dừng & việc tiếp (đọc ĐẦU TIÊN mỗi phiên)
 
 > File **sống** — cập nhật cuối mỗi phiên. Mục đích: mở phiên mới là biết ngay *đang ở đâu, làm gì tiếp*.
-> Cập nhật: **2026-07-17**. Branch git: `qa-brain` (threease_qa) — local == remote == `ba2018f`, working tree sạch.
+> Cập nhật: **2026-07-17**. Branch git: `qa-brain` (threease_qa) — đã push hết, working tree sạch.
+>
+> ⚠️ **KHÔNG ghi commit hash vào file này.** Hash luôn SAI: commit ghi doc tạo ra hash mới *sau khi* đã ghi.
+> (Đúng vậy thật — bản 2026-07-17 ghi `ba2018f`, thực tế đã là `ee3c434`.) Muốn biết đang ở đâu: `git log --oneline -1`.
 
 ---
 
