@@ -28,9 +28,11 @@ Playwright → **quan sát live** → chấm PASS/FAIL + evidence. Cộng pipeli
    Track RIÊNG, oracle = WCAG, vẫn mù code (axe chỉ đọc DOM).
 6. (tuỳ chọn) `/testcase-visual wtf-is-this/TestCase-XX` → so ảnh màn với baseline người-duyệt (regression UI).
    Track RIÊNG, oracle = baseline, mù code. Baseline ở `baselines/` (commit git), mask từ knowledge.
-7. (tuỳ chọn) `/testcase-security wtf-is-this/TestCase-XX` → quét security 4 họ (Injection/XSS · IDOR ·
-   Client-bypass · Error-disclosure) → report + sổ bug. Track RIÊNG, oracle = **bất biến an ninh phổ quát**,
-   mù code. Data test prefix `AIOT-TEST-SEC-*` → `/testcase-cleanup`.
+7. (tuỳ chọn) `/testcase-security wtf-is-this/TestCase-XX` → quét security **10 họ** (phủ phần black-box
+   OWASP: Injection/XSS · IDOR · Client-bypass · Error-disclosure · Security-headers · Open-redirect · CSRF ·
+   Mass-assignment · Force-browse · Session-after-logout) → report + sổ bug. Track RIÊNG, oracle = **bất biến
+   an ninh phổ quát**, mù code. Đây là NƠI TẬP TRUNG security (functional không làm rải rác nữa). Data test
+   prefix `AIOT-TEST-SEC-*` → `/testcase-cleanup`.
 
 ## Chìa khoá + tri thức (black-box)
 - **HOW vs WHAT:** navigation (bấm gì) tách khỏi đúng/sai (WHAT). Bug ở WHAT (logic), không ở HOW

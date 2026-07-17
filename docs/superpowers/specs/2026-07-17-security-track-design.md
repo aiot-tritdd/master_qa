@@ -30,16 +30,26 @@ theo checklist kiểu OWASP-lite, chấm bằng **bất biến an ninh phổ qu�
 **Verdict:** `PASS` · `FAIL` · `未実施` (không probe được). **KHÔNG BAO GIỜ `SPEC-GAP`** — bất biến an ninh
 luôn định nghĩa kỳ vọng (giống a11y với WCAG).
 
-## 3. Phạm vi v1 — 4 họ kiểm tra
+## 3. Phạm vi — 10 họ (phủ phần black-box của OWASP Top 10)
+
+> **Sửa scope 2026-07-17 (user push-back):** v1 ban đầu chỉ 4 họ — scope quá dè dặt. Mở rộng thành
+> **10 họ = TẤT CẢ phần OWASP Top 10 quét được kiểu black-box/mù-code.** Track này là **security scanner
+> tập trung**, KHÔNG để functional làm rải rác nữa (xem §8 consolidation).
 
 Oracle mỗi họ đều **quan sát được, mù code**:
 
-| Họ | Probe | FAIL khi (bất biến bị phá) |
-|---|---|---|
-| **Injection / XSS** | Bơm payload vào MỌI ô text đang test: `<img src=x onerror="window.__SEC_XSS=1">` (XSS), `'; DROP TABLE--` / `" OR "1"="1` (SQLi), `${{7*7}}` / `{{7*7}}` (template), `=2+2+@SUM` (CSV) | payload **execute** (`window.__SEC_XSS===1` sau render) · phản chiếu **chưa escaped** (thành element sống) · response **500** |
-| **Access-control / IDOR** | GET tài nguyên bằng id **người khác / khác institute / không tồn tại** (id lân cận id hợp lệ đang quan sát) | trả **200 kèm data thật khác** (thay vì 403/404) · lộ field nhạy cảm |
-| **Client-guard bypass** | **Guard-parity:** quan sát UI có guard (nút disabled / `max=N` / field 404) → gọi thẳng API bỏ guard (`withApi`) | backend **KHÔNG chặn** (2xx thay vì 4xx) · số dư/tồn **âm** · tạo được record UI cấm |
-| **Error / info disclosure** | Input rác + param dị (id chữ, type sai, field thừa) | body lộ **Traceback / SQL error / stack / path** · **500** |
+| # | Họ (OWASP) | Probe | FAIL khi (bất biến bị phá) |
+|---|---|---|---|
+| 1 | **Injection / XSS** (A03) | Bơm `PAYLOADS.xss/sqli/template/csv` vào ô text (XSS marker `window.__SEC_XSS`) → `probeInjection` | payload **execute** · phản chiếu **chưa escaped** · **500** |
+| 2 | **IDOR** (A01) | GET id người khác / khác institute / không tồn tại → `probeIDOR` | **200 kèm data thật** (thay vì 403/404) |
+| 3 | **Client-bypass** (A01) | **Guard-parity:** quan sát UI guard (disabled/`max`/404) → gọi thẳng API → `probeBypass` | backend **KHÔNG chặn** (`!parityOk`) · số dư/tồn **âm** |
+| 4 | **Error-disclosure** (A05) | input rác/param dị → `probeErrorDisclosure` | body lộ **Traceback/SQL/stack** · **500** |
+| 5 | **Security-headers** (A05) | đọc response headers → `checkSecurityHeaders(headers,{https})` | thiếu **CSP / X-Frame / nosniff / Referrer-Policy / HSTS** |
+| 6 | **Open-redirect** (A01) | param redirect (`?next/url/return`) = host ngoài → theo dõi final URL → `probeOpenRedirect` | final host = **host tấn công** |
+| 7 | **CSRF** (A01/A05) | state-changing POST bỏ token/credential → `probeCsrf` | **2xx** dù thiếu token |
+| 8 | **Mass-assignment** (A01) | POST field đặc quyền KHÔNG có trên form (`is_admin`/`role`/`institute_id`) → đọc lại → `probeMassAssignment` | field lạ **được persist** |
+| 9 | **Force-browse / path-traversal** (A01) | GET URL admin/cấm hoặc `../` → `probeForceBrowse` | **200 kèm data thật** |
+| 10 | **Session-after-logout** (A07) | logout → gọi lại request bảo vệ bằng session cũ → `probeSessionAfterLogout` | còn **200** sau logout |
 
 **Guard-parity nói rõ (chốt brainstorm):** track **QUAN SÁT** trên màn thấy guard (đọc DOM: `disabled`,
 `maxlength`, nút vắng mặt, 404) → test API có giữ **cùng ràng buộc quan sát được** đó không. Oracle =
@@ -90,17 +100,33 @@ Thêm `"Security"` vào tuple `bug_type` hợp lệ (dòng ~380) — y hệt lú
 - Không đụng account/data người thật; chỉ institute/khách test (`TESTSEED001`, khách `AIOT*`).
 - IDOR probe chỉ **đọc** id lân cận trong phạm vi test; không sửa/xoá tài nguyên người khác.
 
-## 6. Ngoài phạm vi v1 (YAGNI)
+## 6. Ngoài phạm vi — vì SAO (thật, không phải lười)
 
-- Không auth/session-fixation/CSRF-token deep test (cần state phức tạp) — để v2.
-- Không fuzzing tự động diện rộng / không quét toàn route_map (giữ spec-scoped, code-blind).
-- Không rate-limit/DoS (cấm — hại dev chung).
-- Không SAST/đọc code (đó là việc con whitebox tương lai, ROADMAP §4).
+**Bỏ do BẢN CHẤT (không quét được mù-code từ ngoài) — nhường con whitebox tương lai (ROADMAP §4):**
+- A04 Insecure Design (kiến trúc) · A08 Software/Data Integrity (deserialize/CI-CD) · A09 Logging & Monitoring
+  (không observable từ ngoài) · A06 Vulnerable Components (cần SBOM/SCA = đọc dependency) · A02 Crypto/TLS sâu
+  (cần soi config/cipher). → Đây là ranh giới THẬT của black-box, không phải cắt scope tuỳ tiện.
+
+**Bỏ do AN TOÀN dev chung (không phải kỹ thuật):**
+- No-lockout / credential-stuffing / brute-force: thử sai pass nhiều lần dễ **khoá account test dùng chung**
+  (mini-DoS lên account) → BỎ. Rate-limit/DoS: cấm.
+
+**Giữ nguyên (đã có ở §3):** mọi thứ CÒN LẠI của OWASP quét được black-box đều nằm trong 10 họ.
+
+## 6b. Consolidation — security RA KHỎI qa-brain functional (chốt 2026-07-17)
+
+Trước đây `qa-brain/SKILL.md` §"USER QUẬY PHÁ" bảo con **functional** tự improvise injection/IDOR/bypass
+mỗi spec → rải rác, không hệ thống, không report riêng. **Dẹp.** Security **tập trung ở `/testcase-security`**:
+- Sửa `SKILL.md`: rút Injection/IDOR/tampering/bypass/error-disclosure khỏi checklist functional →
+  trỏ sang `/testcase-security`. Functional **chỉ giữ robustness nghiệp vụ** (input-rác, race/double-submit,
+  state-transition, cross-field/business-rule — mấy cái đúng/sai *nghiệp vụ*, không phải security).
+- Đụng nghi vấn security lúc test functional → GHI CHÚ chạy `/testcase-security`, KHÔNG improvise.
 
 ## 7. Kiểm thử (track tự test)
 
-- `security_lib.test.js` (node:test): oracle helpers thuần (`xssFired`, `isServerError`, `looksLikeData`,
-  `hasStackLeak`) + `probeInjection` trên fixture `setContent` (XSS-fired vs escaped) — không cần dev.
+- `security_lib.test.js` (node:test): 15 test — oracle helpers thuần (10 họ: `xssFired`/`isServerError`/
+  `looksLikeData`/`hasStackLeak`/`checkSecurityHeaders`/`probeOpenRedirect`/`probeCsrf`/`probeMassAssignment`/
+  `probeForceBrowse`/`probeSessionAfterLogout`) + `probeInjection` trên fixture `setContent` (XSS-fired vs escaped) — không cần dev.
 - `test_build_security_report.py`: cột đúng thứ tự · tách Chi tiết/Cách fix · File ảnh basename ·
   coverage sheet · empty-message.
 - `test_bug_report_security_type.py` (hoặc mở rộng test type sẵn): `bug_type:"Security"` render được.

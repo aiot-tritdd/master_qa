@@ -3,7 +3,9 @@ const assert = require('node:assert');
 const { chromium } = require('playwright');
 const {
   PAYLOADS, isServerError, hasStackLeak, looksLikeData,
-  xssFired, resetXss, probeInjection, probeIDOR, probeBypass, probeErrorDisclosure, finding,
+  xssFired, resetXss, probeInjection, probeIDOR, probeBypass, probeErrorDisclosure,
+  checkSecurityHeaders, probeOpenRedirect, probeCsrf, probeMassAssignment, probeForceBrowse, probeSessionAfterLogout,
+  finding,
 } = require('./security_lib');
 
 test('PAYLOADS có đủ 4 họ, XSS dùng marker window.__SEC_XSS', () => {
@@ -75,6 +77,51 @@ test('probeErrorDisclosure: 500 hoặc stack leak → disclosed', () => {
   assert.equal(probeErrorDisclosure({ status: 500, body: 'x' }).disclosed, true);
   assert.equal(probeErrorDisclosure({ status: 200, body: 'Traceback (most recent call last):' }).disclosed, true);
   assert.equal(probeErrorDisclosure({ status: 404, body: '{"detail":"not found"}' }).disclosed, false);
+});
+
+test('checkSecurityHeaders: thiếu header phòng thủ → missing; đủ → ok; HSTS bỏ qua khi http; CSP frame-ancestors thay X-Frame', () => {
+  const none = checkSecurityHeaders({});
+  assert.equal(none.ok, false);
+  assert.ok(none.missing.some(m => m.header === 'content-security-policy'));
+  const full = checkSecurityHeaders({
+    'Content-Security-Policy': "default-src 'self'", 'X-Frame-Options': 'DENY',
+    'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer',
+    'Strict-Transport-Security': 'max-age=63072000',
+  });
+  assert.equal(full.ok, true, JSON.stringify(full.missing));
+  // http → HSTS không tính thiếu
+  assert.ok(!checkSecurityHeaders({}, { https: false }).missing.some(m => m.header === 'strict-transport-security'));
+  // CSP frame-ancestors thay được X-Frame-Options
+  const cspFa = checkSecurityHeaders({ 'Content-Security-Policy': "frame-ancestors 'none'" });
+  assert.ok(!cspFa.missing.some(m => m.header === 'x-frame-options'));
+});
+
+test('probeOpenRedirect: final host == host tấn công → vulnerable', () => {
+  assert.equal(probeOpenRedirect({ finalUrl: 'https://evil.com/x', attackerHost: 'evil.com' }).vulnerable, true);
+  assert.equal(probeOpenRedirect({ finalUrl: 'https://ticket-dev.threease.com/home', attackerHost: 'evil.com' }).vulnerable, false);
+  assert.equal(probeOpenRedirect({ finalUrl: 'not-a-url', attackerHost: 'evil.com' }).vulnerable, false);
+});
+
+test('probeCsrf: POST thiếu token mà 2xx → vulnerable', () => {
+  assert.equal(probeCsrf({ status: 200 }).vulnerable, true);
+  assert.equal(probeCsrf({ status: 403 }).vulnerable, false);
+  assert.equal(probeCsrf({ status: 302 }).vulnerable, false);
+});
+
+test('probeMassAssignment: field đặc quyền ghi được → vulnerable', () => {
+  assert.equal(probeMassAssignment({ accepted: true }).vulnerable, true);
+  assert.equal(probeMassAssignment({ accepted: false }).vulnerable, false);
+});
+
+test('probeForceBrowse: URL cấm 200+data → leak', () => {
+  assert.equal(probeForceBrowse({ status: 200, body: { id: 1, name: 'x' } }).leak, true);
+  assert.equal(probeForceBrowse({ status: 403, body: {} }).leak, false);
+});
+
+test('probeSessionAfterLogout: sau logout còn 200 → vulnerable', () => {
+  assert.equal(probeSessionAfterLogout({ status: 200 }).vulnerable, true);
+  assert.equal(probeSessionAfterLogout({ status: 401 }).vulnerable, false);
+  assert.equal(probeSessionAfterLogout({ status: 302 }).vulnerable, false);
 });
 
 test('finding chuẩn hoá đủ field', () => {

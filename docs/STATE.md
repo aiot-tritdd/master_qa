@@ -31,8 +31,10 @@ evidence PNG/xlsx. Oracle = SPEC + quan sát live. **Mù code.** GitNexus chỉ 
   report `.visual.xlsx` + sổ bug (`bug_type: Visual`). Mask sinh tự động ở build-time (explorer `dynamic`). Type test thứ 3.
   ✅ **LIVE-VERIFIED 2026-07-17**: capture/compare/NEW-BASELINE chạy e2e; **bless baseline 3 màn ticket** (`baselines/ticket/{coupons,customer-700006,coupon-reports-sales}.png`, commit). ⚠️ Giới hạn auto-mask (không bắt churn xuyên-phiên) đã ghi ROADMAP → 3 màn data-heavy này sẽ cần re-bless khi data đổi.
   Spec/plan: `docs/superpowers/{specs,plans}/2026-07-16-visual-track*`.
-- ✅ **Track Security** (`/testcase-security`) — 4 họ (Injection/XSS · IDOR · Client-bypass guard-parity · Error-disclosure),
-  oracle = **bất biến an ninh phổ quát** (code-blind, no SPEC-GAP). `security_lib.js` + `build_security_report.py` + `bug_type:Security`. Type track thứ 4.
+- ✅ **Track Security** (`/testcase-security`) — **10 họ phủ phần black-box OWASP** (Injection/XSS · IDOR · Client-bypass guard-parity ·
+  Error-disclosure · Security-headers · Open-redirect · CSRF · Mass-assignment · Force-browse/traversal · Session-after-logout),
+  oracle = **bất biến an ninh phổ quát** (code-blind, no SPEC-GAP). `security_lib.js` (15 test) + `build_security_report.py` + `bug_type:Security`. Type track thứ 4.
+  **Consolidation:** security RÚT khỏi qa-brain functional (SKILL.md) → tập trung ở track này.
   ⚠️ **CÒN TREO: live-verify** (cần dev): chạy `/testcase-security wtf-is-this/TestCase-11`, cleanup `AIOT-TEST-SEC-*` sau.
   Spec/plan: `docs/superpowers/{specs,plans}/2026-07-17-security-track*`.
 

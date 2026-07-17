@@ -146,13 +146,12 @@ phiên này + 1 dòng vì sao. KHÔNG liệt kê máy móc cả 6 khi không kh�
 Bộ case mà **toàn PASS + toàn happy path = YẾU**. QA giỏi **cố tình phá cho gãy**. Với mỗi feature
 PHẢI có nhóm **adversarial** (ngoài happy/permission/boundary/regression/integrity của METHOD):
 - **Input rác:** số âm, 0, thập phân, chữ, cực lớn, rỗng, khoảng trắng, emoji.
-- **Injection:** `<script>`/`<img onerror>` (XSS), `'; DROP`/`${}` vào MỌI ô text → phải escaped.
 - **Race / double-submit:** double-click nút, gửi 2 lần cực nhanh → không nhân đôi/âm.
-- **Chống-bypass:** bỏ guard client (xoá `max`/`disabled`, sửa value qua JS) hoặc gọi thẳng API →
-  **backend phải chặn** (METHOD golden). Số dư/tồn kho **không được âm**.
-- **Tampering / IDOR:** URL với id không tồn tại / của người khác / khác institute → 404/403 sạch,
-  **không 500/traceback/lộ dữ liệu**.
 - **State ngược đời:** ngày kết thúc < bắt đầu, hủy 2 lần, dùng khi hết hạn, sửa khi đang có người giữ.
+- ⛔ **Security (Injection/XSS · IDOR · client-bypass · tampering · error-disclosure · headers · CSRF · …)
+  KHÔNG làm rải rác ở đây nữa** → track riêng **`/testcase-security`** (oracle = bất biến an ninh phổ quát,
+  10 họ phủ phần black-box OWASP). Functional chỉ giữ robustness *nghiệp vụ* (input-rác/race/state ở trên +
+  cross-field/business-rule). Đụng nghi vấn security lúc test functional → GHI CHÚ để chạy `/testcase-security`, đừng tự improvise.
 - ⚠️ Nhiều đòn quậy spec **im lặng** kỳ vọng → ra **`SPEC-GAP`** (finding giá trị cao nhất). ĐỪNG bịa
   `expect`; ghi cái quan sát được + "hỏi BA/dev". Tìm được `SPEC-GAP`/`FAIL` ở nhóm này = QA đang làm đúng việc.
 
@@ -182,9 +181,8 @@ kỹ thuật kiểm thử bài bản để moi bug/gap (không phải bấm rand
   history ↔ thống kê). Σ dòng phải = tổng. Đây là mỏ bug (vd cột hiển thị券面 nhưng tổng tính 残).
 - **Concurrency / idempotency:** double-submit, 2 request song song, retry, double-refund → không
   nhân đôi / không âm.
-- **Chống-bypass tầng API:** bỏ guard client (xoá max/disabled, POST thẳng) → backend phải chặn.
 - **Cross-field / business-rule:** SC vs giá, 開始日 vs 終了日, thuế込/抜/免, quyền × trạng thái.
-- **Injection / tampering / IDOR:** XSS/SQL vào ô text; URL id lạ/của người khác/khác institute.
+- **Security (bypass/injection/IDOR/…):** → track riêng `/testcase-security` (KHÔNG làm ở functional nữa).
 - **Định lượng khi báo:** luôn ghi con số THẬT (trước→sau, Σ vs tổng, mã HTTP) để finding không cãi được.
 > Khi bí ý tưởng: tự hỏi *"một user ẩu / một kẻ phá hoại / một ca hiếm sẽ làm gì để làm hệ sai số?"*
 > và rà lại checklist trên cho từng màn/trường.

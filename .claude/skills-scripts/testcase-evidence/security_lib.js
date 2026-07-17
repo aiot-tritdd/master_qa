@@ -78,12 +78,62 @@ function probeErrorDisclosure(result) {
   return { disclosed: isServerError(status) || leak.leak, kind: leak.kind, snippet: leak.snippet };
 }
 
+// ── A05 Security headers — bất biến: header phòng thủ NÊN có (defense-in-depth). ──
+const EXPECTED_HEADERS = {
+  'content-security-policy': 'CSP (chống XSS/inject)',
+  'x-frame-options': 'chống clickjacking (hoặc CSP frame-ancestors)',
+  'x-content-type-options': 'nosniff (chống MIME-sniff)',
+  'referrer-policy': 'kiểm soát rò referrer',
+  'strict-transport-security': 'HSTS (ép https)',
+};
+function checkSecurityHeaders(headers, opts = {}) {
+  const https = opts.https !== false;
+  const h = {};
+  for (const k in (headers || {})) h[k.toLowerCase()] = headers[k];
+  const missing = [];
+  for (const [key, label] of Object.entries(EXPECTED_HEADERS)) {
+    if (key === 'strict-transport-security' && !https) continue;               // HSTS chỉ áp cho https
+    if (key === 'x-frame-options' && /frame-ancestors/i.test(h['content-security-policy'] || '')) continue; // CSP thay thế
+    if (!h[key]) missing.push({ header: key, label });
+  }
+  return { missing, ok: missing.length === 0 };
+}
+
+// ── A01 Open-redirect — final host == host tấn công → vuln. ──
+function probeOpenRedirect({ finalUrl, attackerHost }) {
+  try { return { vulnerable: new URL(finalUrl).host === attackerHost }; }
+  catch (_) { return { vulnerable: false }; }
+}
+
+// ── A05/A01 CSRF — state-changing POST thiếu token/credential → PHẢI KHÔNG 2xx. ──
+function probeCsrf({ status }) {
+  return { vulnerable: typeof status === 'number' && status >= 200 && status < 300 };
+}
+
+// ── A01 Mass-assignment — field đặc quyền KHÔNG có trên form mà GHI được → vuln. ──
+function probeMassAssignment({ accepted }) {
+  return { vulnerable: !!accepted };
+}
+
+// ── A01 Force-browse / path-traversal — URL cấm/traversal trả 200 kèm data → leak (giống IDOR). ──
+function probeForceBrowse(result) {
+  const { status, body } = result || {};
+  return { status, leak: status === 200 && looksLikeData(body) };
+}
+
+// ── A07 Session-after-logout — sau logout, request bảo vệ PHẢI 401/302-login, KHÔNG 200. ──
+function probeSessionAfterLogout({ status }) {
+  return { vulnerable: status === 200 };
+}
+
 function finding({ family, payloadClass, where, url, severity, observed, fix, shot }) {
   return { family, payloadClass: payloadClass || '', where: where || '', url: url || '',
     severity: severity || 'Medium', observed: observed || '', fix: fix || '', shot: shot || '' };
 }
 
 module.exports = {
-  PAYLOADS, isServerError, hasStackLeak, looksLikeData,
-  xssFired, resetXss, probeInjection, probeIDOR, probeBypass, probeErrorDisclosure, finding,
+  PAYLOADS, isServerError, hasStackLeak, looksLikeData, EXPECTED_HEADERS,
+  xssFired, resetXss, probeInjection, probeIDOR, probeBypass, probeErrorDisclosure,
+  checkSecurityHeaders, probeOpenRedirect, probeCsrf, probeMassAssignment, probeForceBrowse, probeSessionAfterLogout,
+  finding,
 };

@@ -36,7 +36,7 @@ Level: E2E/System ─── con black-box hiện tại sống ở đây
 
 Type:  Functional      ✅ có
        Accessibility   ✅ vừa build (/testcase-a11y, axe-core, oracle=WCAG)
-       Security        ✅ /testcase-security (4 họ: XSS/IDOR/bypass/error-disclosure, oracle=bất biến an ninh)
+       Security        ✅ /testcase-security (10 họ — phủ phần black-box OWASP, oracle=bất biến an ninh)
        Visual          ❌ ứng viên kế
        Performance     ❌ vướng oracle (cần budget do người đặt)
        Compatibility   ❌ rẻ, giá trị tuỳ scope (đáng nhất cho widget public)
