@@ -28,6 +28,18 @@ grown_from: "0119159:.claude-tester/knowledge/LESSONS.md (chỉ 9/11 mục — 2
 - Không chắc HOW hay WHAT? → hỏi: *"câu này giúp tôi BẤM đúng, hay giúp tôi CHẤM đúng?"*
   Giúp **bấm** → vào. Giúp **chấm** → không (chỉ SPEC được giúp chấm).
 
+- **2026/07/17 — [SPA/route/oracle] Nuxt trả 200 + CÙNG MỘT VỎ cho MỌI path** (pro, reservation — đo thật).
+  `GET /../../../../etc/passwd` và `GET /reservation` trả body **giống HỆT nhau từng byte** (reservation 3526 ký tự,
+  pro 4165); chữ `404 Not Found` / `リクエストページが存在しません` do **JS vẽ SAU khi render**, KHÔNG có trong body.
+  ⇒ (a) **`context.request` (không chạy JS) không đủ để chấm** force-browse/IDOR trên SPA — phải `page.goto` + chờ
+  rồi đọc `document.body.innerText`; (b) **status 200 trên SPA KHÔNG nghĩa là route tồn tại** — đừng dùng 200/404
+  để kết luận "có/không có màn" (khác hẳn ticket-app Django: 404 thật là 404).
+- **2026/07/17 — [pro/route]** Route đặt lịch thật là **`/reservations`** (số nhiều, KHÔNG có prefix branch).
+  `/branches/2/reservations/` trả **200 nhưng ra màn ホーム** (vỏ SPA) → tưởng vào đúng màn là sai.
+  Calendar Nuxt cần **~7-8s** mới render (2.5s là chưa xong → quét axe/probe lúc đó = đo vỏ rỗng).
+- **2026/07/17 — [reservation/route]** Widget đặt lịch ở **`/reservation`** (số ÍT). `/` ra `リクエストページが存在しません`
+  (soft-404, HTTP 200). Widget **không có login** (chỉ basic-auth `BASIC_USER/BASIC_PASS`) → các họ cần cắt phiên
+  (session-after-logout / session-fixation) **không áp dụng được**. Đặc trưng màn để chờ: `text=コース選択`.
 - **2026/07/11 — [cleanup/coupon]** Coupon (Ticket **và** Pro) **KHÔNG có UI/API xoá**: list/detail/edit
   không có nút 削除, `/coupons/<id>/delete/` → 404, Pro modal chỉ có 更新/編集. ⇒ data test coupon
   (`AIOT-TEST-*`) + pack đã phát hành **không dọn được qua UI** → nhờ dev xoá ở DB (`name LIKE 'AIOT-TEST%'`).

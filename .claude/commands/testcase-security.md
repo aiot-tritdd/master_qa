@@ -1,8 +1,11 @@
 # /testcase-security — Test Security (bất biến an ninh, black-box) một TestCase
 
 Quét security các màn spec đang test đụng tới, theo checklist **13 họ** (tất cả đã live-verify trên ticket-dev
-2026-07-17). **Track RIÊNG**, KHÔNG trộn PASS/FAIL functional. Oracle = **bất biến an ninh PHỔ QUÁT**
-(không phải spec). Mù code.
+2026-07-17; 6 họ read-only re-verify trên pro + reservation). **Track RIÊNG**, KHÔNG trộn PASS/FAIL functional.
+Oracle = **bất biến an ninh PHỔ QUÁT** (không phải spec). Mù code.
+
+> ⚠️ Quét **app SPA** (pro / reservation / admin — Nuxt)? Đọc mục **"App SPA — BẮT BUỘC cấp `baselineBody`"**
+> bên dưới TRƯỚC khi chạy. Bỏ qua = FAIL giả hàng loạt (đã cắn thật 2026-07-17).
 
 ## Cách dùng
 `/testcase-security wtf-is-this/TestCase-XX`
@@ -44,6 +47,31 @@ Setup 1 lần: `cd .claude/skills-scripts/testcase-evidence && npm i`.
 > Assert dùng **tập mã** (`isDenied(status)` / `statusIn(status,[400,403,404,422])`), KHÔNG ép 1 status.
 > ⚠️ Cookie **csrf/xsrf** cố tình KHÔNG HttpOnly (double-submit cần JS đọc) → probe đã chừa; đừng báo bug.
 > Session-fixation phải **cắm id giả** rồi xem server có xoay không (chỉ đọc id trước/sau chưa đủ nếu app không tạo session ẩn danh).
+
+### 🚨 App SPA (Nuxt/Vue/React) — BẮT BUỘC cấp `baselineBody`, nếu không FAIL GIẢ HÀNG LOẠT
+Oracle HTML của `probeIDOR`/`probeForceBrowse` là *"200 mà không phải trang deny ⇒ nghi lộ"*. Luật đó **VỠ trên SPA**:
+server trả **cùng một vỏ** cho MỌI path (kể cả path cấm/không tồn tại), chữ "404 / không có quyền" do **JS vẽ sau**
+→ vỏ không chứa deny-marker → **mọi path đều bị chấm leak**.
+> 📌 Đã cắn thật **2026-07-17**: `../../../../etc/passwd` ra "200 + trả data" trên **cả pro lẫn reservation**,
+> trong khi body **y HỆT** trang hợp lệ, **không** có `root:x:`, DOM sau render là **404** → app chặn ĐÚNG. FAIL giả 100%.
+> (Cùng loại với dòng `IDOR attempt` 未実施 của TestCase-11 — trước phải ghi chú tay, nay có cơ chế chặn.)
+
+```js
+// ✅ ĐÚNG — baseline = body path HỢP LỆ; giống hệt byte ⇒ catch-all SPA ⇒ inconclusive
+const baselineBody = await (await context.request.get(BASE + '/<path-hợp-lệ>')).text();
+const r = probeForceBrowse({ status, body }, { baselineBody });
+if (r.inconclusive) {                    // vỏ SPA → raw HTML vô nghĩa, PHẢI quan sát DOM đã render
+  await page.goto(BASE + '/' + payload); await page.waitForTimeout(4000);
+  const rendered = await page.evaluate(() => document.body.innerText.trim());
+  // chấm lại trên `rendered`; traversal chỉ FAIL khi thấy dấu hiệu file hệ thống thật (root:x: / /bin/sh)
+}
+```
+- **`baselineBody` (so byte) là cửa MẠNH NHẤT** — app-agnostic, không đoán. Luôn cấp khi có thể.
+- `looksLikeSpaShell()` chỉ là **dự phòng** khi không có baseline, và **yếu hơn**: vỏ Pro có 56 ký tự text
+  server-render (`…ログイン ワークスペースの準備が整うまでお待ちください。`) nên nó **trượt** — chỉ baseline bắt được.
+  ⚠️ **Đừng nâng ngưỡng độ-dài để "chữa"**: ngưỡng cùn sẽ nuốt luôn trang lộ thật nhưng ngắn ⇒ **false-negative**
+  (bỏ sót lỗ hổng — tệ hơn hẳn false-positive). Unit test đã khoá cả 2 chiều.
+- Chỉ áp cho **HTML**; body **JSON** vẫn chấm bằng `looksLikeData` như cũ.
 
 ## Quy trình
 1. **Scope:** đọc `specs.md §3` → app/màn/field. Có `tcs.json` đã chạy → tái dùng màn/URL/field.

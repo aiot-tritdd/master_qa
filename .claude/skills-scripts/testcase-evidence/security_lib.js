@@ -89,12 +89,53 @@ function looksDenied(body) {
   return DENY_MARKERS.some(re => re.test(s));
 }
 
+// ⚠️ SPA shell — vỏ HTML chưa render (Nuxt/Vue/React). Server trả CÙNG một vỏ cho MỌI path (kể cả path
+// cấm/không tồn tại); chữ "404/không có quyền" do JS vẽ SAU. Vỏ này KHÔNG có text server-render nào.
+// Vì sao phải nhận diện: oracle HTML của probeIDOR là "200 mà không phải trang deny ⇒ nghi lộ" — luật đó
+// VỠ trên SPA (vỏ không chứa deny-marker ⇒ mọi path đều bị chấm leak = FAIL GIẢ HÀNG LOẠT).
+// Bắt được thật (2026-07-17): `../../../../etc/passwd` trên pro+reservation ra "200 + trả data", trong khi
+// body y HỆT trang hợp lệ, không hề có `root:x:`, và DOM sau render là "404 Not Found" → app chặn đúng.
+// ⇒ Gặp vỏ SPA thì probe KHÔNG được phán; phải quan sát DOM ĐÃ RENDER (page.goto + chờ) rồi đưa text vào.
+// Cần CẢ HAI dấu hiệu — cố ý. Chỉ dựa "text ngắn" là dao quá cùn: một trang lộ data THẬT nhưng ngắn
+// (vd `<h1>顧客 700006</h1>email a@b.com` = 24 ký tự) sẽ bị nuốt thành "vỏ" ⇒ false-NEGATIVE, tức bỏ sót
+// lỗ hổng — tệ hơn hẳn false-positive ban đầu. Unit test dưới khoá đúng ca này.
+const SPA_MOUNT_RE = /<div[^>]+id=["'](?:__nuxt|__next|app|root)["']|__NUXT__|__NEXT_DATA__|data-reactroot|ng-version=/i;
+function looksLikeSpaShell(body) {
+  if (typeof body !== 'string' || !/<html|<!doctype/i.test(body)) return false;
+  if (!SPA_MOUNT_RE.test(body)) return false;          // ① có vân tay hydration của SPA
+  const text = body
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&[a-z#0-9]+;/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return text.length < 40;                             // ② + không có nội dung server-render nào
+}
+
 // probeIDOR: request tài nguyên KHÔNG được phép. status≠200 (403/404/302) = access-control OK.
 // status===200: JSON → looksLikeData; HTML → 200 mà KHÔNG phải trang deny = nghi lộ (evidence xác nhận).
-function probeIDOR(result) {
+//
+// HAI cửa chống FAIL-giả trên SPA (chỉ áp cho HTML, KHÔNG áp cho JSON):
+//  ① opts.baselineBody — body của path HỢP LỆ. Giống HỆT body path cấm ⇒ server KHÔNG phục vụ tài nguyên
+//    đó, chỉ trả catch-all của SPA ⇒ raw HTML không nói lên gì. Đây là tín hiệu MẠNH NHẤT (so byte, không
+//    đoán), app-agnostic. Dùng nó khi có thể.
+//  ② looksLikeSpaShell(body) — dự phòng khi driver không cấp baseline. Là heuristic ⇒ yếu hơn ①:
+//    vỏ Pro có 56 ký tự text server-render ("…ログイン ワークスペースの準備が整うまでお待ちください。") nên ② TRƯỢT,
+//    chỉ ① bắt được (đo thật 2026-07-17). Đừng nâng ngưỡng để "chữa" — ngưỡng độ-dài vốn mong manh.
+// Cả hai → `inconclusive`: driver PHẢI quan sát DOM đã render rồi chấm lại.
+function probeIDOR(result, opts = {}) {
   const { status, body } = result || {};
   if (status !== 200) return { status, leak: false };
   const isObj = body && typeof body === 'object';
+  if (!isObj && typeof body === 'string') {
+    if (opts.baselineBody && body === opts.baselineBody) {
+      return { status, leak: false, inconclusive: true, reason: 'spa-catch-all: body giống HỆT path hợp lệ ⇒ server không phục vụ tài nguyên này' };
+    }
+    if (looksLikeSpaShell(body)) {
+      return { status, leak: false, inconclusive: true, reason: 'spa-shell: vỏ HTML chưa render, phải quan sát DOM sau render' };
+    }
+  }
   const leak = isObj ? looksLikeData(body) : !looksDenied(body);
   return { status, leak };
 }
@@ -149,8 +190,8 @@ function probeMassAssignment({ accepted }) {
 
 // ── A01 Force-browse / path-traversal — URL cấm/traversal trả 200 kèm resource → leak. ──
 // Cùng oracle với IDOR (xử được cả JSON lẫn HTML: 200 + không phải trang deny = nghi lộ).
-function probeForceBrowse(result) {
-  return probeIDOR(result);
+function probeForceBrowse(result, opts = {}) {
+  return probeIDOR(result, opts); // phải chuyển tiếp opts, nếu không cửa baselineBody bị nuốt
 }
 
 // ── A07 Session-after-logout — sau logout, request bảo vệ PHẢI 401/302-login, KHÔNG 200. ──
@@ -209,7 +250,7 @@ function finding({ family, payloadClass, where, url, severity, observed, fix, sh
 }
 
 module.exports = {
-  PAYLOADS, DENY_STATUS, isServerError, statusIn, isDenied, hasStackLeak, looksLikeData, looksDenied, EXPECTED_HEADERS,
+  PAYLOADS, DENY_STATUS, isServerError, statusIn, isDenied, hasStackLeak, looksLikeData, looksDenied, looksLikeSpaShell, EXPECTED_HEADERS,
   xssFired, resetXss, probeInjection, probeIDOR, probeBypass, probeErrorDisclosure,
   checkSecurityHeaders, probeOpenRedirect, probeCsrf, probeMassAssignment, probeForceBrowse, probeSessionAfterLogout,
   probeCookieFlags, probeCors, probeSessionFixation,

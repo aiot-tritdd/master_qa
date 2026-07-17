@@ -2,7 +2,7 @@ const { test } = require('node:test');
 const assert = require('node:assert');
 const { chromium } = require('playwright');
 const {
-  PAYLOADS, DENY_STATUS, isServerError, statusIn, isDenied, hasStackLeak, looksLikeData,
+  PAYLOADS, DENY_STATUS, isServerError, statusIn, isDenied, hasStackLeak, looksLikeData, looksLikeSpaShell,
   xssFired, resetXss, probeInjection, probeIDOR, probeBypass, probeErrorDisclosure,
   checkSecurityHeaders, probeOpenRedirect, probeCsrf, probeMassAssignment, probeForceBrowse, probeSessionAfterLogout,
   probeCookieFlags, probeCors, probeSessionFixation,
@@ -178,6 +178,60 @@ test('probeSessionFixation: id không xoay sau login → vuln; xoay → an toàn
   assert.equal(probeSessionFixation({ before: 'sameid', after: 'sameid' }).vulnerable, true);
   assert.equal(probeSessionFixation({ before: 'old', after: 'new' }).vulnerable, false);
   assert.equal(probeSessionFixation({ before: null, after: 'x' }).inconclusive, true);
+});
+
+// ── REGRESSION: vỏ SPA chưa render KHÔNG được chấm leak (bug thật 2026-07-17, pro+reservation) ──
+// Vỏ Nuxt THẬT lấy từ reservation-dev: server trả y hệt vỏ này cho /reservation (hợp lệ) LẪN
+// /../../../../etc/passwd (traversal). Không có root:x:. DOM sau render mới ra "404 Not Found".
+const NUXT_SHELL = `<!doctype html>
+<html lang="ja" data-n-head="%7B%22lang%22"><head><title>Threease</title>
+<meta charset="utf-8"><style>#nuxt-loading{background:#fff;visibility:hidden}</style></head>
+<body><div id="__nuxt"><style>#nuxt-loading{opacity:0}</style><div id="nuxt-loading"></div></div>
+<script>window.__NUXT__={};</script></body></html>`;
+
+test('looksLikeSpaShell: nhận ra vỏ chưa render, KHÔNG nhầm trang có nội dung thật', () => {
+  assert.equal(looksLikeSpaShell(NUXT_SHELL), true, 'vỏ Nuxt thật phải bị nhận ra');
+  assert.equal(looksLikeSpaShell('<html><body><h1>顧客 700006</h1><p>email: a@b.com</p></body></html>'), false,
+    'trang HTML có nội dung server-render KHÔNG phải vỏ');
+  assert.equal(looksLikeSpaShell('root:x:0:0:root:/root:/bin/bash'), false, 'body không phải HTML');
+  assert.equal(looksLikeSpaShell({ id: 1 }), false, 'JSON không phải vỏ');
+  // ⚠️ false-NEGATIVE guard: trang LỘ THẬT nhưng NGẮN (24 ký tự) không được nhầm là vỏ.
+  // Chỉ dựa "text ngắn" là fail ca này → phải đòi thêm vân tay hydration SPA.
+  assert.equal(looksLikeSpaShell('<html><body><h1>顧客 700006</h1>email a@b.com</body></html>'), false,
+    'trang ngắn nhưng KHÔNG có mount-point SPA ⇒ không phải vỏ (nếu nuốt = bỏ sót lỗ hổng)');
+});
+
+test('probeIDOR: vỏ SPA → inconclusive, KHÔNG phải leak (chống FAIL giả hàng loạt)', () => {
+  const r = probeIDOR({ status: 200, body: NUXT_SHELL });
+  assert.equal(r.leak, false, 'vỏ SPA tuyệt đối không được chấm leak');
+  assert.equal(r.inconclusive, true, 'phải báo inconclusive để driver quan sát DOM đã render');
+  // probeForceBrowse dùng chung oracle → cùng hành vi
+  assert.equal(probeForceBrowse({ status: 200, body: NUXT_SHELL }).inconclusive, true);
+  // nhưng lộ THẬT thì vẫn phải bắt được
+  assert.equal(probeIDOR({ status: 200, body: '<html><body><h1>顧客 700006</h1>email a@b.com</body></html>' }).leak, true);
+  assert.equal(probeIDOR({ status: 200, body: { id: 7, email: 'a@b.com' } }).leak, true);
+});
+
+// Vỏ Pro THẬT: có 56 ký tự text server-render ⇒ heuristic looksLikeSpaShell TRƯỢT.
+// Chỉ cửa baselineBody (so byte) mới bắt được. Ca này khoá đúng khoảng trống đó.
+const PRO_SHELL = `<!doctype html><html><head><title>threease_pro - threease_pro</title></head>
+<body><div id="__nuxt"></div><div>ログイン</div><div>ワークスペースの準備が整うまでお待ちください。</div>
+<script>window.__NUXT__={};</script></body></html>`;
+
+test('probeIDOR: baselineBody bắt được catch-all mà heuristic vỏ TRƯỢT (ca Pro thật)', () => {
+  assert.equal(looksLikeSpaShell(PRO_SHELL), false, 'vỏ Pro có text server-render ⇒ heuristic không bắt (đúng như đo thật)');
+  // không baseline → probe phán leak (FAIL giả — chính là bug 2026-07-17)
+  assert.equal(probeIDOR({ status: 200, body: PRO_SHELL }).leak, true);
+  // có baseline giống hệt → inconclusive, KHÔNG phán leak
+  const r = probeIDOR({ status: 200, body: PRO_SHELL }, { baselineBody: PRO_SHELL });
+  assert.equal(r.leak, false);
+  assert.equal(r.inconclusive, true);
+  assert.match(r.reason, /catch-all/);
+  // probeForceBrowse phải CHUYỂN TIẾP opts (từng quên → cửa bị nuốt)
+  assert.equal(probeForceBrowse({ status: 200, body: PRO_SHELL }, { baselineBody: PRO_SHELL }).inconclusive, true);
+  // baseline KHÁC → vẫn phán bình thường (không nuốt leak thật)
+  assert.equal(probeIDOR({ status: 200, body: '<html><body><h1>顧客 700006</h1>email a@b.com</body></html>' },
+    { baselineBody: PRO_SHELL }).leak, true);
 });
 
 test('finding chuẩn hoá đủ field', () => {
