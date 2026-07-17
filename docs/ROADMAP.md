@@ -40,24 +40,27 @@ Type:  Functional      ✅ có
        Visual          ✅ DONE + live-verify — nhưng CHỈ hợp màn TĨNH (xem cảnh báo §3)
        Compatibility   ✅ DONE + live-verify (reservation widget) — oracle=WCAG 1.4.10 + parity engine
                        ≈67% ổn: 8/12 ô chạy, 8/8 PASS. Safari 未実施 — user CHỐT chấp nhận lỗ (2026-07-17)
-       Performance     ❌ ỨNG VIÊN KẾ — oracle ĐÃ GIẢI (Core Web Vitals), xem §3
+       Performance     ✅ DONE + live-verify — oracle=Core Web Vitals (ngưỡng Google công bố)
+                       ⚠️ LAB≠FIELD: đo 1 máy/1 mạng/trên dev = CẬN DƯỚI của mức tệ, không phải chứng nhận nhanh
+
+⇒ **CẢ 6 TYPE ĐỀU XONG.** Mở rộng tiếp = theo trục ĐỘ PHỦ APP (admin trắng) hoặc trục LEVEL (whitebox §4).
 ```
 
 **Độ phủ app (2026-07-17)** — type-track ≠ app đã quét. 5 app thì mới đụng 3:
 
-| App | Functional | a11y | Visual | Security | Compat |
-|---|---|---|---|---|---|
-| ticket | ✅ TestCase-11 | ✅ | ✅ (3 baseline) | ✅ 13 họ | ❌ |
-| pro | ✅ TestCase-12 | ✅ 2 màn | ❌ | ✅ **13/13 họ** | ❌ |
-| reservation | ⛔ **không có SPEC** → không chấm được | ✅ 1 màn | ❌ | ✅ 6 họ read-only | ✅ **2/3 engine × 4 cỡ** |
-| **admin** | ❌ | ❌ | ❌ | ❌ | ❌ ← **mảng trắng hoàn toàn** |
-| backend | — (không có UI; quét gián tiếp qua API của pro) | — | — | — | — |
+| App | Functional | a11y | Visual | Security | Compat | Perf |
+|---|---|---|---|---|---|---|
+| ticket | ✅ TestCase-11 | ✅ | ✅ (3 baseline) | ✅ 13 họ | ❌ | ❌ |
+| pro | ✅ TestCase-12 | ✅ 2 màn | ❌ | ✅ **13/13 họ** | ❌ | ✅ 2 màn — **FAIL** |
+| reservation | ⛔ **không có SPEC** → không chấm được | ✅ 1 màn | ❌ | ✅ 6 họ read-only | ✅ 2/3 engine × 4 cỡ (Safari bỏ) | ✅ 1 màn — PASS |
+| **admin** | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ ← **mảng trắng hoàn toàn** |
+| backend | — (không có UI; quét gián tiếp qua API của pro) | — | — | — | — | — |
 
 > ⚠️ **reservation không có SPEC** ⇒ functional **cấu trúc không chấm được** (không oracle → không bịa `expect`).
 > Muốn test functional widget: phải có spec trước. Type-track thì chạy được vì oracle phổ quát.
 
 **🔴 Nút thắt lớn nhất hiện nay KHÔNG phải thiếu test — mà là bug không tới tay dev.**
-Sổ: **36 bug · Mở 36 · Chờ retest 0 · Đã đóng 0**. Chưa cái nào được sửa, và `wtf-is-this/` thì **gitignored**
+Sổ: **39 bug · Mở 39 · Chờ retest 0 · Đã đóng 0**. Chưa cái nào được sửa, và `wtf-is-this/` thì **gitignored**
 (evidence local) ⇒ team **chưa từng thấy** sổ. Vòng đời `Mở → Chờ retest → Đã đóng` (BUG-LOG §2) + `/testcase-retest`
 **dựng sẵn nhưng chưa chạy lần nào**. Thêm bug vào đống chưa ai đọc = giá trị biên tiến về 0.
 → Ưu tiên: chốt kênh giao bug với team, rồi chạy thử 1 vòng retest để biết pipeline có thật sự sống.
@@ -73,7 +76,7 @@ Sổ: **36 bug · Mở 36 · Chờ retest 0 · Đã đóng 0**. Chưa cái nào 
 | **Security (gom)** | ✅ **DONE — live-verified** (**13 họ**; ticket 13 · **pro đủ 13/13** · reservation 6 read-only) | bất biến an ninh phổ quát (XSS escaped, no 500/leak, IDOR 403/404, guard-parity, cookie/CORS/fixation) | `withApi`, khuôn a11y |
 | **Visual** | ✅ **DONE — live-verified** (bless 3 baseline ticket) · ⚠️ CHỈ dùng cho màn **TĨNH** | baseline PNG đã người-duyệt | `shot()` sẵn + khuôn a11y |
 | **Compatibility** | ✅ **DONE — live-verified** (`/testcase-compat`, 12 test, widget **8 PASS / 4 未実施 ≈ 67% phủ**) · Safari: **user chốt chấp nhận lỗ** | **WCAG 1.4.10 Reflow** (mốc 320px, W3C công bố) + parity affordance giữa engine + 0 `pageerror` | Playwright multi-context |
-| **Performance** | ⏳ **ỨNG VIÊN KẾ** — oracle **đã giải** (Core Web Vitals) | LCP/CLS/INP < ngưỡng Google công bố | `withApi` timing + CDP |
+| **Performance** | ✅ **DONE — live-verified** (`/testcase-perf`, 8 test; widget PASS · **pro FAIL: TBT 1184ms = 6× ngưỡng**) | **Core Web Vitals** — LCP/CLS/TBT/FCP/TTFB < ngưỡng **Google công bố** (web.dev) | `PerformanceObserver` + `pw_lib` |
 
 **🔬 Live-verify là thật, không phải thủ tục — 6 bug ORACLE + 1 bug URL bị bắt nhờ nó** (không có nó thì cả 4 đã lọt thành
 bug bịa gửi cho dev, hoặc PASS rỗng che lỗi thật):
@@ -143,10 +146,9 @@ phải re-bless. Muốn hết noise phải **mask vùng-data tay** (điều user
 
 | # | Việc | Vì sao đứng đây | Chặn gì |
 |---|---|---|---|
-| **1** | **Giao 36 bug cho team + chạy thử 1 vòng retest** | Bug nằm trong file **local gitignored**, chưa ai đọc. Test không tới dev = **công cốc**. Vòng đời bug + `/testcase-retest` dựng sẵn **chưa chạy lần nào** ⇒ chưa biết có sống không | ⛔ cần user chốt **kênh giao** (OneDrive? issue? gửi sếp?) |
-| **2** | **Compatibility track** | Type kế hợp vision nhất: 0 setup, oracle phổ quát. Và `reservation` là **widget CÔNG KHAI khách dùng trên điện thoại**, mà mới test **1 browser 1 cỡ desktop** → chỗ rủi ro cao nhất lại mỏng nhất | không |
-| **3** | **Admin app** | Mảng trắng cuối cùng (4/5 app đã đụng) | không — nhưng để sau #1, thêm bug vào đống chưa ai đọc thì vô nghĩa |
-| **4** | **Performance track** | Oracle đã gỡ (Core Web Vitals) | không |
+| **1** | **Giao 39 bug cho team + chạy thử 1 vòng retest** | Bug nằm trong file **local gitignored**, chưa ai đọc. Test không tới dev = **công cốc**. Vòng đời bug + `/testcase-retest` dựng sẵn **chưa chạy lần nào** ⇒ chưa biết có sống không | ⛔ cần user chốt **kênh giao** (OneDrive? issue? gửi sếp?) |
+| **2** | **Admin app** | Mảng trắng cuối cùng (4/5 app đã đụng). **6/6 type-track đã xong** ⇒ mở rộng giờ đi theo trục ĐỘ PHỦ APP, không phải thêm type | không — nhưng để sau #1, thêm bug vào đống chưa ai đọc thì vô nghĩa |
+| **3** | **Phủ type-track còn thiếu trên app đã đụng** | Bảng §2 lỗ nhiều: ticket chưa compat/perf · pro chưa visual · widget chưa functional (không SPEC) | không |
 | **5** | **IDOR** (họ duy nhất còn 未実施 trên pro/ticket) | Lỗ hổng access-control là loại nặng nhất, mà đang **mù** | ⛔ cần **account institute #2** (TESTSEED002) |
 | — | PreToolUse hook · whitebox · Analyzer | user đã bác/hoãn (xem §3, §4) | — |
 

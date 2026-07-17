@@ -86,6 +86,26 @@ evidence PNG/xlsx. Oracle = SPEC + quan sát live. **Mù code.** GitNexus chỉ 
     bằng HTTP 200 / "thấy chữ gì đó".**
   - ⚠️ Phạm lại luật cũ: `waitForTimeout(7000)` → desktop bị chấm **未実施 OAN** (giây 7 vẫn đang loading, spinner +
     lớp phủ). Sửa: chờ **điều kiện** (`waitFor visible` + `networkidle`). `pw_lib.shot()` đã ghi luật này từ lâu.
+- ✅ **Track Performance** (`/testcase-perf`) — **type track thứ 6, ĐÓNG TRỌN 6/6 TYPE**, 2026-07-17.
+  `perf_lib.js` (**8 test**) + `build_perf_report.py` (sheet **Chỉ số** màn × metric, có dòng ngưỡng + cảnh báo
+  LAB≠FIELD ngay đầu) + `bug_type:"Performance"`.
+  **Oracle = Core Web Vitals, ngưỡng GOOGLE CÔNG BỐ** (web.dev/vitals) — LCP ≤2500ms · CLS ≤0.1 · **TBT ≤200ms**
+  (proxy LAB cho INP) · FCP ≤1800ms · TTFB ≤800ms. **Không cần ai đặt số** ⇒ 0-setup, đúng vai trò WCAG với a11y.
+  📌 **Gỡ 1 quyết định SAI của ROADMAP cũ**: *"Performance vướng oracle, cần budget do người đặt"* → **SAI**.
+  `needs-improvement` **cũng FAIL** (good LÀ mốc đạt; nới cho qua = tự hạ chuẩn công bố).
+  ✅ **LIVE-VERIFIED 2026-07-17** (5 lần/màn → **trung vị**, chromium, dev):
+  · **Reservation `/2` = PASS** — cả 5 chỉ số good (LCP 1324ms · CLS 0.046 · TBT 106ms · FCP 1324ms · TTFB 184ms).
+  · **Pro `/reservations` = FAIL** → **BUG-039 (High): TBT 1184ms = 6× ngưỡng 200ms** ⇒ luồng chính bị chặn ~1.2s,
+    user bấm/gõ không ăn · **BUG-038 (Medium): CLS 0.18** (dao động 0.109–0.495, cờ `unstable` — nhưng **mọi lần
+    chạy đều > 0.1** nên vẫn kết luận được là không đạt).
+  · **Pro `/accounting` = FAIL** → **BUG-040 (Medium): TBT 480ms = 2.4× ngưỡng**.
+  ⚠️ **4 điều BẮT BUỘC nói khi báo cáo** (giấu = lừa người đọc): ① **LAB ≠ FIELD** — chuẩn CWV thật là phân vị 75
+  của người dùng THẬT (CrUX, máy yếu/4G); lab "good" **không** chứng minh user thật thấy nhanh, nhưng lab "poor"
+  thì **chắc chắn** tệ ⇒ kết quả = **CẬN DƯỚI của mức tệ**. ② **DEV ≠ PROD** (không CDN, data ít). ③ **INP
+  KHÔNG đo được ở lab** → TBT proxy; `perf_lib` cố ý **không** có INP trong `THRESHOLDS`, **unit test khoá luôn**
+  (thêm INP vào = chuẩn bị bịa số). ④ **Nhiễu cao** → 5 lần lấy **TRUNG VỊ** (không phải trung bình); cờ
+  `unstable` (dao động > trung vị) phải **báo ra**, không giấu.
+  **Sổ bug: 36 → 39.**
   - ⚠️ **Reservation KHÔNG có SPEC** → functional **không chạy được** (không oracle, không bịa). Chỉ type-track (oracle phổ quát). Folder `wtf-is-this/Reservation-widget/` chứa evidence type-track, không phải folder spec.
 
 ### ✅ MERGE Phase 0 — vá lệnh chết (2026-07-09, đã verify)
@@ -148,9 +168,9 @@ Chạy thật trên dev, không phải syntax check:
    ⛔ **Chặn: cần user chốt kênh giao** (OneDrive / tạo issue / gửi sếp?).
    → Sau khi giao: chạy thử **1 vòng retest** để nghiệm thu pipeline.
    💡 *Vấn đề bây giờ không phải "tìm thêm bug" — là bug không tới tay dev.*
-2. **[Type-track kế] Performance** — oracle đã gỡ (Core Web Vitals: LCP<2.5s · CLS<0.1 · INP<200ms — ngưỡng
-   Google công bố, phổ quát, **không cần ai đặt số**). 0 setup, hợp vision đa dự án. (Không chặn.)
-3. **[App] Admin (8081)** — mảng trắng cuối cùng (4/5 app đã đụng). Để **sau #1**: thêm bug vào đống chưa ai đọc = vô nghĩa.
+2. **[App] Admin (8081)** — mảng trắng cuối cùng. **6/6 type-track đã xong** ⇒ mở rộng giờ đi theo trục
+   **ĐỘ PHỦ APP**, không phải thêm type mới. (Không chặn — nhưng để sau #1.)
+3. **[Phủ lỗ]** Bảng độ phủ (ROADMAP §2) còn lỗ: ticket chưa compat/perf · pro chưa visual · widget chưa functional (không SPEC).
 4. **[Security] IDOR** — họ DUY NHẤT còn `未実施` trên cả ticket lẫn pro. Access-control là loại nặng nhất mà đang **mù**.
    ⛔ **Chặn: cần account institute THỨ HAI** (`TESTSEED002`) → xin dev/sếp.
 6. **[Grow knowledge/system]** Còn 3 domain: **6 Booking** · **7 Reservation widget** · **8 Admin** (OQ-02 đã đóng, hết bị chặn).

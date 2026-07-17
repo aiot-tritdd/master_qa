@@ -41,6 +41,12 @@ Playwright → **quan sát live** → chấm PASS/FAIL + evidence. Cộng pipeli
    **parity affordance giữa engine** + **0 lỗi JS**, mù code. KHÔNG cần baseline (so giữa engine cùng thời điểm).
    ⛔ Engine không chạy được → **`未実施` + lý do**, TUYỆT ĐỐI không giả lập bằng engine khác rồi báo "đã test".
 
+9. (tuỳ chọn) `/testcase-perf wtf-is-this/TestCase-XX` → đo **Core Web Vitals** (LCP/CLS/TBT/FCP/TTFB),
+   5 lần/màn lấy **trung vị**. Track RIÊNG, oracle = **ngưỡng Google công bố** (web.dev/vitals) — không cần
+   ai đặt số. `needs-improvement` **cũng là FAIL** (good LÀ mốc đạt; nới = tự hạ chuẩn).
+   ⚠️ **Báo cáo BẮT BUỘC nói: LAB ≠ FIELD + DEV ≠ PROD** — lab "good" không chứng minh user thật thấy nhanh;
+   lab "poor" thì chắc chắn tệ. ⛔ **Không báo "INP" ở lab** (field-only) — dùng TBT proxy.
+
 ## Chìa khoá + tri thức (black-box)
 - **HOW vs WHAT:** navigation (bấm gì) tách khỏi đúng/sai (WHAT). Bug ở WHAT (logic), không ở HOW
   (nút/màn) → navigation miễn nhiễm bug logic.

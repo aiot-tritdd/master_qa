@@ -196,6 +196,7 @@ làm hỏng khâu dựng, và ta không phân biệt được *"bug ở feature"
    │
 /testcase-security <folder> quét security 13 họ (phủ black-box OWASP 2025) → report security + sổ bug
 /testcase-compat <folder>   quét compat: 3 engine x 4 viewport → report ma trận + sổ bug
+/testcase-perf <folder>     đo Core Web Vitals (5 lần → trung vị) → report perf + sổ bug
    │
 /testcase-cleanup           dọn dữ liệu test trên dev (prefix AIOT-TEST-*)
    │
@@ -291,6 +292,7 @@ qua đúng một trong ba cửa:
 | **Test visual regression** một TestCase | `.claude/commands/testcase-visual.md` |
 | **Test security** một TestCase (13 họ, black-box) | `.claude/commands/testcase-security.md` |
 | **Test compatibility** một TestCase (engine × viewport) | `.claude/commands/testcase-compat.md` |
+| **Test performance** một TestCase (Core Web Vitals) | `.claude/commands/testcase-perf.md` |
 | 5 repo nối nhau ra sao · cách dùng GitNexus | `../CLAUDE.md` (workspace) |
 | Luật cho Claude khi chạy test | `CLAUDE.md` · `.claude/skills/qa-brain/SKILL.md` |
 
