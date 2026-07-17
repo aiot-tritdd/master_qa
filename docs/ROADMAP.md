@@ -51,7 +51,7 @@ Type:  Functional      ✅ có
 
 | App | Functional | a11y | Visual | Security | Compat | Perf |
 |---|---|---|---|---|---|---|
-| ticket | ✅ TestCase-11 | ✅ | ✅ (3 baseline) | ✅ 13 họ | ❌ | ❌ |
+| ticket | ✅ TestCase-11 | ✅ | ✅ (3 baseline) | ✅ 13 họ | 🔻 bỏ (app nội bộ) | ✅ 3 màn — **PASS** |
 | pro | ✅ TestCase-12 | ✅ 2 màn | ❌ | ✅ **13/13 họ** | ❌ | ✅ 2 màn — **FAIL** |
 | reservation | ⛔ **không có SPEC** → không chấm được | ✅ 1 màn | ❌ | ✅ 6 họ read-only | ✅ 2/3 engine × 4 cỡ (Safari bỏ) | ✅ 1 màn — PASS |
 | ~~admin~~ | 🚫 | 🚫 | 🚫 | 🚫 | 🚫 | 🚫 ← **user CHỐT BỎ HẲN 2026-07-17** (không test, không đề xuất lại) |
@@ -145,14 +145,17 @@ phải re-bless. Muốn hết noise phải **mask vùng-data tay** (điều user
 
 | # | Việc | Vì sao đứng đây | Chặn gì |
 |---|---|---|---|
-| **1** | **`ticket` — Performance** | Lỗ ĐÁNG vá duy nhất còn lại. Nhân viên dùng ticket **hằng ngày**; Pro vừa lòi **TBT 1184ms** (đơ 1.2s) ⇒ ticket nhiều khả năng cũng vậy. Rẻ (~10ph), oracle sẵn | không |
-| **2** | **Whitebox — 1 lát mỏng** (§4) | **Thứ DUY NHẤT còn lại thực sự mở rộng hệ.** Trục ngang (Type) đã 6/6; chỉ còn trục dọc (Level): Unit + Integration — con đen **cấu trúc không thể** với tới | ⛔ **cần sếp/dev đồng ý** cho agent viết test vào 5 repo sản phẩm (§4 cục chặn #3) |
-| **3** | **IDOR** | Họ duy nhất còn `未実施`. Access-control là loại nặng nhất mà đang **mù** | ⛔ cần **account institute #2** (`TESTSEED002`) |
+| **1** | **Whitebox — 1 lát mỏng** (§4) | **Thứ DUY NHẤT còn lại thực sự mở rộng hệ.** Trục ngang (Type) đã 6/6; chỉ còn trục dọc (Level): Unit + Integration — con đen **cấu trúc không thể** với tới | ⛔ **cần sếp/dev đồng ý** cho agent viết test vào 5 repo sản phẩm (§4 cục chặn #3) |
+| **2** | **IDOR** | Họ duy nhất còn `未実施`. Access-control là loại nặng nhất mà đang **mù** | ⛔ cần **account institute #2** (`TESTSEED002`) |
+| ✅ | ~~`ticket` — Perf~~ | **XONG 2026-07-17: 3/3 màn PASS, 0 bug** (TBT 0–4ms). Lỗ độ-phủ đáng vá cuối cùng → đã đóng | — |
 | 🔻 | `ticket` — Compat | Giá trị thấp: app **nội bộ**, nhân viên dùng desktop/Chrome máy công ty. Compat đáng cho app **công khai** (đã làm widget) | không — nhưng đừng ưu tiên |
 | 🚫 | ~~Admin app~~ · ~~`pro` Visual~~ · ~~giao bug~~ · PreToolUse hook · Analyzer | **user đã BÁC** — xem `STATE.md §3 "Đã đề xuất → user BÁC"`. Đừng đề xuất lại | — |
 
-**Con đen coi như XONG.** Hết đường đi ngang (6/6 type) và đã chốt bỏ admin ⇒ mở rộng thật sự **chỉ còn whitebox**,
-mà whitebox kẹt ở **quyền sở hữu**, không phải kỹ thuật.
+**Con đen coi như XONG.** 6/6 type · admin chốt bỏ · lỗ độ-phủ đáng vá cuối (ticket perf) đã đóng
+⇒ mở rộng thật sự **chỉ còn whitebox**, mà whitebox kẹt ở **quyền sở hữu**, không phải kỹ thuật.
+
+**📊 Vấn đề tốc độ KHU TRÚ ở Pro, không phải "hệ chậm"** (quan sát 2026-07-17, không chẩn đoán nguyên nhân —
+đó là việc dev): `ticket` **TBT ≈ 0ms** · `reservation` **TBT 106ms** · `pro` **TBT 1184ms** (đơ ~1.2s).
 
 ---
 

@@ -106,6 +106,13 @@ evidence PNG/xlsx. Oracle = SPEC + quan sát live. **Mù code.** GitNexus chỉ 
   (thêm INP vào = chuẩn bị bịa số). ④ **Nhiễu cao** → 5 lần lấy **TRUNG VỊ** (không phải trung bình); cờ
   `unstable` (dao động > trung vị) phải **báo ra**, không giấu.
   **Sổ bug: 36 → 39.**
+  ✅ **Vá lỗ `ticket` perf 2026-07-17 — 3/3 màn PASS, 0 bug** (`/coupons/` · `/customer/700006/` · `/coupon-reports/sales/`,
+  account `ticket-admin`). Mọi chỉ số good, **TBT = 0–4ms** (LCP 376–604ms · CLS 0–0.007 · TTFB 168–495ms).
+  Đã **verify probe vào ĐÚNG màn** (DOM render `クーポン設定`/`顧客詳細`/`クーポン販売記録レポート`) — không phải PASS rỗng;
+  `ready` selector ban đầu (`クーポン`/`顧客`/`レポート`) quá lỏng nên phải kiểm lại bằng dump DOM.
+  📊 **Đối chiếu quan sát được (KHÔNG chẩn đoán nguyên nhân — đó là việc dev):** `ticket` **TBT ≈ 0ms** vs `pro`
+  **TBT 1184ms**. Cùng một sản phẩm, chênh nhau ~1.2 giây chặn luồng chính. ⇒ Vấn đề tốc độ **khu trú ở Pro**,
+  không phải "hệ chậm".
   - ⚠️ **Reservation KHÔNG có SPEC** → functional **không chạy được** (không oracle, không bịa). Chỉ type-track (oracle phổ quát). Folder `wtf-is-this/Reservation-widget/` chứa evidence type-track, không phải folder spec.
 
 ### ✅ MERGE Phase 0 — vá lệnh chết (2026-07-09, đã verify)
@@ -161,18 +168,16 @@ Chạy thật trên dev, không phải syntax check:
 > 🧹 Dọn 2026-07-17: các mục MERGE Phase 1-4 · live-verify `pw_api`/`shot()` · re-UI-confirm `pro-open-booking`
 > **đã XONG** → chuyển hết lên §2, không còn nằm ở "việc tiếp" nữa. Bảng đầy đủ + lý do xếp hạng: **`ROADMAP.md` §3b**.
 
-1. **[Vá lỗ ĐÁNG vá] `ticket` — Performance.** Nhân viên dùng ticket **hằng ngày**; Pro vừa lòi TBT 1184ms
-   (đơ 1.2s) nên ticket nhiều khả năng cũng vậy. Rẻ (~10ph), oracle sẵn, không chặn. → **việc đáng làm nhất còn lại.**
-2. 🔵 **[Whitebox — 1 lát mỏng] Thứ DUY NHẤT còn lại thực sự MỞ RỘNG hệ.** Trục ngang (Type) đã **6/6**, admin
+1. 🔵 **[Whitebox — 1 lát mỏng] Thứ DUY NHẤT còn lại thực sự MỞ RỘNG hệ.** Trục ngang (Type) đã **6/6**, admin
    đã chốt bỏ ⇒ con đen **hết đường đi ngang**. Chỉ còn trục dọc (Level): **Unit + Integration** — con đen
    **cấu trúc không thể** với tới (mù code). Chi tiết + 3 cục chặn: **ROADMAP §4**.
    ⛔ **Chặn KHÔNG phải kỹ thuật mà là QUYỀN SỞ HỮU**: unit test thường **dev tự viết trong repo họ**; agent lạ
    ghi test vào 5 repo sản phẩm → **cần sếp/dev đồng ý**. Hỏi được thì mới bắt đầu.
    Khuyến nghị ROADMAP: làm **1 lát mỏng** (1 flow, tầng Integration/API-contract, oracle **vẫn là SPEC**) —
    đừng nuốt cả đáy pyramid × 5 repo.
-3. **[Security] IDOR** — họ DUY NHẤT còn `未実施` trên cả ticket lẫn pro. Access-control là loại nặng nhất mà đang **mù**.
+2. **[Security] IDOR** — họ DUY NHẤT còn `未実施` trên cả ticket lẫn pro. Access-control là loại nặng nhất mà đang **mù**.
    ⛔ **Chặn: cần account institute THỨ HAI** (`TESTSEED002`) → xin dev/sếp.
-4. **[Grow knowledge/system]** Còn 2 domain: **6 Booking** · **7 Reservation widget** (~~8 Admin~~ — đã chốt bỏ).
+3. **[Grow knowledge/system]** Còn 2 domain: **6 Booking** · **7 Reservation widget** (~~8 Admin~~ — đã chốt bỏ).
    ⚠️ Chỉ grow khi **thực sự test tới** (demand-driven).
 7. **[Nav doc]** Nâng `issue-ticket-pack.md` `draft → approved`: UI-confirm khâu tạo booking → thanh toán → phát hành vé.
 8. **[Optional]** `TestCase_NEW`: 6 case còn `未実施` cần precondition **gói vé còn nguyên** (KH3 đã dùng 2 vé).
