@@ -64,6 +64,13 @@ ngược vision "engine đa dự án ít setup":
 ⇒ Visual **đáng cho dự án trưởng thành/ổn định chạy lặp nhiều** (ThreeSides về sau), KHÔNG phải track kế tiếp
 cho vision đa-dự-án. Ưu tiên trước: **Performance · Compatibility · Security-gom** (0 setup per-project, oracle phổ quát).
 
+**⚠️ Giới hạn auto-mask (live-verify 2026-07-17):** `explorer.js dynamic`/`detectDynamic` chỉ bắt **động
+TRONG-phiên** (đồng hồ/spinner/animation tự nhảy giữa 2 snapshot cùng-trạng-thái). Nó **KHÔNG thấy
+"động XUYÊN-phiên"**: dữ liệu bảng đổi khi tester thêm/xoá data, số dư đổi theo ngày. Trên màn data-heavy
+(vd coupon list, 顧客詳細) auto-mask trả `[]` (tưởng tĩnh) nhưng baseline vẫn **FAIL-giả** khi data đổi →
+phải re-bless. Muốn hết noise phải **mask vùng-data tay** (điều user không thích) hoặc chỉ bless màn UI ổn định.
+Đây là lý do thực nghiệm củng cố "Visual = dự án mature/ổn định".
+
 **Bỏ qua (quyết 2026-07-16):**
 - **Analyzer** (gom cụm bug) — sổ mới 11 bug/1 nguồn, ad-hoc "kêu Claude nhóm giùm" là đủ tới khi sổ lớn. Đóng gói = YAGNI.
 - **PreToolUse hook** (biến tường thép thành cơ chế) — OQ-09, để sau.
