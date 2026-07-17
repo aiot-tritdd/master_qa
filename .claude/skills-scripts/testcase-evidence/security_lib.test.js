@@ -161,6 +161,9 @@ test('probeCookieFlags: cookie phiên thiếu HttpOnly/SameSite/Secure → weak;
     .weak.some(w => w.missing.includes('Secure')));
   // cookie không phải phiên (vd preference) → không soi
   assert.equal(probeCookieFlags(['theme=dark; Path=/']).ok, true);
+  // cookie CSRF thiếu HttpOnly là BY-DESIGN (JS phải đọc) → chỉ đòi SameSite+Secure, không flag HttpOnly
+  assert.equal(probeCookieFlags(['csrftoken=abc; Path=/; SameSite=Lax; Secure']).ok, true);
+  assert.deepEqual(probeCookieFlags(['csrftoken=abc; Path=/']).weak[0].missing.sort(), ['SameSite', 'Secure'].sort());
 });
 
 test('probeCors: echo origin tấn công (± creds) hoặc *+creds → vulnerable; origin cố định → không', () => {

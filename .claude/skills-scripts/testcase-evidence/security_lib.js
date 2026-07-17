@@ -160,7 +160,10 @@ function probeSessionAfterLogout({ status }) {
 
 // ── A02/A04 Cookie flags — cookie PHIÊN phải có HttpOnly + SameSite (+ Secure khi https). ──
 // Nhận mảng chuỗi Set-Cookie thô (driver đọc từ response header). Chỉ soi cookie phiên/định-danh.
+// ⚠️ Cookie CSRF (csrf/xsrf) CỐ TÌNH đọc-được-bởi-JS (double-submit) → KHÔNG đòi HttpOnly (live-verify
+//    2026-07-17: Django csrftoken thiếu HttpOnly là by-design, không phải lỗi). Chỉ đòi SameSite+Secure.
 const SESSION_COOKIE_RE = /(session|sessionid|_session|sess|sid|csrf|xsrf|token|auth|remember)/i;
+const CSRF_COOKIE_RE = /(csrf|xsrf)/i;
 function probeCookieFlags(setCookies, opts = {}) {
   const https = opts.https !== false;
   const list = Array.isArray(setCookies) ? setCookies : (setCookies ? [setCookies] : []);
@@ -171,7 +174,7 @@ function probeCookieFlags(setCookies, opts = {}) {
     if (!SESSION_COOKIE_RE.test(name)) continue;
     const f = c.toLowerCase();
     const missing = [];
-    if (!/;\s*httponly/.test(f)) missing.push('HttpOnly');
+    if (!CSRF_COOKIE_RE.test(name) && !/;\s*httponly/.test(f)) missing.push('HttpOnly');
     if (!/;\s*samesite=/.test(f)) missing.push('SameSite');
     if (https && !/;\s*secure/.test(f)) missing.push('Secure');
     if (missing.length) weak.push({ cookie: name, missing });

@@ -1,7 +1,7 @@
 # /testcase-security — Test Security (bất biến an ninh, black-box) một TestCase
 
-Quét security các màn spec đang test đụng tới, theo checklist **13 họ** (10 core đã live-verify +
-3 bổ sung v2). **Track RIÊNG**, KHÔNG trộn PASS/FAIL functional. Oracle = **bất biến an ninh PHỔ QUÁT**
+Quét security các màn spec đang test đụng tới, theo checklist **13 họ** (tất cả đã live-verify trên ticket-dev
+2026-07-17). **Track RIÊNG**, KHÔNG trộn PASS/FAIL functional. Oracle = **bất biến an ninh PHỔ QUÁT**
 (không phải spec). Mù code.
 
 ## Cách dùng
@@ -36,12 +36,14 @@ Setup 1 lần: `cd .claude/skills-scripts/testcase-evidence && npm i`.
 | 8 | Mass-assignment (A01) | POST field đặc quyền KHÔNG có trên form → quan sát ghi → `probeMassAssignment` | `vulnerable` (field lạ được persist) |
 | 9 | Force-browse/path-traversal (A01) | URL admin/cấm hoặc `PAYLOADS.pathTraversal` → `probeForceBrowse` | `leak` (200 + data thật) |
 | 10 | Session-after-logout (A07) | logout → gọi lại request bảo vệ → `probeSessionAfterLogout` | `vulnerable` (còn 200 sau logout) |
-| 11 | **Cookie-flags** (A02/A04) *(v2)* | đọc Set-Cookie → `probeCookieFlags(setCookies,{https})` | `!ok` (cookie phiên thiếu HttpOnly/SameSite/Secure) |
+| 11 | **Cookie-flags** (A02/A04) *(v2)* | đọc Set-Cookie → `probeCookieFlags(setCookies,{https})` | `!ok` (cookie phiên thiếu HttpOnly/SameSite/Secure; cookie csrf được chừa HttpOnly) |
 | 12 | **CORS misconfig** (A02) *(v2)* | gửi request kèm `Origin: evil` → đọc ACAO → `probeCors(headers,{attackerOrigin})` | `vulnerable` (echo origin lạ / `*`+credentials) |
-| 13 | **Session-fixation** (A07) *(v2)* | lấy session-id trước login + sau login → `probeSessionFixation({before,after})` | `vulnerable` (id KHÔNG xoay sau login) |
+| 13 | **Session-fixation** (A07) *(v2)* | **cắm session-id giả trước login** → so với id sau login → `probeSessionFixation({before,after})` | `vulnerable` (id KHÔNG xoay sau login) |
 
-> ⚠️ 3 họ **v2** (2026-07-17, harvest từ qa-skills) đã vào `security_lib` + unit-test, **CHƯA live-verify** trên app.
+> ✅ 3 họ **v2** (harvest qa-skills) đã vào `security_lib` + unit-test + **LIVE-VERIFIED 2026-07-17** (ticket: cả 3 PASS).
 > Assert dùng **tập mã** (`isDenied(status)` / `statusIn(status,[400,403,404,422])`), KHÔNG ép 1 status.
+> ⚠️ Cookie **csrf/xsrf** cố tình KHÔNG HttpOnly (double-submit cần JS đọc) → probe đã chừa; đừng báo bug.
+> Session-fixation phải **cắm id giả** rồi xem server có xoay không (chỉ đọc id trước/sau chưa đủ nếu app không tạo session ẩn danh).
 
 ## Quy trình
 1. **Scope:** đọc `specs.md §3` → app/màn/field. Có `tcs.json` đã chạy → tái dùng màn/URL/field.
