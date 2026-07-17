@@ -2,7 +2,7 @@
 // Khoá ORACLE track Performance. Live-verify khoá phần "probe có đo thật" (việc khác).
 const { test } = require('node:test');
 const assert = require('node:assert');
-const { THRESHOLDS, FIELD_ONLY, rate, median, aggregate, verdict, findings } = require('./perf_lib');
+const { THRESHOLDS, FIELD_ONLY, rate, median, aggregate, verdict, findings, fmt } = require('./perf_lib');
 
 test('THRESHOLDS đúng số Google công bố — KHÔNG được tự chế/nới', () => {
   assert.equal(THRESHOLDS.LCP.good, 2500); assert.equal(THRESHOLDS.LCP.poor, 4000);
@@ -69,6 +69,22 @@ test('verdict: chuẩn "good" của Google LÀ mốc đạt — needs-improvemen
   const agg = aggregate([{ LCP: 1000, CLS: 0.01, TTFB: 1500 }]);
   assert.equal(verdict(agg), 'FAIL', 'TTFB 1500 > 800 -> FAIL khi soi hết');
   assert.equal(verdict(agg, { cwvOnly: true }), 'PASS', 'chỉ CWV thì LCP+CLS đều good');
+});
+
+test('fmt: số phải ĐỌC ĐƯỢC — 0.1804399642965267 là số máy nhả, không phải số để báo cáo', () => {
+  assert.equal(fmt('CLS', 0.1804399642965267), '0.18', 'CLS -> 3 chữ số (ngưỡng là 0.1/0.25)');
+  assert.equal(fmt('CLS', 0.0456789), '0.046');
+  assert.equal(fmt('LCP', 1323.9999), '1324', 'ms -> số nguyên, lẻ 0.4ms vô nghĩa');
+  assert.equal(fmt('TTFB', 183.90000000000003), '184');
+  assert.equal(fmt('LCP', null), '—');
+});
+
+test('findings: số trong câu báo cáo đã được làm tròn (không lòi float 16 chữ số)', () => {
+  const f = findings(aggregate([{ CLS: 0.1804399642965267 }, { CLS: 0.109 }, { CLS: 0.495 }]));
+  const cls = f.find((x) => x.metric === 'CLS');
+  assert.ok(!/0\.1804399/.test(cls.observed), 'không được lòi float thô ra report');
+  assert.match(cls.observed, /= 0\.18\b/);
+  assert.match(cls.observed, /Dao động 0\.109–0\.495/);
 });
 
 test('findings: chỉ báo chỉ số KHÔNG đạt; kèm số đo, ngưỡng, nguồn tra lại', () => {

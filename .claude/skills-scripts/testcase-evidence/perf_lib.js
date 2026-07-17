@@ -78,6 +78,14 @@ function aggregate(runs) {
 // Vì sao không nới "needs-improvement cho qua": đó là tự hạ chuẩn công bố xuống theo ý mình —
 // đúng cái bệnh mà track này sinh ra để tránh. Muốn nới thì phải là quyết định của người, ghi rõ.
 const SEV = { poor: 'High', 'needs-improvement': 'Medium' };
+
+// Làm tròn để người ĐỌC được. `0.1804399642965267` là số máy nhả ra, không phải số để báo cáo —
+// 16 chữ số thập phân không thêm thông tin nào, chỉ làm dev hiểu là "máy in bừa".
+// ms -> số nguyên (lẻ 0.4ms vô nghĩa) · CLS (không đơn vị) -> 3 chữ số (ngưỡng là 0.1/0.25).
+function fmt(metric, v) {
+  if (typeof v !== 'number' || Number.isNaN(v)) return '—';
+  return THRESHOLDS[metric] && THRESHOLDS[metric].unit === 'ms' ? String(Math.round(v)) : String(Math.round(v * 1000) / 1000);
+}
 function verdict(agg, opts = {}) {
   if (!agg || !Object.keys(agg).length) return '未実施';
   const only = opts.cwvOnly ? Object.keys(THRESHOLDS).filter((m) => THRESHOLDS[m].cwv) : Object.keys(THRESHOLDS);
@@ -97,9 +105,9 @@ function findings(agg, ctx = {}) {
       severity: SEV[d.rating] || 'Medium',
       where: ctx.where || '',
       url: ctx.url || '',
-      observed: `${metric} (trung vị ${d.runs} lần chạy) = ${d.median}${t.unit} → "${d.rating}". `
+      observed: `${metric} (trung vị ${d.runs} lần chạy) = ${fmt(metric, d.median)}${t.unit} → "${d.rating}". `
         + `Ngưỡng Google: good ≤ ${t.good}${t.unit}, poor > ${t.poor}${t.unit}. `
-        + `Dao động ${d.min}–${d.max}${t.unit}${d.unstable ? ' ⚠️ spread > trung vị: số NHIỄU, đừng tin chắc' : ''}.`,
+        + `Dao động ${fmt(metric, d.min)}–${fmt(metric, d.max)}${t.unit}${d.unstable ? ' ⚠️ spread > trung vị: số NHIỄU, đừng tin con số chính xác' : ''}.`,
       fix: `${t.label}. Chuẩn + cách sửa: ${t.src}`,
       shot: ctx.shot || '',
     });
@@ -107,4 +115,4 @@ function findings(agg, ctx = {}) {
   return out;
 }
 
-module.exports = { THRESHOLDS, FIELD_ONLY, rate, median, aggregate, verdict, findings, SEV };
+module.exports = { THRESHOLDS, FIELD_ONLY, rate, median, aggregate, verdict, findings, fmt, SEV };
