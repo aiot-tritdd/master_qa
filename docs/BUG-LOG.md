@@ -61,6 +61,10 @@ Phần lớn field copy thẳng từ file test `wtf-is-this/TestCase-XX/TestCase
 > **Bug Visual** (do `/testcase-visual` sinh): `result` luôn `FAIL` (diff > ngưỡng; NEW-BASELINE/未実施 KHÔNG vào sổ) ·
 > `before`=baseline · `after`=ảnh diff (tô đỏ) · dedup **1 bug/màn** (không tách theo vùng).
 
+> **Bug Security** (do `/testcase-security` sinh): `result` luôn `FAIL` (không bao giờ SPEC-GAP — bất biến an ninh
+> luôn định nghĩa kỳ vọng) · `before=null` + `note` lý do N/A · `after`=ảnh khoanh chỗ · dedup **1 bug/(màn×họ×payload-class)** ·
+> `pri`=High cho XSS-fired/bypass-thành-công/IDOR-leak, Medium cho error-disclosure/500.
+
 ---
 
 ## 2. Vòng đời bug → chỉ đổi `status` (+ 2 field)

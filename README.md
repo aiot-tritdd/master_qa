@@ -194,6 +194,8 @@ làm hỏng khâu dựng, và ta không phân biệt được *"bug ở feature"
    │
 /testcase-visual <folder>   so ảnh màn với baseline người-duyệt → report visual + sổ bug
    │
+/testcase-security <folder> quét security 4 họ (XSS/IDOR/bypass/error-disclosure) → report security + sổ bug
+   │
 /testcase-cleanup           dọn dữ liệu test trên dev (prefix AIOT-TEST-*)
    │
 /testcase-upspecschange → (dev fix) → /testcase-retest
@@ -286,6 +288,7 @@ qua đúng một trong ba cửa:
 | **Dò + UI-confirm một flow mới** (build-time, explorer tự-lái) | [`testcase-systemdoc.md`](.claude/commands/testcase-systemdoc.md) (`explorer.js`) |
 | **Test accessibility** một TestCase (WCAG, black-box) | `.claude/commands/testcase-a11y.md` |
 | **Test visual regression** một TestCase | `.claude/commands/testcase-visual.md` |
+| **Test security** một TestCase (4 họ, black-box) | `.claude/commands/testcase-security.md` |
 | 5 repo nối nhau ra sao · cách dùng GitNexus | `../CLAUDE.md` (workspace) |
 | Luật cho Claude khi chạy test | `CLAUDE.md` · `.claude/skills/qa-brain/SKILL.md` |
 

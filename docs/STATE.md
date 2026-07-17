@@ -1,7 +1,7 @@
 # STATE — điểm dừng & việc tiếp (đọc ĐẦU TIÊN mỗi phiên)
 
 > File **sống** — cập nhật cuối mỗi phiên. Mục đích: mở phiên mới là biết ngay *đang ở đâu, làm gì tiếp*.
-> Cập nhật: **2026-07-14**. Branch git: `qa-brain` (threease_qa).
+> Cập nhật: **2026-07-17**. Branch git: `qa-brain` (threease_qa).
 
 ---
 
@@ -25,12 +25,16 @@ evidence PNG/xlsx. Oracle = SPEC + quan sát live. **Mù code.** GitNexus chỉ 
   `TestCase-11` (coupon report) **9 PASS / 8 FAIL**, khớp 100% scope dev.
 - ✅ **Phân tích + merge hệ của sếp** (`.claude-tester/`): xong Phase 0→4 (hồ sơ `SYSTEM-COMPARISON.md` đã gỡ — tra `git log`/`git show`).
 - ✅ **Track Accessibility** (`/testcase-a11y`) — axe-core black-box, report `.a11y.xlsx` + sổ bug
-  (`bug_type: Accessibility`). Type test thứ 2 (sau Functional). ⚠️ **CÒN TREO: live-verify** (cần Docker dev): quét màn thật + render `.a11y.xlsx` + append sổ bug CHƯA chạy end-to-end lần nào — chạy `/testcase-a11y wtf-is-this/TestCase-11` khi dev lên.
-  Spec/plan: `docs/superpowers/{specs,plans}/2026-07-16-a11y-track*`.
+  (`bug_type: Accessibility`). ✅ **LIVE-VERIFIED 2026-07-17** trên TestCase-11 (ticket): 3 màn FAIL, đẩy **BUG-012..019** vào sổ.
+  Evidence nâng cấp: `shotViolation` chụp full-màn khoanh đỏ; report có cột giải-thích-lỗi (Lỗi gì→Chi tiết(failureSummary đo được)→Cách fix→Tài liệu→File ảnh). Spec/plan: `docs/superpowers/{specs,plans}/2026-07-16-a11y-track*`.
 - ✅ **Track Visual** (`/testcase-visual`) — pixelmatch, baseline `baselines/<app>/<slug>.png` (commit git),
   report `.visual.xlsx` + sổ bug (`bug_type: Visual`). Mask sinh tự động ở build-time (explorer `dynamic`). Type test thứ 3.
-  ⚠️ **CÒN TREO: live-verify** (cần Docker dev): chạy `/testcase-visual wtf-is-this/TestCase-11` khi dev lên (chưa e2e lần nào).
+  ✅ **LIVE-VERIFIED 2026-07-17**: capture/compare/NEW-BASELINE chạy e2e; **bless baseline 3 màn ticket** (`baselines/ticket/{coupons,customer-700006,coupon-reports-sales}.png`, commit). ⚠️ Giới hạn auto-mask (không bắt churn xuyên-phiên) đã ghi ROADMAP → 3 màn data-heavy này sẽ cần re-bless khi data đổi.
   Spec/plan: `docs/superpowers/{specs,plans}/2026-07-16-visual-track*`.
+- ✅ **Track Security** (`/testcase-security`) — 4 họ (Injection/XSS · IDOR · Client-bypass guard-parity · Error-disclosure),
+  oracle = **bất biến an ninh phổ quát** (code-blind, no SPEC-GAP). `security_lib.js` + `build_security_report.py` + `bug_type:Security`. Type track thứ 4.
+  ⚠️ **CÒN TREO: live-verify** (cần dev): chạy `/testcase-security wtf-is-this/TestCase-11`, cleanup `AIOT-TEST-SEC-*` sau.
+  Spec/plan: `docs/superpowers/{specs,plans}/2026-07-17-security-track*`.
 
 ### ✅ MERGE Phase 0 — vá lệnh chết (2026-07-09, đã verify)
 Trước đó 4 lệnh trỏ vào file **không tồn tại**. Nay:

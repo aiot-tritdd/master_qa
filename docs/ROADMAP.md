@@ -36,7 +36,7 @@ Level: E2E/System ─── con black-box hiện tại sống ở đây
 
 Type:  Functional      ✅ có
        Accessibility   ✅ vừa build (/testcase-a11y, axe-core, oracle=WCAG)
-       Security        🟡 làm rải rác trong qa-brain (injection/IDOR/bypass) — chưa gom
+       Security        ✅ /testcase-security (4 họ: XSS/IDOR/bypass/error-disclosure, oracle=bất biến an ninh)
        Visual          ❌ ứng viên kế
        Performance     ❌ vướng oracle (cần budget do người đặt)
        Compatibility   ❌ rẻ, giá trị tuỳ scope (đáng nhất cho widget public)
@@ -50,7 +50,7 @@ Type:  Functional      ✅ có
 |---|---|---|---|
 | Functional | ✅ core | SPEC + quan sát live | qa-brain |
 | **Accessibility** | ✅ **done** (live-verify CÒN TREO — cần Docker dev) | WCAG (axe-core) | `shot()`, khuôn command |
-| Security (gom) | 🟡 rút thành checklist OWASP | phần lớn suy được (no 500/leak, 4xx đúng) | `withApi` sẵn |
+| **Security (gom)** | ✅ **done** (live-verify CÒN TREO — cần dev) | bất biến an ninh phổ quát (XSS escaped, no 500/leak, IDOR 403/404, guard-parity) | `withApi`, khuôn a11y |
 | Compatibility | ⏳ hợp vision (0 baseline) | cùng-kết-quả + không-vỡ-layout | Playwright multi-context |
 | Performance | ⏳ hợp vision (ngưỡng chuẩn web mặc định) | LCP/timing < ngưỡng phổ quát | `withApi` timing |
 | **Visual** | 🔨 **đang build v1** (chỉ hợp dự án MATURE) | baseline PNG đã người-duyệt | `shot()` sẵn + khuôn a11y |
