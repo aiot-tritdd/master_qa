@@ -161,19 +161,18 @@ Chạy thật trên dev, không phải syntax check:
 > 🧹 Dọn 2026-07-17: các mục MERGE Phase 1-4 · live-verify `pw_api`/`shot()` · re-UI-confirm `pro-open-booking`
 > **đã XONG** → chuyển hết lên §2, không còn nằm ở "việc tiếp" nữa. Bảng đầy đủ + lý do xếp hạng: **`ROADMAP.md` §3b**.
 
-1. 🔴 **[NÚT THẮT SỐ 1 — giao bug] 37 bug đang CHẾT trong file local.**
-   Sổ: **Mở 37 · Chờ retest 0 · Đã đóng 0** ⇒ chưa ai sửa cái nào. `wtf-is-this/` **gitignored** ⇒ team
-   **chưa từng thấy** `bug-he-thong.xlsx`. Vòng đời bug (BUG-LOG §2) + `/testcase-retest` **dựng sẵn, CHƯA
-   CHẠY LẦN NÀO** → chưa biết pipeline có sống không.
-   ⛔ **Chặn: cần user chốt kênh giao** (OneDrive / tạo issue / gửi sếp?).
-   → Sau khi giao: chạy thử **1 vòng retest** để nghiệm thu pipeline.
-   💡 *Vấn đề bây giờ không phải "tìm thêm bug" — là bug không tới tay dev.*
-2. **[App] Admin (8081)** — mảng trắng cuối cùng. **6/6 type-track đã xong** ⇒ mở rộng giờ đi theo trục
-   **ĐỘ PHỦ APP**, không phải thêm type mới. (Không chặn — nhưng để sau #1.)
-3. **[Phủ lỗ]** Bảng độ phủ (ROADMAP §2) còn lỗ: ticket chưa compat/perf · pro chưa visual · widget chưa functional (không SPEC).
-4. **[Security] IDOR** — họ DUY NHẤT còn `未実施` trên cả ticket lẫn pro. Access-control là loại nặng nhất mà đang **mù**.
+1. **[Vá lỗ ĐÁNG vá] `ticket` — Performance.** Nhân viên dùng ticket **hằng ngày**; Pro vừa lòi TBT 1184ms
+   (đơ 1.2s) nên ticket nhiều khả năng cũng vậy. Rẻ (~10ph), oracle sẵn, không chặn. → **việc đáng làm nhất còn lại.**
+2. 🔵 **[Whitebox — 1 lát mỏng] Thứ DUY NHẤT còn lại thực sự MỞ RỘNG hệ.** Trục ngang (Type) đã **6/6**, admin
+   đã chốt bỏ ⇒ con đen **hết đường đi ngang**. Chỉ còn trục dọc (Level): **Unit + Integration** — con đen
+   **cấu trúc không thể** với tới (mù code). Chi tiết + 3 cục chặn: **ROADMAP §4**.
+   ⛔ **Chặn KHÔNG phải kỹ thuật mà là QUYỀN SỞ HỮU**: unit test thường **dev tự viết trong repo họ**; agent lạ
+   ghi test vào 5 repo sản phẩm → **cần sếp/dev đồng ý**. Hỏi được thì mới bắt đầu.
+   Khuyến nghị ROADMAP: làm **1 lát mỏng** (1 flow, tầng Integration/API-contract, oracle **vẫn là SPEC**) —
+   đừng nuốt cả đáy pyramid × 5 repo.
+3. **[Security] IDOR** — họ DUY NHẤT còn `未実施` trên cả ticket lẫn pro. Access-control là loại nặng nhất mà đang **mù**.
    ⛔ **Chặn: cần account institute THỨ HAI** (`TESTSEED002`) → xin dev/sếp.
-6. **[Grow knowledge/system]** Còn 3 domain: **6 Booking** · **7 Reservation widget** · **8 Admin** (OQ-02 đã đóng, hết bị chặn).
+4. **[Grow knowledge/system]** Còn 2 domain: **6 Booking** · **7 Reservation widget** (~~8 Admin~~ — đã chốt bỏ).
    ⚠️ Chỉ grow khi **thực sự test tới** (demand-driven).
 7. **[Nav doc]** Nâng `issue-ticket-pack.md` `draft → approved`: UI-confirm khâu tạo booking → thanh toán → phát hành vé.
 8. **[Optional]** `TestCase_NEW`: 6 case còn `未実施` cần precondition **gói vé còn nguyên** (KH3 đã dùng 2 vé).
@@ -188,6 +187,14 @@ Chạy thật trên dev, không phải syntax check:
   ⇒ Compat đứng ở **≈67%** (8/12 ô; 8/8 ô chạy đều PASS) và **dừng ở đó**. Báo cáo phải ghi rõ "chưa test Safari".
   Đừng đề xuất lại trừ khi có lý do MỚI (vd: khách báo lỗi trên iPhone).
 - **Whitebox / Analyzer** — hoãn (ROADMAP §3, §4).
+- 🚫 **ADMIN app — user chốt 2026-07-17: BỎ HẲN, "từ nay luôn".** KHÔNG test admin, **KHÔNG đề xuất lại**.
+  ⇒ Độ phủ app dừng ở **3/5** (ticket · pro · reservation). Admin = vùng trắng **có chủ ý**, không phải thiếu sót.
+- 🚫 **Giao bug cho team** — user tự lo (đưa file lên Drive). `wtf-is-this/` **giữ gitignore**. Đừng đề xuất kênh giao,
+  đừng nhắc "bug chưa tới tay dev" nữa. Việc của con QA dừng ở: sổ + report đúng, sạch, đọc được.
+- 🚫 **`pro` — Visual**: cùng lý do đã bác cho reservation (calendar `2026/07/17`, 会計 có số tiền → baseline hỏng
+  mỗi ngày = máy đẻ nhiễu). Visual chỉ dùng cho màn **TĨNH**.
+- 🔻 **`ticket` — Compat**: giá trị thấp (app **nội bộ**, nhân viên dùng desktop/Chrome máy công ty). Compat đáng cho
+  app **công khai** (khách xài đủ loại máy) — đã làm cho widget rồi. Không cấm, nhưng đừng ưu tiên.
 
 ## 4. Cách maintain khi 5 repo update
 

@@ -43,27 +43,26 @@ Type:  Functional      ✅ có
        Performance     ✅ DONE + live-verify — oracle=Core Web Vitals (ngưỡng Google công bố)
                        ⚠️ LAB≠FIELD: đo 1 máy/1 mạng/trên dev = CẬN DƯỚI của mức tệ, không phải chứng nhận nhanh
 
-⇒ **CẢ 6 TYPE ĐỀU XONG.** Mở rộng tiếp = theo trục ĐỘ PHỦ APP (admin trắng) hoặc trục LEVEL (whitebox §4).
+⇒ **CẢ 6 TYPE ĐỀU XONG** — hết đường đi ngang. Trục ĐỘ PHỦ APP cũng đóng (**admin: user chốt bỏ hẳn 2026-07-17**).
+⇒ **Mở rộng thật sự CHỈ CÒN trục LEVEL: whitebox (§4)** — mà nó kẹt ở **quyền sở hữu**, không phải kỹ thuật.
 ```
 
-**Độ phủ app (2026-07-17)** — type-track ≠ app đã quét. 5 app thì mới đụng 3:
+**Độ phủ app (2026-07-17)** — type-track ≠ app đã quét. Phủ **3/5** app; admin **bỏ có chủ ý**, backend không có UI:
 
 | App | Functional | a11y | Visual | Security | Compat | Perf |
 |---|---|---|---|---|---|---|
 | ticket | ✅ TestCase-11 | ✅ | ✅ (3 baseline) | ✅ 13 họ | ❌ | ❌ |
 | pro | ✅ TestCase-12 | ✅ 2 màn | ❌ | ✅ **13/13 họ** | ❌ | ✅ 2 màn — **FAIL** |
 | reservation | ⛔ **không có SPEC** → không chấm được | ✅ 1 màn | ❌ | ✅ 6 họ read-only | ✅ 2/3 engine × 4 cỡ (Safari bỏ) | ✅ 1 màn — PASS |
-| **admin** | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ ← **mảng trắng hoàn toàn** |
+| ~~admin~~ | 🚫 | 🚫 | 🚫 | 🚫 | 🚫 | 🚫 ← **user CHỐT BỎ HẲN 2026-07-17** (không test, không đề xuất lại) |
 | backend | — (không có UI; quét gián tiếp qua API của pro) | — | — | — | — | — |
 
 > ⚠️ **reservation không có SPEC** ⇒ functional **cấu trúc không chấm được** (không oracle → không bịa `expect`).
 > Muốn test functional widget: phải có spec trước. Type-track thì chạy được vì oracle phổ quát.
 
-**🔴 Nút thắt lớn nhất hiện nay KHÔNG phải thiếu test — mà là bug không tới tay dev.**
-Sổ: **39 bug · Mở 39 · Chờ retest 0 · Đã đóng 0**. Chưa cái nào được sửa, và `wtf-is-this/` thì **gitignored**
-(evidence local) ⇒ team **chưa từng thấy** sổ. Vòng đời `Mở → Chờ retest → Đã đóng` (BUG-LOG §2) + `/testcase-retest`
-**dựng sẵn nhưng chưa chạy lần nào**. Thêm bug vào đống chưa ai đọc = giá trị biên tiến về 0.
-→ Ưu tiên: chốt kênh giao bug với team, rồi chạy thử 1 vòng retest để biết pipeline có thật sự sống.
+**Sổ bug: 39 · Mở 39 · Đã đóng 0.** 🚫 **Giao bug = việc của user** (tự đưa file lên Drive; `wtf-is-this/` giữ
+gitignore) — chốt 2026-07-17. Con QA **không lo khâu giao**; trách nhiệm dừng ở: sổ + report **đúng, sạch, đọc được**.
+Vòng đời `Mở → Chờ retest → Đã đóng` + `/testcase-retest` vẫn **chưa chạy lần nào** — sẽ chạy khi dev bắt đầu fix.
 
 ---
 
@@ -146,14 +145,14 @@ phải re-bless. Muốn hết noise phải **mask vùng-data tay** (điều user
 
 | # | Việc | Vì sao đứng đây | Chặn gì |
 |---|---|---|---|
-| **1** | **Giao 39 bug cho team + chạy thử 1 vòng retest** | Bug nằm trong file **local gitignored**, chưa ai đọc. Test không tới dev = **công cốc**. Vòng đời bug + `/testcase-retest` dựng sẵn **chưa chạy lần nào** ⇒ chưa biết có sống không | ⛔ cần user chốt **kênh giao** (OneDrive? issue? gửi sếp?) |
-| **2** | **Admin app** | Mảng trắng cuối cùng (4/5 app đã đụng). **6/6 type-track đã xong** ⇒ mở rộng giờ đi theo trục ĐỘ PHỦ APP, không phải thêm type | không — nhưng để sau #1, thêm bug vào đống chưa ai đọc thì vô nghĩa |
-| **3** | **Phủ type-track còn thiếu trên app đã đụng** | Bảng §2 lỗ nhiều: ticket chưa compat/perf · pro chưa visual · widget chưa functional (không SPEC) | không |
-| **5** | **IDOR** (họ duy nhất còn 未実施 trên pro/ticket) | Lỗ hổng access-control là loại nặng nhất, mà đang **mù** | ⛔ cần **account institute #2** (TESTSEED002) |
-| — | PreToolUse hook · whitebox · Analyzer | user đã bác/hoãn (xem §3, §4) | — |
+| **1** | **`ticket` — Performance** | Lỗ ĐÁNG vá duy nhất còn lại. Nhân viên dùng ticket **hằng ngày**; Pro vừa lòi **TBT 1184ms** (đơ 1.2s) ⇒ ticket nhiều khả năng cũng vậy. Rẻ (~10ph), oracle sẵn | không |
+| **2** | **Whitebox — 1 lát mỏng** (§4) | **Thứ DUY NHẤT còn lại thực sự mở rộng hệ.** Trục ngang (Type) đã 6/6; chỉ còn trục dọc (Level): Unit + Integration — con đen **cấu trúc không thể** với tới | ⛔ **cần sếp/dev đồng ý** cho agent viết test vào 5 repo sản phẩm (§4 cục chặn #3) |
+| **3** | **IDOR** | Họ duy nhất còn `未実施`. Access-control là loại nặng nhất mà đang **mù** | ⛔ cần **account institute #2** (`TESTSEED002`) |
+| 🔻 | `ticket` — Compat | Giá trị thấp: app **nội bộ**, nhân viên dùng desktop/Chrome máy công ty. Compat đáng cho app **công khai** (đã làm widget) | không — nhưng đừng ưu tiên |
+| 🚫 | ~~Admin app~~ · ~~`pro` Visual~~ · ~~giao bug~~ · PreToolUse hook · Analyzer | **user đã BÁC** — xem `STATE.md §3 "Đã đề xuất → user BÁC"`. Đừng đề xuất lại | — |
 
-**Nguyên tắc thứ tự:** #1 trước mọi thứ. Hiện tại con QA **giỏi tìm bug hơn là giao bug** — mất cân bằng ở
-khâu giao, không phải khâu tìm.
+**Con đen coi như XONG.** Hết đường đi ngang (6/6 type) và đã chốt bỏ admin ⇒ mở rộng thật sự **chỉ còn whitebox**,
+mà whitebox kẹt ở **quyền sở hữu**, không phải kỹ thuật.
 
 ---
 
