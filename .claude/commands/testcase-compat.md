@@ -34,8 +34,12 @@ cho khách thì đây là engine quan trọng NHẤT, không phải "cái thứ 
 **① KHÔNG được giả lập engine rồi báo "đã test".**
 Máy hiện tại (**macOS 13.7.8**) → `Playwright does not support webkit on mac13` ⇒ **webkit = `未実施`**, ghi rõ lý do.
 Giả lập iPhone bằng chromium (đổi viewport + UA) chỉ đổi **kích thước**, KHÔNG đổi **engine** — Safari có quirk
-riêng (flexbox, `<input type=date>`, scroll). Báo "PASS Safari" kiểu đó = **PASS rỗng**. Muốn phủ thật: macOS ≥14,
-hoặc webkit trong Docker/CI.
+riêng (flexbox, `<input type=date>`, scroll). Báo "PASS Safari" kiểu đó = **PASS rỗng**.
+> ✅ **CHỐT 2026-07-17 (chủ dự án quyết): CHẤP NHẬN LỖ Safari.** Không dựng Docker/CI để phủ webkit.
+> ⇒ Trên repo này, webkit **luôn** là `未実施` — ghi lý do, **báo cáo PHẢI nói rõ "chưa test Safari"**, và
+> **đừng đề xuất phủ lại** trừ khi có lý do mới (vd khách báo lỗi trên iPhone).
+> ⚠️ Khi báo "0 bug compat", nói kèm sự thật: chromium + firefox là 2 engine **ít vỡ nhất**; "0 bug" = 0 bug
+> **trên phần dễ**, KHÔNG phải "chạy ngon trên mọi máy".
 
 **② KHÔNG so `console.error` giữa engine — chỉ so `pageerror`.**
 Đo thật: API 404 → **chromium** ghi `Failed to load resource: 404` ra console, **firefox KHÔNG ghi**. Cùng sự cố,

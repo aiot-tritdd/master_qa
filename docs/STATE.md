@@ -64,10 +64,15 @@ evidence PNG/xlsx. Oracle = SPEC + quan sát live. **Mù code.** GitNexus chỉ 
   giữa engine · ③ **0 `pageerror`**. Engine: chromium · firefox · webkit. Viewport: 320/390/768/1280.
   ✅ **LIVE-VERIFIED 2026-07-17** (reservation widget `/2`): **8 PASS / 4 未実施** — chromium + firefox **4/4 viewport
   PASS** (reflow ok @320px, parity **19 affordance khớp y hệt** cả 4 cỡ, 0 lỗi JS). **0 bug.**
-  ⚠️ **LỖ CÒN LẠI: webkit/Safari = 未実施** — `playwright 1.61` + **macOS 13.7.8** → `does not support webkit on mac13`.
-  Đây là engine QUAN TRỌNG NHẤT với widget công khai (khách đặt lịch bằng iPhone). ⛔ **KHÔNG giả lập** bằng
-  chromium+UA rồi báo "đã test Safari" (giả lập đổi viewport/UA, KHÔNG đổi engine ⇒ PASS rỗng). Phủ được nếu:
-  macOS ≥14 hoặc webkit trong Docker/CI.
+  ✅ **CHỐT 2026-07-17 (user quyết): CHẤP NHẬN LỖ Safari — KHÔNG phủ webkit, KHÔNG đề xuất lại.**
+  webkit/Safari = **`未実施` vĩnh viễn** trên setup này: `playwright 1.61` + **macOS 13.7.8** → `does not support
+  webkit on mac13`. Đã đề xuất Docker/CI để phủ → **user bác, chấp nhận lỗ**.
+  ⛔ **KHÔNG giả lập** bằng chromium+UA rồi báo "đã test Safari" (giả lập đổi viewport/UA, KHÔNG đổi engine ⇒ PASS rỗng).
+  ⚠️ **Báo cáo compat PHẢI ghi rõ "chưa test Safari"** — không được để người đọc tưởng đã phủ.
+  📊 **Trạng thái thật: Compat ≈ 67% ổn** = 8/12 ô chạy (2/3 engine × 4 viewport), **8/8 ô chạy đều PASS**, 1 màn.
+  Lưu ý trung thực khi đọc con số "0 bug": chromium + firefox là 2 engine **ÍT vỡ nhất**; Safari (engine hay vỡ:
+  flexbox, `<input type=date>`, scroll iOS) nằm ngoài phạm vi. "0 bug" = 0 bug **trên phần dễ**, không phải "widget
+  chạy ngon trên mọi máy".
   - 🐞 **Live bắt + vá 2 bug oracle nữa**: ① `probeConsole` đếm **resource-404** là lỗi JS → chromium ghi 404 ra
     console, **firefox KHÔNG** ⇒ chromium FAIL/firefox PASS = **bịa** (đang đo *cách browser ghi log*). Vá: chỉ nhận
     `pageerror`; 404 tách sang `networkFailures` (chuyện functional). ② `probeParity` nhiễu vì **dialog chớp nhoáng**:
@@ -145,12 +150,8 @@ Chạy thật trên dev, không phải syntax check:
    💡 *Vấn đề bây giờ không phải "tìm thêm bug" — là bug không tới tay dev.*
 2. **[Type-track kế] Performance** — oracle đã gỡ (Core Web Vitals: LCP<2.5s · CLS<0.1 · INP<200ms — ngưỡng
    Google công bố, phổ quát, **không cần ai đặt số**). 0 setup, hợp vision đa dự án. (Không chặn.)
-   ⚠️ **[Compat — lỗ còn lại] webkit/Safari `未実施`**: `playwright 1.61` + **macOS 13.7.8** → không chạy được.
-   Đây là engine QUAN TRỌNG NHẤT với widget công khai (khách dùng iPhone). Phủ được nếu: macOS ≥14, hoặc
-   webkit trong **Docker/CI**. ⛔ TUYỆT ĐỐI không giả lập bằng chromium+UA rồi báo "đã test Safari".
 3. **[App] Admin (8081)** — mảng trắng cuối cùng (4/5 app đã đụng). Để **sau #1**: thêm bug vào đống chưa ai đọc = vô nghĩa.
-4. **[Compat] Phủ nốt webkit** bằng Docker/CI (xem #2) — hoặc chấp nhận lỗ Safari và ghi rõ trong báo cáo.
-5. **[Security] IDOR** — họ DUY NHẤT còn `未実施` trên cả ticket lẫn pro. Access-control là loại nặng nhất mà đang **mù**.
+4. **[Security] IDOR** — họ DUY NHẤT còn `未実施` trên cả ticket lẫn pro. Access-control là loại nặng nhất mà đang **mù**.
    ⛔ **Chặn: cần account institute THỨ HAI** (`TESTSEED002`) → xin dev/sếp.
 6. **[Grow knowledge/system]** Còn 3 domain: **6 Booking** · **7 Reservation widget** · **8 Admin** (OQ-02 đã đóng, hết bị chặn).
    ⚠️ Chỉ grow khi **thực sự test tới** (demand-driven).
@@ -163,6 +164,9 @@ Chạy thật trên dev, không phải syntax check:
 - **Visual cho pro/reservation** — bác, **đúng**: 3 màn đều đổi theo ngày (calendar/dãy ngày/số tiền) ⇒ baseline
   hỏng mỗi ngày = máy đẻ nhiễu. Visual chỉ dùng cho màn **TĨNH**.
 - **Reservation — họ security mutating** — bác: ghi data = đẻ booking rác trên widget công khai.
+- **Phủ webkit/Safari cho Compat** (Docker/CI hoặc macOS ≥14) — đề xuất 2026-07-17 → **bác, CHẤP NHẬN LỖ**.
+  ⇒ Compat đứng ở **≈67%** (8/12 ô; 8/8 ô chạy đều PASS) và **dừng ở đó**. Báo cáo phải ghi rõ "chưa test Safari".
+  Đừng đề xuất lại trừ khi có lý do MỚI (vd: khách báo lỗi trên iPhone).
 - **Whitebox / Analyzer** — hoãn (ROADMAP §3, §4).
 
 ## 4. Cách maintain khi 5 repo update

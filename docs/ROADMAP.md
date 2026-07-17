@@ -39,7 +39,7 @@ Type:  Functional      ✅ có
        Security        ✅ DONE + live-verify (13 họ; đủ 13/13 trên pro) — oracle=bất biến an ninh
        Visual          ✅ DONE + live-verify — nhưng CHỈ hợp màn TĨNH (xem cảnh báo §3)
        Compatibility   ✅ DONE + live-verify (reservation widget) — oracle=WCAG 1.4.10 + parity engine
-                       ⚠️ webkit/Safari 未実施: macOS 13 không chạy được (KHÔNG giả lập)
+                       ≈67% ổn: 8/12 ô chạy, 8/8 PASS. Safari 未実施 — user CHỐT chấp nhận lỗ (2026-07-17)
        Performance     ❌ ỨNG VIÊN KẾ — oracle ĐÃ GIẢI (Core Web Vitals), xem §3
 ```
 
@@ -72,7 +72,7 @@ Sổ: **36 bug · Mở 36 · Chờ retest 0 · Đã đóng 0**. Chưa cái nào 
 | **Accessibility** | ✅ **DONE — live-verified** (ticket 2026-07-17 · pro + reservation 2026-07-17) | WCAG (axe-core) | `shot()`, khuôn command |
 | **Security (gom)** | ✅ **DONE — live-verified** (**13 họ**; ticket 13 · **pro đủ 13/13** · reservation 6 read-only) | bất biến an ninh phổ quát (XSS escaped, no 500/leak, IDOR 403/404, guard-parity, cookie/CORS/fixation) | `withApi`, khuôn a11y |
 | **Visual** | ✅ **DONE — live-verified** (bless 3 baseline ticket) · ⚠️ CHỈ dùng cho màn **TĨNH** | baseline PNG đã người-duyệt | `shot()` sẵn + khuôn a11y |
-| **Compatibility** | ✅ **DONE — live-verified** (`/testcase-compat`, 12 test, reservation widget 8 PASS / 4 未実施) | **WCAG 1.4.10 Reflow** (mốc 320px, W3C công bố) + parity affordance giữa engine + 0 `pageerror` | Playwright multi-context |
+| **Compatibility** | ✅ **DONE — live-verified** (`/testcase-compat`, 12 test, widget **8 PASS / 4 未実施 ≈ 67% phủ**) · Safari: **user chốt chấp nhận lỗ** | **WCAG 1.4.10 Reflow** (mốc 320px, W3C công bố) + parity affordance giữa engine + 0 `pageerror` | Playwright multi-context |
 | **Performance** | ⏳ **ỨNG VIÊN KẾ** — oracle **đã giải** (Core Web Vitals) | LCP/CLS/INP < ngưỡng Google công bố | `withApi` timing + CDP |
 
 **🔬 Live-verify là thật, không phải thủ tục — 6 bug ORACLE + 1 bug URL bị bắt nhờ nó** (không có nó thì cả 4 đã lọt thành
