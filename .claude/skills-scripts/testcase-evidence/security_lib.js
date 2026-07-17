@@ -131,10 +131,10 @@ function probeMassAssignment({ accepted }) {
   return { vulnerable: !!accepted };
 }
 
-// ── A01 Force-browse / path-traversal — URL cấm/traversal trả 200 kèm data → leak (giống IDOR). ──
+// ── A01 Force-browse / path-traversal — URL cấm/traversal trả 200 kèm resource → leak. ──
+// Cùng oracle với IDOR (xử được cả JSON lẫn HTML: 200 + không phải trang deny = nghi lộ).
 function probeForceBrowse(result) {
-  const { status, body } = result || {};
-  return { status, leak: status === 200 && looksLikeData(body) };
+  return probeIDOR(result);
 }
 
 // ── A07 Session-after-logout — sau logout, request bảo vệ PHẢI 401/302-login, KHÔNG 200. ──

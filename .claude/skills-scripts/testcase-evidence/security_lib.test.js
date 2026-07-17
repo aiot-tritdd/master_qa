@@ -121,8 +121,10 @@ test('probeMassAssignment: field đặc quyền ghi được → vulnerable', ()
   assert.equal(probeMassAssignment({ accepted: false }).vulnerable, false);
 });
 
-test('probeForceBrowse: URL cấm 200+data → leak', () => {
+test('probeForceBrowse: 200+resource → leak; 200 trang deny (HTML) → không; 403 → không', () => {
   assert.equal(probeForceBrowse({ status: 200, body: { id: 1, name: 'x' } }).leak, true);
+  assert.equal(probeForceBrowse({ status: 200, body: '<html>報告 顧客ID AIOTT01 データ</html>' }).leak, true);   // HTML thật → leak
+  assert.equal(probeForceBrowse({ status: 200, body: '<html>権限がありません</html>' }).leak, false);            // 200 deny page
   assert.equal(probeForceBrowse({ status: 403, body: {} }).leak, false);
 });
 
