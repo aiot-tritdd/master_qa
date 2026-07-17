@@ -234,6 +234,27 @@ test('probeIDOR: baselineBody bắt được catch-all mà heuristic vỏ TRƯ�
     { baselineBody: PRO_SHELL }).leak, true);
 });
 
+// ── REGRESSION: rò qua MESSAGE + mảnh SQL (không có tên class exception) — bug oracle thật 2026-07-17 ──
+test('hasStackLeak: bắt rò model/bảng/SQL kiểu Rails message (oracle cũ TRƯỢT ca này)', () => {
+  // Body THẬT từ Pro: POST /permissions/presets với id lạ -> 422
+  const real = JSON.stringify({ errors: { base: [
+    `Couldn't find Therapists::Preset with 'id'=999999 [WHERE "therapists_presets"."institute_id" = $1]`,
+  ] } });
+  const r = hasStackLeak(real);
+  assert.equal(r.leak, true, 'phải bắt được: lộ model Therapists::Preset + bảng therapists_presets + cột institute_id');
+  assert.ok(['rails-record-not-found', 'sql-fragment'].includes(r.kind), `kind lạ: ${r.kind}`);
+  assert.equal(probeErrorDisclosure({ status: 422, body: real }).disclosed, true);
+
+  // từng mảnh riêng cũng phải bắt
+  assert.equal(hasStackLeak(`Couldn't find User with 'id'=1`).kind, 'rails-record-not-found');
+  assert.equal(hasStackLeak(`... [WHERE "orders"."tenant_id" = $1]`).kind, 'sql-fragment');
+
+  // ⚠️ KHÔNG được bắt nhầm lỗi validation bình thường (message thân thiện, không lộ nội bộ)
+  assert.equal(hasStackLeak(JSON.stringify({ errors: { name: ['名前を入力してください'] } })).leak, false);
+  assert.equal(hasStackLeak(JSON.stringify({ error: 'Not found' })).leak, false);
+  assert.equal(hasStackLeak('WHERE do I find the settings page?').leak, false, 'chữ WHERE trong văn xuôi không phải SQL');
+});
+
 test('finding chuẩn hoá đủ field', () => {
   const f = finding({ family: 'xss', payloadClass: 'xss', where: 'ô Tên', url: '/coupons/new/',
     severity: 'High', observed: 'payload execute', fix: 'escape output', shot: 'shots/x.png' });

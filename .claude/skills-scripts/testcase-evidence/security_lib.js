@@ -40,6 +40,13 @@ const LEAK_PATTERNS = [
   [/SQLSTATE\[|SQL syntax|psql:|pg_query|near "/i, 'sql-error'],
   [/\b(NoMethodError|ActiveRecord::|RuntimeError|StandardError)\b/, 'ruby-exception'],
   [/ at .+\(.+:\d+:\d+\)/, 'js-stack'],
+  // ⚠️ Hai pattern dưới thêm 2026-07-17 — live-verify trên Pro lộ ra LỖ của oracle cũ:
+  // POST /permissions/presets với id lạ trả 422 kèm:
+  //   "Couldn't find Therapists::Preset with 'id'=999999 [WHERE \"therapists_presets\".\"institute_id\" = $1]"
+  // Body này KHÔNG chứa tên class exception (`ActiveRecord::…`) nên 4 pattern trên đều TRƯỢT, dù nó rò
+  // model nội bộ + tên bảng + cột phân tách tenant. Rò qua *message* + *mảnh SQL*, không qua tên class.
+  [/Couldn't find [A-Z]\w*(?:::\w+)* with/, 'rails-record-not-found'],   // lộ tên model nội bộ
+  [/\bWHERE\s+"\w+"\."\w+"\s*=/i, 'sql-fragment'],                        // lộ tên bảng/cột (SQL Postgres)
 ];
 function hasStackLeak(body) {
   const s = typeof body === 'string' ? body : JSON.stringify(body || '');

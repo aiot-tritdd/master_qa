@@ -28,6 +28,16 @@ grown_from: "0119159:.claude-tester/knowledge/LESSONS.md (chỉ 9/11 mục — 2
 - Không chắc HOW hay WHAT? → hỏi: *"câu này giúp tôi BẤM đúng, hay giúp tôi CHẤM đúng?"*
   Giúp **bấm** → vào. Giúp **chấm** → không (chỉ SPEC được giúp chấm).
 
+- **2026/07/17 — [pro/auth] Pro KHÔNG dùng cookie phiên.** Auth = devise-token cất ở **localStorage key `user`**
+  (`{"id":2,"accessToken":"…"}`), gửi lên qua **header** `access-token/client/uid/expiry/token-type`.
+  Cookie duy nhất là analytics (`_ga`,`_gid`,`AMP_*`,`cwr_*`) — **không mang quyền**, server không hề `Set-Cookie`.
+  ⇒ (a) họ **cookie-flags N/A** trên Pro; (b) cắm token giả vào key `_token`/`access-token` là **vô ích** —
+  app không đọc 2 key đó (từng làm tui tưởng "token giả sống sót"); (c) logout = `DELETE /auth/sign_out`,
+  sau đó token cũ trả **401**.
+- **2026/07/17 — [pro/preset] Preset quyền = chỗ ghi data test AN TOÀN nhất trên Pro.**
+  `GET/POST /permissions/presets` · `DELETE /permissions/presets/{id}` → **204**; `cleanup.js` quét prefix `AIOT-TEST`.
+  Shape: `{id, name, default_preset, permission_slugs[]}`. Quan sát được: name rỗng → **422** · `permission_slugs: []` → **422** ·
+  `id` lạ trong body → **422** · tạo hợp lệ → **201**.
 - **2026/07/17 — [SPA/route/oracle] Nuxt trả 200 + CÙNG MỘT VỎ cho MỌI path** (pro, reservation — đo thật).
   `GET /../../../../etc/passwd` và `GET /reservation` trả body **giống HỆT nhau từng byte** (reservation 3526 ký tự,
   pro 4165); chữ `404 Not Found` / `リクエストページが存在しません` do **JS vẽ SAU khi render**, KHÔNG có trong body.
