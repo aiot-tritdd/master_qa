@@ -2,7 +2,7 @@
 
 > Bản đồ tầm nhìn (KHÁC `STATE.md` = việc-phiên-này). Mở file này để biết *đang đứng đâu trên bức
 > tranh lớn, còn mở được gì, và vì sao*. Cập nhật khi hướng đổi, không phải mỗi phiên.
-> Cập nhật: 2026-07-16.
+> Cập nhật: **2026-07-17** (sync với thực tế sau đợt pro+reservation).
 
 ---
 
@@ -28,19 +28,38 @@ Hai trục vuông góc (xem `docs/.../Deep-Guide` hoặc README §"Tầng test")
 - **Level** = zoom (Unit → Integration → System/E2E). Con hiện tại kịch trần ở **E2E/System** — vì mù code, KHÔNG thể tụt xuống.
 - **Type** = phẩm chất kiểm (Functional / a11y / Visual / Performance / Security / Compatibility).
 
-### Đang đứng đâu (2026-07-16)
+### Đang đứng đâu (2026-07-17)
 
 ```
 Level: E2E/System ─── con black-box hiện tại sống ở đây
                       Unit + Integration ─── TRỐNG (chỉ whitebox mới với tới, xem §4)
 
 Type:  Functional      ✅ có
-       Accessibility   ✅ vừa build (/testcase-a11y, axe-core, oracle=WCAG)
-       Security        ✅ /testcase-security (10 họ — phủ phần black-box OWASP, oracle=bất biến an ninh)
-       Visual          ❌ ứng viên kế
-       Performance     ❌ vướng oracle (cần budget do người đặt)
-       Compatibility   ❌ rẻ, giá trị tuỳ scope (đáng nhất cho widget public)
+       Accessibility   ✅ DONE + live-verify (ticket · pro · reservation) — oracle=WCAG
+       Security        ✅ DONE + live-verify (13 họ; đủ 13/13 trên pro) — oracle=bất biến an ninh
+       Visual          ✅ DONE + live-verify — nhưng CHỈ hợp màn TĨNH (xem cảnh báo §3)
+       Compatibility   ❌ ỨNG VIÊN KẾ ← rẻ, oracle phổ quát, 0 setup
+       Performance     ❌ oracle ĐÃ GIẢI (Core Web Vitals) — xem §3
 ```
+
+**Độ phủ app (2026-07-17)** — type-track ≠ app đã quét. 5 app thì mới đụng 3:
+
+| App | Functional | a11y | Visual | Security |
+|---|---|---|---|---|
+| ticket | ✅ TestCase-11 | ✅ | ✅ (3 baseline) | ✅ 13 họ |
+| pro | ✅ TestCase-12 | ✅ 2 màn | ❌ | ✅ **13/13 họ** |
+| reservation | ⛔ **không có SPEC** → không chấm được | ✅ 1 màn | ❌ | ✅ 6 họ read-only |
+| **admin** | ❌ | ❌ | ❌ | ❌ ← **mảng trắng hoàn toàn** |
+| backend | — (không có UI; quét gián tiếp qua API của pro) | — | — | — |
+
+> ⚠️ **reservation không có SPEC** ⇒ functional **cấu trúc không chấm được** (không oracle → không bịa `expect`).
+> Muốn test functional widget: phải có spec trước. Type-track thì chạy được vì oracle phổ quát.
+
+**🔴 Nút thắt lớn nhất hiện nay KHÔNG phải thiếu test — mà là bug không tới tay dev.**
+Sổ: **37 bug · Mở 37 · Chờ retest 0 · Đã đóng 0**. Chưa cái nào được sửa, và `wtf-is-this/` thì **gitignored**
+(evidence local) ⇒ team **chưa từng thấy** sổ. Vòng đời `Mở → Chờ retest → Đã đóng` (BUG-LOG §2) + `/testcase-retest`
+**dựng sẵn nhưng chưa chạy lần nào**. Thêm bug vào đống chưa ai đọc = giá trị biên tiến về 0.
+→ Ưu tiên: chốt kênh giao bug với team, rồi chạy thử 1 vòng retest để biết pipeline có thật sự sống.
 
 ---
 
@@ -49,13 +68,35 @@ Type:  Functional      ✅ có
 | Track | Trạng thái | Oracle (độc lập code) | Tận dụng |
 |---|---|---|---|
 | Functional | ✅ core | SPEC + quan sát live | qa-brain |
-| **Accessibility** | ✅ **done** (live-verify CÒN TREO — cần Docker dev) | WCAG (axe-core) | `shot()`, khuôn command |
-| **Security (gom)** | ✅ **done** (live-verify CÒN TREO — cần dev) | bất biến an ninh phổ quát (XSS escaped, no 500/leak, IDOR 403/404, guard-parity) | `withApi`, khuôn a11y |
-| Compatibility | ⏳ hợp vision (0 baseline) | cùng-kết-quả + không-vỡ-layout | Playwright multi-context |
-| Performance | ⏳ hợp vision (ngưỡng chuẩn web mặc định) | LCP/timing < ngưỡng phổ quát | `withApi` timing |
-| **Visual** | 🔨 **đang build v1** (chỉ hợp dự án MATURE) | baseline PNG đã người-duyệt | `shot()` sẵn + khuôn a11y |
+| **Accessibility** | ✅ **DONE — live-verified** (ticket 2026-07-17 · pro + reservation 2026-07-17) | WCAG (axe-core) | `shot()`, khuôn command |
+| **Security (gom)** | ✅ **DONE — live-verified** (**13 họ**; ticket 13 · **pro đủ 13/13** · reservation 6 read-only) | bất biến an ninh phổ quát (XSS escaped, no 500/leak, IDOR 403/404, guard-parity, cookie/CORS/fixation) | `withApi`, khuôn a11y |
+| **Visual** | ✅ **DONE — live-verified** (bless 3 baseline ticket) · ⚠️ CHỈ dùng cho màn **TĨNH** | baseline PNG đã người-duyệt | `shot()` sẵn + khuôn a11y |
+| **Compatibility** | ⏳ **ỨNG VIÊN KẾ** (0 baseline, 0 setup) | cùng-kết-quả + không-vỡ-layout | Playwright multi-context |
+| Performance | ⏳ oracle **đã giải** (Core Web Vitals) | LCP/CLS/INP < ngưỡng Google công bố | `withApi` timing + CDP |
 
-**Vì sao HOÃN Visual (quyết 2026-07-16 theo vision multi-project):** Visual là track **kém "drop-in" nhất**,
+**🔬 Live-verify là thật, không phải thủ tục — 4 bug ORACLE bị bắt nhờ nó** (không có nó thì cả 4 đã lọt thành
+bug bịa gửi cho dev, hoặc PASS rỗng che lỗi thật):
+
+| # | Ngày | Probe bịa gì | Sự thật | Vá |
+|---|---|---|---|---|
+| 1 | 07-17 | `csrftoken` thiếu HttpOnly = yếu | CSRF cookie **cố tình** để JS đọc (double-submit) | chừa csrf khỏi luật HttpOnly |
+| 2 | 07-17 | IDOR/force-browse "200 + lộ data" (ticket) | oracle HTML sai | vá HTML-oracle |
+| 3 | 07-17 | **`/etc/passwd` lộ trên pro + reservation** | body path cấm **=== body path hợp lệ từng byte**; không có `root:x:`; DOM sau render = **404** ⇒ app chặn ĐÚNG. SPA trả cùng vỏ cho mọi path, `context.request` không chạy JS | `probeIDOR(r,{baselineBody})` → giống baseline = `inconclusive`; + `looksLikeSpaShell()` dự phòng |
+| 4 | 07-17 | error-disclosure "không rò" (pro) | 422 rò `Couldn't find Therapists::Preset … WHERE "therapists_presets"."institute_id"` = **model + bảng + cột tenant**. Oracle cũ chỉ tìm **tên class** exception nên trượt | +2 pattern `rails-record-not-found`, `sql-fragment` |
+
+⇒ **Luật rút ra:** ① *unit-test khoá oracle, live-verify khoá "probe có chạm app thật"* — thiếu vế nào cũng chết.
+② **PASS không có đối chứng = PASS vô nghĩa** (mass-assignment lần đầu ra 422 vì gửi kèm `id` lạ → bị chặn vì
+lý do KHÁC; phải tách biến: A hợp lệ→201, B chỉ thêm `default_preset:true`→201 nhưng field bị bỏ qua).
+③ **Vá false-positive rất dễ đẻ false-negative** — bản vá SPA đầu tiên (chỉ đo độ dài text) bị chính unit test
+bắt vì nó nuốt luôn trang lộ thật nhưng ngắn. Ở security, **bỏ sót nguy hiểm hơn báo nhầm**.
+
+**⚡ Performance — ROADMAP cũ nói "vướng oracle, cần người đặt budget". SAI, đã gỡ (2026-07-17):**
+**Core Web Vitals** (LCP < 2.5s · CLS < 0.1 · INP < 200ms) là ngưỡng **Google công bố công khai** — phổ quát,
+không phụ thuộc dự án, **y hệt vai trò WCAG với a11y**. Không cần ông chủ dự án đặt số nào. ⇒ Performance
+**đủ điều kiện oracle-phổ-quát/0-setup**, ngang hàng a11y — không còn lý do hoãn vì oracle.
+(Cái *thật sự* cần người quyết chỉ là budget **riêng-dự-án** kiểu "màn X phải < 800ms" — đó là *thêm*, không phải *điều kiện cần*.)
+
+**Vì sao HOÃN Visual — quyết 2026-07-16, GIỮ NGUYÊN (dù track đã build xong):** Visual là track **kém "drop-in" nhất**,
 ngược vision "engine đa dự án ít setup":
 - Cần **baseline curated PER-PROJECT** (chụp + gật + mask data động + maintain) → setup lặp mỗi dự án.
 - **Regression-only** — dự án mới chưa có baseline thì chưa nói được gì (mà QA generic hay rơi vào "dự án mới đúng spec không" — chỗ Visual mù).
@@ -71,9 +112,37 @@ TRONG-phiên** (đồng hồ/spinner/animation tự nhảy giữa 2 snapshot cù
 phải re-bless. Muốn hết noise phải **mask vùng-data tay** (điều user không thích) hoặc chỉ bless màn UI ổn định.
 Đây là lý do thực nghiệm củng cố "Visual = dự án mature/ổn định".
 
-**Bỏ qua (quyết 2026-07-16):**
-- **Analyzer** (gom cụm bug) — sổ mới 11 bug/1 nguồn, ad-hoc "kêu Claude nhóm giùm" là đủ tới khi sổ lớn. Đóng gói = YAGNI.
-- **PreToolUse hook** (biến tường thép thành cơ chế) — OQ-09, để sau.
+**❌ QUYẾT 2026-07-17: KHÔNG chạy Visual cho pro/reservation.** Đề xuất chạy → **user bác, đúng.** Hai lý do:
+1. Lần đầu chỉ sinh **NEW-BASELINE** → **0 verdict, 0 bug** hôm nay; giá trị chỉ đến từ lần *sau*.
+2. Cả 3 màn đều **đổi theo NGÀY**: calendar Pro hiện `2026/07/17 (金)`, widget hiện dãy `17→23`, 会計 có
+   số tiền/giao dịch. Mai chụp là khác ⇒ diff đỏ mỗi ngày. Đúng loại **"động XUYÊN-phiên"** mà auto-mask
+   **không thấy** (cảnh báo ngay trên). ⇒ Visual ở đây = **máy đẻ nhiễu**, không phải máy bắt bug.
+⇒ **Luật dùng Visual:** chỉ bless màn **TĨNH** (form, cài đặt, login). Màn có ngày/tiền/danh sách → **đừng**.
+
+**Bỏ qua (quyết 2026-07-16 · rà lại 2026-07-17):**
+- **Analyzer** (gom cụm bug) — ⚠️ *lý do cũ đã lỗi thời*: viết khi sổ "11 bug/1 nguồn"; **nay 37 bug/3 nguồn**.
+  Rà lại 2026-07-17: **vẫn hoãn** — dedup hiện làm bằng tay lúc đẩy sổ (1 bug/(màn×họ×payload-class), gom
+  site-wide cho headers) và vẫn ổn. Mốc xét lại: **sổ > ~80 bug** hoặc khi cụm trùng bắt đầu lọt.
+- **PreToolUse hook** (biến tường thép thành cơ chế) — OQ-09. **User bác lại 2026-07-17** khi được đề xuất → giữ hoãn.
+  ⚠️ Rủi ro còn nguyên: "QA mù code" hiện **chỉ là chữ**, không có gì chặn kỹ thuật.
+
+---
+
+## 3b. Bước kế — xếp theo GIÁ TRỊ BIÊN (chốt 2026-07-17)
+
+> Xếp theo *"làm cái này thì thay đổi được gì"*, KHÔNG theo "cái nào vui".
+
+| # | Việc | Vì sao đứng đây | Chặn gì |
+|---|---|---|---|
+| **1** | **Giao 37 bug cho team + chạy thử 1 vòng retest** | Bug nằm trong file **local gitignored**, chưa ai đọc. Test không tới dev = **công cốc**. Vòng đời bug + `/testcase-retest` dựng sẵn **chưa chạy lần nào** ⇒ chưa biết có sống không | ⛔ cần user chốt **kênh giao** (OneDrive? issue? gửi sếp?) |
+| **2** | **Compatibility track** | Type kế hợp vision nhất: 0 setup, oracle phổ quát. Và `reservation` là **widget CÔNG KHAI khách dùng trên điện thoại**, mà mới test **1 browser 1 cỡ desktop** → chỗ rủi ro cao nhất lại mỏng nhất | không |
+| **3** | **Admin app** | Mảng trắng cuối cùng (4/5 app đã đụng) | không — nhưng để sau #1, thêm bug vào đống chưa ai đọc thì vô nghĩa |
+| **4** | **Performance track** | Oracle đã gỡ (Core Web Vitals) | không |
+| **5** | **IDOR** (họ duy nhất còn 未実施 trên pro/ticket) | Lỗ hổng access-control là loại nặng nhất, mà đang **mù** | ⛔ cần **account institute #2** (TESTSEED002) |
+| — | PreToolUse hook · whitebox · Analyzer | user đã bác/hoãn (xem §3, §4) | — |
+
+**Nguyên tắc thứ tự:** #1 trước mọi thứ. Hiện tại con QA **giỏi tìm bug hơn là giao bug** — mất cân bằng ở
+khâu giao, không phải khâu tìm.
 
 ---
 
@@ -101,8 +170,9 @@ tự do đọc code. GitNexus đã index 5 repo → whitebox có code-graph sẵ
 | qa-expert | strategy chung 2 con |
 
 **🔐 Bàn giao SECURITY cho whitebox (chốt sau live-verify `/testcase-security` 2026-07-17):**
-Track black-box `/testcase-security` phủ **phần OWASP quét-được-từ-ngoài** (A01 access-control · A03 injection ·
-A05 misconfig · A07-phần session) — 10 họ. **Những category sau BẤT KHẢ với black-box → whitebox PHẢI ôm:**
+Track black-box `/testcase-security` phủ **phần OWASP quét-được-từ-ngoài** (A01 access-control · A05 injection ·
+A02 misconfig · A07-phần session · A10 exceptional-conditions) — **13 họ** (OWASP **2025** mapping).
+**Những category sau BẤT KHẢ với black-box → whitebox PHẢI ôm:**
 | OWASP còn thiếu | Vì sao black-box không tới | Whitebox làm gì |
 |---|---|---|
 | **A02** Cryptographic Failures | cần soi TLS/cipher/thuật toán/nơi lưu secret | đọc config + code crypto |
@@ -114,6 +184,12 @@ A05 misconfig · A07-phần session) — 10 họ. **Những category sau BẤT K
 - **Giới hạn ĐỘ SÂU đã biết:** black-box probe là **1-shot heuristic** (không chuỗi vuln, không fuzz sâu như
   ZAP/Burp). Whitebox + SAST bù phần sâu. **IDOR object-level** black-box cũng yếu (cần id cross-tenant thật)
   → whitebox có id/quan hệ từ DB-schema, test IDOR chính xác hơn.
+- **Giới hạn kiểu app (đo thật 2026-07-17):** trên **SPA client-render** (Nuxt/Vue/React), oracle "đọc HTML từ
+  raw request" **vô dụng** — server trả cùng vỏ cho mọi path, verdict nằm trong DOM sau JS. ⇒ black-box **buộc**
+  phải drive browser thật; công cụ chỉ-HTTP (curl/ZAP baseline không-JS) sẽ báo bừa. Whitebox không dính vấn đề này.
+- **Cửa đã đóng nhờ black-box (đừng whitebox lại từ đầu):** trên pro đã xác nhận **mass-assignment** (server bỏ
+  qua field đặc quyền), **client-bypass** (server ép cùng ràng buộc UI), **session-after-logout/fixation** (token
+  chết sau logout; token cắm sẵn → 401), **password-leak** (không rò qua response/URL/localStorage; login chỉ đi https).
 - **Neo oracle:** security whitebox vẫn KHÔNG được "code nói an toàn nên an toàn" — oracle = chuẩn an ninh
   (OWASP/CWE) + threat-model, code chỉ để *biết chỗ cần soi* (đúng cạm bẫy tautology §dưới).
 
@@ -156,6 +232,7 @@ khỏi khảo lại:
 | **Testsigma** | ý 5-agent (đã rút) | — |
 
 ### Harvest log (2026-07-17) — đọc file skill thật rồi mới chốt
+> ✅ **Queue harvest cho con đen: ĐÓNG.** 3 món đã bê + verify xong (dưới). 4 nguồn còn lại park cho whitebox/strategy.
 Sau khi **đọc nội dung thật** (không đoán mô tả) 3 skill của `qa-skills` (kindlmann, MIT):
 - ✅ **BÊ NGAY — con đen:** `exploratory-testing` → **HICCUPS/FEW HICCUPS** đã nhét vào `qa-brain` §3.4
   (bộ 10 oracle-lens nhận diện bug; Claims=SPEC, Standards=WCAG, World=Compatibility — code-blind, không phá tường).

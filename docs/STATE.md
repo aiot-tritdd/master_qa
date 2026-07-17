@@ -105,34 +105,41 @@ Chạy thật trên dev, không phải syntax check:
 - 🐞 **Tìm + vá 4 bug harness** (chi tiết `knowledge/lessons.md`): thiếu `locale:'ja-JP'` (**gây FAIL SAI**
   vì spec tiếng Nhật không match UI tiếng Anh) · thiếu `deviceScaleFactor:2` · lưu `storageState` quá sớm
   (cache rỗng session) · 3 cách sai để hỏi "đã đăng nhập chưa" (`count()` / `url()` / `visible` sớm).
-- 🗑️ Phát hiện rác trên dev: preset **`AIOT-TEST-105`** còn sót → `/testcase-cleanup` khi rảnh.
+- 🗑️ ~~Rác trên dev: preset `AIOT-TEST-105`~~ → ✅ **đã sạch** (đo 2026-07-17: `GET /permissions/presets` trả
+  đúng **6 preset gốc** `本社/マネージャー/院長/施術者/受付/チケット管理者`, **0 preset `AIOT*`**).
 
-## 3. VIỆC TIẾP (ưu tiên trên xuống)
+## 3. VIỆC TIẾP (ưu tiên trên xuống — rà lại 2026-07-17)
 
-0. 🔴 **[TO NHẤT — PreToolUse hook] Biến tường thép từ VĂN BẢN thành CƠ CHẾ.** Hiện QA-runtime "cấm
-   đọc code/GitNexus/`knowledge/system/`" chỉ là luật viết, không có gì chặn kỹ thuật. Cần hook chặn
-   `Read`/`Grep` vào 5 repo + `knowledge/system/**` + mọi `mcp__gitnexus__*` **khi đang `/testcase-run`**
-   (không chặn lúc build-time soạn knowledge). **Quyết định: tạm GIỮ TEXT, chưa dựng hook** (2026-07-09).
-   Chi tiết + lý do: `OPEN-QUESTIONS.md#OQ-09`. → dựng khi có nhịp.
-1. ✅ **Live-verify `pw_api` + `shot()` — XONG.** Cổng chặn Phase 2 đã mở.
-2. ✅ **[MERGE Phase 2] XONG** — `knowledge/METHOD.md` (5 archetype + 6 luật vàng + adapter
-   *"coverage ≠ oracle"* + sơ đồ rẽ nhánh `SPEC-GAP`). Còn: live-verify archetype #5 (chống bypass).
-3. ✅ **[MERGE Phase 3] XONG** — 11 file của sếp xé qua 3 cửa. Nhà mới: `knowledge/playbook.md` ·
-   `features.md` (draft, chờ UI-confirm) · `system/domain-rules.md` · `system/ui-theme.md` ·
-   `system/api-endpoints.md`; phần còn lại đổ vào nhà có sẵn (`customer-sync`/`coupon-sc`/`OVERVIEW`/
-   `observation-channels`/`lessons`/`KNOWLEDGE-STRATEGY`).
-4. ✅ **[MERGE Phase 4] XONG** — archive `0119159` → `git rm` `822d5dd` → `rm -rf` phần untracked.
-   `.claude-tester` **không còn trong working tree**. Tra nguồn: `git show 0119159:.claude-tester/<path>`.
-   ⚠️ **KHÔNG** kết luận "tường thép thành cơ chế" — đó là câu sai (lần 3 của lỗi "quan sát được = tồn tại").
-   Lỗ tự-nạp (workspace `CLAUDE.md` §8) đã bịt; lỗ phải-grep (`.claude-tester/`) đã bịt; nhưng tường thép
-   **vẫn là văn bản**. Cơ chế thật = PreToolUse hook, **chưa làm** → `OPEN-QUESTIONS.md#OQ-09` (việc lớn nhất còn lại).
-5. **[Grow knowledge/system]** Còn 3 domain: **6 Booking** (GitNexus được việc) ·
-   **7 Reservation widget** + **8 Admin** — ✅ **hết bị chặn** (OQ-02 đã đóng: dev URL xác nhận đúng).
-6. ✅ **[Nav doc] `pro-open-booking.md` đã re-UI-confirm 2026-07-09** dưới `ja-JP` → `approved`.
-   Nhãn thật: `請求書` (không phải `INVOICE`) · `削除する` (không phải `Remove`) · `保存する` ·
-   `.mdi-delete-outline`. Toạ độ cứng `mouse.click(877,68)` đã bỏ → selector ngữ nghĩa.
+> 🧹 Dọn 2026-07-17: các mục MERGE Phase 1-4 · live-verify `pw_api`/`shot()` · re-UI-confirm `pro-open-booking`
+> **đã XONG** → chuyển hết lên §2, không còn nằm ở "việc tiếp" nữa. Bảng đầy đủ + lý do xếp hạng: **`ROADMAP.md` §3b**.
+
+1. 🔴 **[NÚT THẮT SỐ 1 — giao bug] 37 bug đang CHẾT trong file local.**
+   Sổ: **Mở 37 · Chờ retest 0 · Đã đóng 0** ⇒ chưa ai sửa cái nào. `wtf-is-this/` **gitignored** ⇒ team
+   **chưa từng thấy** `bug-he-thong.xlsx`. Vòng đời bug (BUG-LOG §2) + `/testcase-retest` **dựng sẵn, CHƯA
+   CHẠY LẦN NÀO** → chưa biết pipeline có sống không.
+   ⛔ **Chặn: cần user chốt kênh giao** (OneDrive / tạo issue / gửi sếp?).
+   → Sau khi giao: chạy thử **1 vòng retest** để nghiệm thu pipeline.
+   💡 *Vấn đề bây giờ không phải "tìm thêm bug" — là bug không tới tay dev.*
+2. **[Type-track kế] Compatibility.** 0 setup, oracle phổ quát (cùng-kết-quả + không-vỡ-layout), Playwright
+   multi-context có sẵn. **Đáng nhất cho `reservation`**: widget CÔNG KHAI, khách đặt lịch bằng **điện thoại**,
+   mà mới test **1 browser 1 cỡ desktop**. (Không chặn.)
+3. **[App] Admin (8081)** — mảng trắng cuối cùng (4/5 app đã đụng). Để **sau #1**: thêm bug vào đống chưa ai đọc = vô nghĩa.
+4. **[Type-track] Performance** — oracle **đã gỡ** 2026-07-17: **Core Web Vitals** (LCP<2.5s · CLS<0.1 · INP<200ms)
+   là ngưỡng Google công bố, phổ quát, **không cần người đặt budget** (ROADMAP cũ nói ngược → đã sửa).
+5. **[Security] IDOR** — họ DUY NHẤT còn `未実施` trên cả ticket lẫn pro. Access-control là loại nặng nhất mà đang **mù**.
+   ⛔ **Chặn: cần account institute THỨ HAI** (`TESTSEED002`) → xin dev/sếp.
+6. **[Grow knowledge/system]** Còn 3 domain: **6 Booking** · **7 Reservation widget** · **8 Admin** (OQ-02 đã đóng, hết bị chặn).
+   ⚠️ Chỉ grow khi **thực sự test tới** (demand-driven).
 7. **[Nav doc]** Nâng `issue-ticket-pack.md` `draft → approved`: UI-confirm khâu tạo booking → thanh toán → phát hành vé.
 8. **[Optional]** `TestCase_NEW`: 6 case còn `未実施` cần precondition **gói vé còn nguyên** (KH3 đã dùng 2 vé).
+
+### Đã đề xuất → user BÁC (đừng đề xuất lại nếu không có lý do mới)
+- **PreToolUse hook** (OQ-09) — biến "QA mù code" từ *chữ* thành *cơ chế chặn thật*. Đề xuất 2026-07-17 → **bác**.
+  ⚠️ Rủi ro còn nguyên: hiện **không có gì** chặn kỹ thuật việc đọc code lúc test.
+- **Visual cho pro/reservation** — bác, **đúng**: 3 màn đều đổi theo ngày (calendar/dãy ngày/số tiền) ⇒ baseline
+  hỏng mỗi ngày = máy đẻ nhiễu. Visual chỉ dùng cho màn **TĨNH**.
+- **Reservation — họ security mutating** — bác: ghi data = đẻ booking rác trên widget công khai.
+- **Whitebox / Analyzer** — hoãn (ROADMAP §3, §4).
 
 ## 4. Cách maintain khi 5 repo update
 
@@ -151,8 +158,17 @@ Ngân sách GitNexus thật (processes/repo) + 3 loại stale: [`KNOWLEDGE-STRAT
 - **Branch phiên `TESTSEED001` hiện = `3`** (đo 2026-07-09; branch sai → API trả 404).
 - Booking mẫu để drive: **`Jenny` 07/09 14:20, branch 3, id=774, `一部支払済み`, có vé `AIOT-TEST-TK1` + coupon**.
   ❌ `AIOTTEST-KH3` booking 07/13 **không còn tồn tại** (đã bị dọn) — ghi chú cũ đã sai.
-- 🗑️ Rác còn trên dev: preset `AIOT-TEST-105`, staff `AIOT Test105`, ticket master `AIOT-TEST-TK1`.
+- 🗑️ Rác còn trên dev (đo lại **2026-07-17**): preset ✅ **SẠCH** (6 preset gốc, 0 `AIOT*` — mục `AIOT-TEST-105`
+  cũ đã hết). Chưa đo lại: staff `AIOT Test105`, ticket master `AIOT-TEST-TK1` (2 cái này **không có API xoá** → nhờ dev xoá DB).
+- **Pro auth = devise-token ở `localStorage.user`** (`{"id":..,"accessToken":".."}`), gửi qua **header**
+  `access-token/client/uid/expiry/token-type`. **KHÔNG có cookie phiên** (cookie chỉ là GA/AMP/cwr).
+  Logout = `DELETE /auth/sign_out` → token cũ thành **401**.
+- **Chỗ ghi data test AN TOÀN nhất trên Pro = preset quyền**: `POST /permissions/presets` →201 ·
+  `DELETE /permissions/presets/{id}` →204 · `cleanup.js` quét prefix `AIOT-TEST`. Shape `{id,name,default_preset,permission_slugs[]}`.
+- **Route thật**: pro đặt lịch = **`/reservations`** (KHÔNG phải `/branches/N/reservations/` — cái đó ra vỏ ホーム) ·
+  pro kế toán = `/accounting` · reservation widget = **`/reservation`** (số ít; `/` ra soft-404). Nuxt cần **~7-8s** render.
 - Build xlsx: `python3 .claude/skills-scripts/testcase-evidence/build_evidence.py <F>/tcs.json <F>/<Tên>.xlsx`.
+- Factcheck TRƯỚC mọi build: `python3 .../factcheck_report.py <file>.json` (gate filler + tally bịa).
 - Session cache: `.state.<target>.json` — `NO_STATE=1` để login sạch.
 
 ## 6. NGUYÊN TẮC BẤT DI (đừng phá — đã từng trả giá)
@@ -166,6 +182,18 @@ Ngân sách GitNexus thật (processes/repo) + 3 loại stale: [`KNOWLEDGE-STRAT
 5. **`grep` không thấy ≠ không tồn tại** → `OPEN-QUESTIONS.md`, không ép thành "có"/"không".
 6. Spec im lặng ở chỗ METHOD bảo phải kiểm → **`SPEC-GAP`**, KHÔNG bịa `expect`.
 7. Specs sau này = **tinh chỉnh/update** business đã map, không build lại từ 0.
+8. **PASS không có ĐỐI CHỨNG = PASS vô nghĩa.** (2026-07-17) mass-assignment ra `422` → tưởng server phòng thủ
+   tốt; thật ra bị chặn vì **lý do khác** (gửi kèm `id` lạ). Phải **tách biến**: A hợp lệ→201 (baseline chứng minh
+   thao tác chạy được) rồi B chỉ thêm **đúng 1** field đặc quyền. Không có A thì B nói lên **con số không**.
+9. **Unit-test và live-verify khoá HAI thứ KHÁC NHAU — thiếu vế nào cũng chết.** Unit-test khoá *oracle đúng
+   logic*; live-verify khoá *probe có thật sự chạm app*. **4 bug oracle** (2026-07-17) đều chỉ lộ khi chạy thật:
+   csrftoken-HttpOnly · IDOR HTML-oracle · **SPA trả cùng vỏ mọi path** (`/etc/passwd` FAIL giả trên pro+reservation) ·
+   **rò Rails qua message** (`Couldn't find Therapists::Preset … WHERE "bảng"."cột"` — oracle chỉ tìm tên class nên trượt).
+10. **Vá false-positive rất dễ đẻ false-negative.** Bản vá SPA đầu (chỉ đo độ dài text) bị **chính unit test bắt**:
+   nó nuốt luôn trang lộ thật nhưng ngắn. Ở security, **bỏ sót nguy hiểm hơn báo nhầm** → mọi bản vá phải có
+   test **cả hai chiều** (bắt được ca thật + không nuốt ca thật).
+11. **Số lạ → MỞ ẢNH / đọc body.** `200` trên SPA **không** nghĩa là route tồn tại (Nuxt trả cùng vỏ cho mọi path).
+   Đừng dùng status để phán "có/không có màn" — chỉ Django/Rails mới 404 thật.
 
 ## 7. Trạng thái git / task nền
 
