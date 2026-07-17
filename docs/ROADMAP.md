@@ -100,6 +100,23 @@ tự do đọc code. GitNexus đã index 5 repo → whitebox có code-graph sẵ
 | qa-skills: `unit-testing`, `api-testing`, `database-testing`, `contract-testing`, `coverage-analysis` | bị CẤM ở black-box, HỢP LỆ ở whitebox |
 | qa-expert | strategy chung 2 con |
 
+**🔐 Bàn giao SECURITY cho whitebox (chốt sau live-verify `/testcase-security` 2026-07-17):**
+Track black-box `/testcase-security` phủ **phần OWASP quét-được-từ-ngoài** (A01 access-control · A03 injection ·
+A05 misconfig · A07-phần session) — 10 họ. **Những category sau BẤT KHẢ với black-box → whitebox PHẢI ôm:**
+| OWASP còn thiếu | Vì sao black-box không tới | Whitebox làm gì |
+|---|---|---|
+| **A02** Cryptographic Failures | cần soi TLS/cipher/thuật toán/nơi lưu secret | đọc config + code crypto |
+| **A04** Insecure Design | thuộc kiến trúc, không có "đòn" quan sát được | review threat-model + data-flow trên code-graph |
+| **A06** Vulnerable Components | cần đọc dependency/lockfile (SCA/SBOM) | quét `Gemfile.lock`/`package-lock`/`requirements` vs CVE |
+| **A08** Integrity Failures | deserialize/CI-CD/pipeline — không lộ ra UI | audit code deserialize + pipeline config |
+| **A09** Logging & Monitoring | không observable từ ngoài | kiểm code có log/alert sự kiện bảo mật |
+| **A10** SSRF | chỉ test được NẾU có feature fetch-URL (coupon không có) | trace sink `fetch/open(url)` trên code-graph |
+- **Giới hạn ĐỘ SÂU đã biết:** black-box probe là **1-shot heuristic** (không chuỗi vuln, không fuzz sâu như
+  ZAP/Burp). Whitebox + SAST bù phần sâu. **IDOR object-level** black-box cũng yếu (cần id cross-tenant thật)
+  → whitebox có id/quan hệ từ DB-schema, test IDOR chính xác hơn.
+- **Neo oracle:** security whitebox vẫn KHÔNG được "code nói an toàn nên an toàn" — oracle = chuẩn an ninh
+  (OWASP/CWE) + threat-model, code chỉ để *biết chỗ cần soi* (đúng cạm bẫy tautology §dưới).
+
 **3 cạm bẫy phải giải trước khi build whitebox:**
 1. **Tautology áp thẳng vào whitebox.** Test sinh từ code = "code làm đúng cái code làm" = vô nghĩa (đúng cái
    README black-box chửi). ⇒ whitebox vẫn phải neo oracle vào **SPEC** (test tầng unit/IT nhưng kỳ vọng từ spec);

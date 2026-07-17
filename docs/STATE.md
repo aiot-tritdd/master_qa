@@ -33,8 +33,9 @@ evidence PNG/xlsx. Oracle = SPEC + quan sát live. **Mù code.** GitNexus chỉ 
   Spec/plan: `docs/superpowers/{specs,plans}/2026-07-16-visual-track*`.
 - ✅ **Track Security** (`/testcase-security`) — **10 họ phủ phần black-box OWASP** (Injection/XSS · IDOR · Client-bypass guard-parity ·
   Error-disclosure · Security-headers · Open-redirect · CSRF · Mass-assignment · Force-browse/traversal · Session-after-logout),
-  oracle = **bất biến an ninh phổ quát** (code-blind, no SPEC-GAP). `security_lib.js` (15 test) + `build_security_report.py` + `bug_type:Security`. Type track thứ 4.
+  oracle = **bất biến an ninh phổ quát** (code-blind, no SPEC-GAP). `security_lib.js` (16 test) + `build_security_report.py` + `bug_type:Security`. Type track thứ 4.
   **Consolidation:** security RÚT khỏi qa-brain functional (SKILL.md) → tập trung ở track này.
+  ✅ **LIVE-VERIFIED 2026-07-17** (10 họ trên TestCase-11 ticket): 5 PASS (error-disclosure/force-browse/injection-escaped/CSRF-403/session-logout-302) · 1 FAIL security-headers CSP+HSTS → **BUG-020** · 4 未実施 (IDOR cần id cross-tenant · client-bypass end<start mơ hồ · mass-assignment cần model · open-redirect không có param). KHÔNG data rác (mutating bị reject). Live lộ + vá 3 probe (IDOR/force-browse HTML-oracle, session-logout cần POST). Whitebox handoff (OWASP A02/04/06/08/09/10) ghi ROADMAP §4.
   ⚠️ **CÒN TREO: live-verify** (cần dev): chạy `/testcase-security wtf-is-this/TestCase-11`, cleanup `AIOT-TEST-SEC-*` sau.
   Spec/plan: `docs/superpowers/{specs,plans}/2026-07-17-security-track*`.
 
