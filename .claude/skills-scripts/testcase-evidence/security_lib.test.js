@@ -2,9 +2,10 @@ const { test } = require('node:test');
 const assert = require('node:assert');
 const { chromium } = require('playwright');
 const {
-  PAYLOADS, isServerError, hasStackLeak, looksLikeData,
+  PAYLOADS, DENY_STATUS, isServerError, statusIn, isDenied, hasStackLeak, looksLikeData,
   xssFired, resetXss, probeInjection, probeIDOR, probeBypass, probeErrorDisclosure,
   checkSecurityHeaders, probeOpenRedirect, probeCsrf, probeMassAssignment, probeForceBrowse, probeSessionAfterLogout,
+  probeCookieFlags, probeCors, probeSessionFixation,
   finding,
 } = require('./security_lib');
 
@@ -132,6 +133,48 @@ test('probeSessionAfterLogout: sau logout còn 200 → vulnerable', () => {
   assert.equal(probeSessionAfterLogout({ status: 200 }).vulnerable, true);
   assert.equal(probeSessionAfterLogout({ status: 401 }).vulnerable, false);
   assert.equal(probeSessionAfterLogout({ status: 302 }).vulnerable, false);
+});
+
+test('PAYLOADS có pathTraversal', () => {
+  assert.ok(Array.isArray(PAYLOADS.pathTraversal) && PAYLOADS.pathTraversal.length >= 3);
+  assert.ok(PAYLOADS.pathTraversal.some(p => /etc\/passwd|etc%2fpasswd/i.test(p)));
+});
+
+test('statusIn / isDenied: tập mã hợp lệ + redirect = denied; 200/500 = không denied', () => {
+  assert.equal(statusIn(403, DENY_STATUS), true);
+  assert.equal(statusIn(200, DENY_STATUS), false);
+  assert.equal(isDenied(401), true);
+  assert.equal(isDenied(404), true);
+  assert.equal(isDenied(302), true);   // redirect (login) = từ chối hợp lệ
+  assert.equal(isDenied(200), false);
+  assert.equal(isDenied(500), false);  // server-error KHÔNG phải "từ chối hợp lệ"
+});
+
+test('probeCookieFlags: cookie phiên thiếu HttpOnly/SameSite/Secure → weak; đủ cờ → ok; cookie thường bỏ qua', () => {
+  const weak = probeCookieFlags(['sessionid=abc; Path=/']);
+  assert.equal(weak.ok, false);
+  assert.deepEqual(weak.weak[0].missing.sort(), ['HttpOnly', 'SameSite', 'Secure'].sort());
+  const full = probeCookieFlags(['sessionid=abc; Path=/; HttpOnly; SameSite=Lax; Secure']);
+  assert.equal(full.ok, true, JSON.stringify(full.weak));
+  // http → Secure không tính thiếu
+  assert.ok(!probeCookieFlags(['sessionid=abc; HttpOnly; SameSite=Lax'], { https: false })
+    .weak.some(w => w.missing.includes('Secure')));
+  // cookie không phải phiên (vd preference) → không soi
+  assert.equal(probeCookieFlags(['theme=dark; Path=/']).ok, true);
+});
+
+test('probeCors: echo origin tấn công (± creds) hoặc *+creds → vulnerable; origin cố định → không', () => {
+  const atk = 'https://evil.example';
+  assert.equal(probeCors({ 'Access-Control-Allow-Origin': atk }, { attackerOrigin: atk }).vulnerable, true);
+  assert.equal(probeCors({ 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true' }).vulnerable, true);
+  assert.equal(probeCors({ 'Access-Control-Allow-Origin': 'https://app.threease.com' }, { attackerOrigin: atk }).vulnerable, false);
+  assert.equal(probeCors({}).vulnerable, false);   // không có CORS header
+});
+
+test('probeSessionFixation: id không xoay sau login → vuln; xoay → an toàn; thiếu vế → inconclusive', () => {
+  assert.equal(probeSessionFixation({ before: 'sameid', after: 'sameid' }).vulnerable, true);
+  assert.equal(probeSessionFixation({ before: 'old', after: 'new' }).vulnerable, false);
+  assert.equal(probeSessionFixation({ before: null, after: 'x' }).inconclusive, true);
 });
 
 test('finding chuẩn hoá đủ field', () => {

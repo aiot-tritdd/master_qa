@@ -1,6 +1,11 @@
 // security_lib.js — bất biến an ninh PHỔ QUÁT (black-box, mù code). Oracle helpers THUẦN + probe.
 // KHÔNG tự gọi HTTP: probe IDOR/bypass/error nhận {status,body} do driver fetch (driver lo auth per-app).
 // XSS marker = window.__SEC_XSS (bơm rồi đọc lại — chỉ quan sát browser, không đọc code).
+//
+// OWASP mapping = Top 10 **2025** (owasp.org/Top10/2025). Đổi so với 2021: A02 Misconfig lên cao,
+// A03 = Supply-Chain (whitebox), A10 = Mishandling Exceptional Conditions, SSRF gộp A01/A06.
+// Nguồn kỹ thuật probe: qa-skills/security-testing (kindlmann, MIT) — phần black-box; phần
+// DAST/SCA/SAST/JWT là whitebox (xem ROADMAP §4).
 
 const PAYLOADS = {
   xss: [
@@ -11,7 +16,18 @@ const PAYLOADS = {
   sqli: ["' OR '1'='1", "'; DROP TABLE x;--", '" OR ""="'],
   template: ['${{7*7}}', '{{7*7}}', '#{7*7}'],
   csv: ['=2+2', '+2+2', '-2+2', '@SUM(1+1)'],
+  pathTraversal: ['../../../../etc/passwd', '..%2f..%2f..%2f..%2fetc%2fpasswd', '....//....//....//etc/passwd'],
 };
+
+// ── Acceptable-status-set (qa-skills): 1 phép chấm thường có NHIỀU mã hợp lệ — đừng ép 1 status.
+// "Từ chối hợp lệ" = {400,401,403,404,422} hoặc redirect 3xx. Dùng cho probe + assertion test.
+const DENY_STATUS = [400, 401, 403, 404, 422];
+function statusIn(status, allowed) {
+  return typeof status === 'number' && Array.isArray(allowed) && allowed.includes(status);
+}
+function isDenied(status) {
+  return statusIn(status, DENY_STATUS) || (typeof status === 'number' && status >= 300 && status < 400);
+}
 
 function isServerError(status) {
   return typeof status === 'number' && status >= 500 && status < 600;
@@ -142,14 +158,57 @@ function probeSessionAfterLogout({ status }) {
   return { vulnerable: status === 200 };
 }
 
+// ── A02/A04 Cookie flags — cookie PHIÊN phải có HttpOnly + SameSite (+ Secure khi https). ──
+// Nhận mảng chuỗi Set-Cookie thô (driver đọc từ response header). Chỉ soi cookie phiên/định-danh.
+const SESSION_COOKIE_RE = /(session|sessionid|_session|sess|sid|csrf|xsrf|token|auth|remember)/i;
+function probeCookieFlags(setCookies, opts = {}) {
+  const https = opts.https !== false;
+  const list = Array.isArray(setCookies) ? setCookies : (setCookies ? [setCookies] : []);
+  const weak = [];
+  for (const c of list) {
+    if (typeof c !== 'string') continue;
+    const name = (c.split('=')[0] || '').trim();
+    if (!SESSION_COOKIE_RE.test(name)) continue;
+    const f = c.toLowerCase();
+    const missing = [];
+    if (!/;\s*httponly/.test(f)) missing.push('HttpOnly');
+    if (!/;\s*samesite=/.test(f)) missing.push('SameSite');
+    if (https && !/;\s*secure/.test(f)) missing.push('Secure');
+    if (missing.length) weak.push({ cookie: name, missing });
+  }
+  return { weak, ok: weak.length === 0 };
+}
+
+// ── A02 CORS misconfig — server PHẢN CHIẾU Origin tấn công (echo bất kỳ origin), tệ hơn nếu kèm
+// Allow-Credentials=true; hoặc '*' + credentials. Nhận header response của 1 request gửi Origin lạ. ──
+function probeCors(headers, opts = {}) {
+  const h = {};
+  for (const k in (headers || {})) h[k.toLowerCase()] = headers[k];
+  const acao = h['access-control-allow-origin'] || null;
+  const credentials = /true/i.test(h['access-control-allow-credentials'] || '');
+  const attacker = opts.attackerOrigin || 'https://evil.example';
+  const reflectsAttacker = acao === attacker;                 // echo đúng origin mình gửi = tin mọi origin
+  const wildcardWithCreds = acao === '*' && credentials;      // spec cấm '*'+creds nhưng vài server bỏ qua
+  return { acao, credentials, vulnerable: reflectsAttacker || wildcardWithCreds };
+}
+
+// ── A07 Session-fixation — session id TRƯỚC login PHẢI khác SAU login (server xoay session). ──
+// before/after = giá trị cookie phiên quan sát 2 thời điểm. Thiếu 1 vế → inconclusive (未実施).
+function probeSessionFixation({ before, after }) {
+  const has = before != null && after != null && before !== '' && after !== '';
+  if (!has) return { vulnerable: false, inconclusive: true };
+  return { vulnerable: before === after, inconclusive: false };
+}
+
 function finding({ family, payloadClass, where, url, severity, observed, fix, shot }) {
   return { family, payloadClass: payloadClass || '', where: where || '', url: url || '',
     severity: severity || 'Medium', observed: observed || '', fix: fix || '', shot: shot || '' };
 }
 
 module.exports = {
-  PAYLOADS, isServerError, hasStackLeak, looksLikeData, looksDenied, EXPECTED_HEADERS,
+  PAYLOADS, DENY_STATUS, isServerError, statusIn, isDenied, hasStackLeak, looksLikeData, looksDenied, EXPECTED_HEADERS,
   xssFired, resetXss, probeInjection, probeIDOR, probeBypass, probeErrorDisclosure,
   checkSecurityHeaders, probeOpenRedirect, probeCsrf, probeMassAssignment, probeForceBrowse, probeSessionAfterLogout,
+  probeCookieFlags, probeCors, probeSessionFixation,
   finding,
 };

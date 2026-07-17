@@ -33,11 +33,16 @@ evidence PNG/xlsx. Oracle = SPEC + quan sát live. **Mù code.** GitNexus chỉ 
   Spec/plan: `docs/superpowers/{specs,plans}/2026-07-16-visual-track*`.
 - ✅ **Track Security** (`/testcase-security`) — **10 họ phủ phần black-box OWASP** (Injection/XSS · IDOR · Client-bypass guard-parity ·
   Error-disclosure · Security-headers · Open-redirect · CSRF · Mass-assignment · Force-browse/traversal · Session-after-logout),
-  oracle = **bất biến an ninh phổ quát** (code-blind, no SPEC-GAP). `security_lib.js` (16 test) + `build_security_report.py` + `bug_type:Security`. Type track thứ 4.
+  oracle = **bất biến an ninh phổ quát** (code-blind, no SPEC-GAP). `security_lib.js` (**21 test**) + `build_security_report.py` + `bug_type:Security`. Type track thứ 4.
   **Consolidation:** security RÚT khỏi qa-brain functional (SKILL.md) → tập trung ở track này.
   ✅ **LIVE-VERIFIED 2026-07-17** (10 họ trên TestCase-11 ticket): **6 PASS** (error-disclosure/force-browse/injection-escaped/CSRF-403/session-logout-302/**client-bypass end<start chặn server-side**) · 1 FAIL security-headers CSP+HSTS → **BUG-020** · 4 未実施 (IDOR *hoãn — account chỉ 1 institute TESTSEED001, cần institute thứ 2* · mass-assignment *whitebox — cần model* · open-redirect *không có param* · SSRF *N/A — scope coupon không có feature fetch-URL*). KHÔNG data rác (mutating bị reject). Live lộ + vá 3 probe (IDOR/force-browse HTML-oracle, session-logout cần POST). Whitebox handoff (OWASP A02/04/06/08/09/10) ghi ROADMAP §4.
   ⚠️ **CÒN TREO: live-verify** (cần dev): chạy `/testcase-security wtf-is-this/TestCase-11`, cleanup `AIOT-TEST-SEC-*` sau.
   Spec/plan: `docs/superpowers/{specs,plans}/2026-07-17-security-track*`.
+- ✅ **Harvest qa-skills** (kindlmann, MIT — 2026-07-17, ĐÃ đọc file skill thật):
+  - **HICCUPS** → `qa-brain/SKILL.md §3.4`: bộ 10 kính oracle nhận diện bug (code-blind; Claims=SPEC chốt đúng/sai, Standards=a11y, World=Compatibility).
+  - **`security_lib` v2** (+5 test → 21): 3 probe mới **cookie-flags · CORS · session-fixation** (họ 11-13) + `PAYLOADS.pathTraversal` + helper **acceptable-status-set** (`isDenied`/`statusIn`). Command doc remap **OWASP 2025** + recipe **Juice-Shop meta-verify** (chống PASS rỗng). ⚠️ 3 họ v2 **CHƯA live-verify** trên app.
+  - **Breadcrumb whitebox/chiến-lược** vào ROADMAP §4 + harvest log §5 (security-auditor/test-automator/qa-expert + phần DAST/SCA/SAST của qa-skills security-testing = whitebox; không bê cho con đen).
+  - ⏳ Còn queue con đen: **fact-preservation grep** cho report (humanizer) + **live-verify 3 họ v2**.
 
 ### ✅ MERGE Phase 0 — vá lệnh chết (2026-07-09, đã verify)
 Trước đó 4 lệnh trỏ vào file **không tồn tại**. Nay:
