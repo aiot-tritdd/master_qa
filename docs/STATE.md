@@ -1,7 +1,39 @@
 # STATE — điểm dừng & việc tiếp (đọc ĐẦU TIÊN mỗi phiên)
 
 > File **sống** — cập nhật cuối mỗi phiên. Mục đích: mở phiên mới là biết ngay *đang ở đâu, làm gì tiếp*.
-> Cập nhật: **2026-07-17**. Branch git: `qa-brain` (threease_qa).
+> Cập nhật: **2026-07-17**. Branch git: `qa-brain` (threease_qa) — local == remote == `ba2018f`, working tree sạch.
+
+---
+
+# 🔔 MỞ SESSION MỚI → ĐỌC ĐÚNG KHỐI NÀY LÀ ĐỦ
+
+## Con black-box đã **CẠN VIỆC** (2026-07-17). Không còn việc nào tự chạy được.
+
+```
+Trục TYPE (ngang):  6/6 XONG   Functional · a11y · Visual · Security · Compat · Perf
+Trục APP  (ngang):  ĐÓNG       phủ 3/5 (ticket·pro·reservation) — admin user CHỐT BỎ HẲN
+Trục LEVEL (dọc):   TRỐNG      Unit + Integration → chỉ WHITEBOX với tới (con đen mù code, cấu trúc không thể)
+```
+
+## ⛔ Cả 2 việc còn lại đều KẸT Ở NGƯỜI KHÁC — không phải kẹt kỹ thuật
+
+| Việc | Kẹt gì | **Câu ông cần hỏi** |
+|---|---|---|
+| **Whitebox** (mở rộng thật sự duy nhất còn lại) | **quyền sở hữu** | Hỏi **sếp/dev**: *"Cho agent viết unit/integration test vào 5 repo sản phẩm không?"* Unit test xưa nay **dev tự viết trong repo họ** → đây là quyết định **tổ chức**, không phải kỹ thuật. Được đồng ý → làm **1 lát mỏng** (1 flow, tầng Integration/API-contract, oracle **vẫn SPEC**), đừng nuốt cả đáy pyramid × 5 repo. Chi tiết + 3 cục chặn: **ROADMAP §4**. |
+| **IDOR** (họ security DUY NHẤT còn `未実施`) | **thiếu data** | Xin **dev/sếp**: **account institute THỨ HAI** (`TESTSEED002`). Hiện chỉ có `TESTSEED001` → không thử đọc-chéo-tenant được. Access-control là loại lỗ nặng nhất mà đang **mù**. |
+
+> 💡 **Không hỏi được cái nào → KHÔNG CÓ VIỆC.** Đừng bịa việc ra làm. Đừng đề xuất lại mấy thứ ở
+> mục **"Đã đề xuất → user BÁC"** (§3) — admin, giao bug, pro visual, webkit/Safari, PreToolUse hook.
+
+## Ảnh chụp nhanh — hệ đang ở đâu
+- **Sổ bug: 39** (Mở 39 · Đã đóng 0) — a11y 21 · Function 11 · Security 4 · Perf 3.
+  🚫 **Giao bug = việc của USER** (tự đưa file lên Drive). `wtf-is-this/` giữ gitignore. **Đừng nhắc nữa.**
+- **Test tự động của chính hệ QA: 78 xanh** (71 JS `node --test` + 7 Python).
+- **6 lib oracle**: `security_lib`(25) · `compat_lib`(12) · `perf_lib`(10) · `a11y_lib` · `pw_lib` · `pw_api`
+  + `factcheck_report.py`(7) gate mọi report trước khi build.
+- **Dev sạch** — không còn data test (`AIOT-TEST-SEC-*` đã dọn, verify 0 preset rác).
+- 📊 **Phát hiện to nhất chưa ai fix:** `pro` **TBT 1184ms** (đơ ~1.2s) vs `ticket` ~0ms vs `reservation` 106ms
+  ⇒ **vấn đề tốc độ KHU TRÚ ở Pro**, không phải "hệ chậm". (Quan sát — không chẩn đoán, đó là việc dev.)
 
 ---
 
@@ -12,6 +44,16 @@ Nó **không** giải thích hệ thống — muốn hiểu hệ thống thì đ
 
 QA senior **black-box** (skill `qa-brain` + commands `testcase-*`): SPEC → sinh+chạy test trên **dev** →
 evidence PNG/xlsx. Oracle = SPEC + quan sát live. **Mù code.** GitNexus chỉ ở build-time (soạn knowledge).
+
+### 6 lệnh test (mỗi lệnh 1 track riêng, oracle riêng)
+| Lệnh | Oracle | Trạng thái |
+|---|---|---|
+| `/testcase-run` (qa-brain) | **SPEC** + quan sát live | ✅ |
+| `/testcase-a11y` | **WCAG** (axe-core) | ✅ ticket·pro·reservation |
+| `/testcase-visual` | baseline người-duyệt | ✅ — ⚠️ **CHỈ màn TĨNH** (màn có ngày/tiền → nhiễu) |
+| `/testcase-security` | bất biến an ninh (13 họ, OWASP 2025) | ✅ pro đủ 13/13 |
+| `/testcase-compat` | **WCAG 1.4.10** + parity engine | ✅ ≈67% (Safari bỏ có chủ ý) |
+| `/testcase-perf` | **Core Web Vitals** (ngưỡng Google) | ✅ ticket PASS · pro FAIL |
 
 ## 2. ĐÃ XONG (đừng làm lại)
 
@@ -201,6 +243,39 @@ Chạy thật trên dev, không phải syntax check:
 - 🔻 **`ticket` — Compat**: giá trị thấp (app **nội bộ**, nhân viên dùng desktop/Chrome máy công ty). Compat đáng cho
   app **công khai** (khách xài đủ loại máy) — đã làm cho widget rồi. Không cấm, nhưng đừng ưu tiên.
 
+## 3b. 📓 Nhật ký phiên 2026-07-17 — phiên DÀI, tóm cho phiên sau
+
+**Làm được:** test pro + reservation (a11y+security) · build **2 track mới** (Compat, Perf) → đóng 6/6 type ·
+vá lỗ ticket perf · sync toàn bộ doc về đúng thực tế · sổ bug **20 → 39**.
+
+**🐞 Live-verify bắt 7 lỗi CỦA CHÍNH CON QA** (không có nó thì cả 7 đã thành bug bịa gửi dev / PASS rỗng):
+
+| Probe bịa gì | Sự thật |
+|---|---|
+| `csrftoken` thiếu HttpOnly = yếu | CSRF cookie **cố tình** để JS đọc (double-submit) |
+| **`/etc/passwd` lộ trên pro + reservation** | body path cấm **=== body path hợp lệ từng byte**, không có `root:x:`, DOM sau render = **404** ⇒ app chặn ĐÚNG. SPA trả cùng vỏ mọi path, `context.request` không chạy JS |
+| error-disclosure "không rò" (pro) | 422 rò `Couldn't find Therapists::Preset … WHERE "therapists_presets"."institute_id"` — oracle cũ chỉ tìm **tên class** exception nên trượt → **BUG-037** |
+| "chromium FAIL / firefox PASS" (compat) | 6 "lỗi" là **resource-404**; chromium ghi ra console, firefox KHÔNG ⇒ đang đo **cách browser ghi log** |
+| firefox lệch nút `閉じる` | lúc **thiếu** (320px) lúc **thừa** (390px) — **tự mâu thuẫn** ⇒ dialog chớp nhoáng |
+| mass-assignment "PASS" (422) | PASS **may rủi** — gửi kèm `id` lạ nên bị chặn vì **lý do KHÁC**. Tách biến + đối chứng mới ra PASS thật |
+| `CLS = 0.1804399642965267` | số máy nhả, không phải số để báo cáo → `fmt()` |
+
+**🎯 Bẫy ĐẮT NHẤT — đo SAI URL suốt nửa phiên:** quét a11y + security trên `/reservation` mà nó **không phải**
+đường vào widget (app hiểu path là **slug phòng khám** → tìm院 tên "reservation" → **404 toàn bộ API** → đo
+widget **rỗng data**). Đúng là **`/2`** (5 API 200, hiện `AIoT院1`). Bẫy: `コース選択` có mặt ở **CẢ trạng thái lỗi**
+nên **không phân biệt được** → tưởng vào đúng. Hậu quả: **BUG-033 là bug MA** → xoá; BUG-031 đếm sai 3→5.
+
+**5 luật rút ra (đã nhét vào §6 NGUYÊN TẮC BẤT DI — đọc mục đó):**
+1. Vào đúng màn = **API 200 + DATA THẬT hiện ra**, KHÔNG phải HTTP 200 / "thấy chữ gì đó".
+2. **PASS không có ĐỐI CHỨNG = PASS vô nghĩa.**
+3. **Unit-test và live-verify khoá 2 thứ KHÁC nhau** — thiếu vế nào cũng chết.
+4. Vá false-positive **rất dễ đẻ false-negative** → test cả 2 chiều.
+5. **Chờ ĐIỀU KIỆN, không chờ ĐỒNG HỒ** (phạm lại luật `pw_lib.shot()` đã ghi từ lâu).
+
+**Quyết định user chốt phiên này** (xem đầy đủ ở mục "Đã đề xuất → user BÁC"):
+bỏ hẳn **admin** ("từ nay luôn") · **giao bug** là việc user · **pro visual** không làm ·
+**Safari/webkit** chấp nhận lỗ · security mutating trên reservation không chạy · chỉ ghi data trên **Pro**.
+
 ## 4. Cách maintain khi 5 repo update
 
 `refresh-gitnexus.sh` (graph tươi — **CHỈ graph**) → **`/testcase-stale`** (so `source_hash`) →
@@ -257,10 +332,19 @@ Ngân sách GitNexus thật (processes/repo) + 3 loại stale: [`KNOWLEDGE-STRAT
 
 ## 7. Trạng thái git / task nền
 
-- Branch `qa-brain`. `wtf-is-this/` đã gitignore (evidence local). `.state.*.json` đã gitignore.
+- Branch `qa-brain` — **local == remote**, working tree **sạch** (chốt 2026-07-17).
+- `wtf-is-this/` đã gitignore (evidence + sổ bug = **LOCAL ONLY**, user tự đưa lên Drive). `.state.*.json` đã gitignore.
 - ✅ `.claude-tester/` **đã xoá** (archive `0119159`, xoá `822d5dd`). Tra nguồn: `git show 0119159:.claude-tester/<path>`.
 - Đống transition Python→skill (`D qa/ api/ web/ tests/`) còn trong index — **để user tự xử**.
 - Không có background task đang chạy.
+
+**Chạy lại toàn bộ test của hệ QA (nên làm đầu phiên nếu đụng lib):**
+```bash
+cd .claude/skills-scripts/testcase-evidence && NODE_PATH="$PWD/node_modules" node --test   # 71 xanh
+python3 .claude/skills-scripts/testcase-evidence/test_factcheck_report.py                   # 7 xanh
+```
+⚠️ **Playwright:** chỉ có **chromium + firefox**. **webkit KHÔNG cài được** (macOS 13.7.8) — đã chốt chấp nhận.
+Cài browser phải dùng binary LOCAL (`./node_modules/.bin/playwright install`), `npx playwright` lấy bản khác → lệch version.
 
 ---
 

@@ -2,7 +2,11 @@
 
 > Bản đồ tầm nhìn (KHÁC `STATE.md` = việc-phiên-này). Mở file này để biết *đang đứng đâu trên bức
 > tranh lớn, còn mở được gì, và vì sao*. Cập nhật khi hướng đổi, không phải mỗi phiên.
-> Cập nhật: **2026-07-17** (sync với thực tế sau đợt pro+reservation).
+> Cập nhật: **2026-07-17** (sync sau đợt pro+reservation+compat+perf).
+>
+> 🔔 **Trạng thái 1 dòng:** con black-box **CẠN VIỆC** — 6/6 type xong · admin chốt bỏ · lỗ độ-phủ đáng vá đã đóng.
+> Mở rộng thật sự **chỉ còn whitebox (§4)**, mà nó kẹt ở **quyền sở hữu** (cần sếp/dev đồng ý cho agent viết test
+> vào 5 repo), không phải kẹt kỹ thuật. Việc-làm-được-ngay: **KHÔNG CÓ**. Xem `STATE.md` khối đầu.
 
 ---
 
