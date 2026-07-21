@@ -199,7 +199,8 @@ qua từng kính, thấy gợn thì quy về `PASS/FAIL/未実施/SPEC-GAP`. **T
 - **S** Standards — chuẩn áp dụng? → **WCAG = track `/testcase-a11y`**; an ninh = `/testcase-security`.
 - **F** Familiarity — user lần đầu có hiểu mà không cần chỉ?
 - **E** Explainability — giải thích được hành vi cho người khác không? Không → khả nghi bug.
-- **W** World — chạy thật ngoài đời: locale/JP, múi giờ, mạng yếu, kích thước màn → **hợp track Compatibility**.
+- **W** World — chạy thật ngoài đời: **locale/JP/bản dịch → track `/testcase-i18n`**; múi giờ, mạng yếu,
+  kích thước màn/engine → **track `/testcase-compat`**.
 > ⚠️ HICCUPS chỉ để *phát hiện chỗ nghi*. Chốt đúng/sai vẫn là **Claims=SPEC** (Tường thép #1); kính khác
 > ra gợn mà SPEC im lặng → **SPEC-GAP**, đừng tự bịa `expect`. Nguồn: qa-skills (kindlmann, MIT).
 

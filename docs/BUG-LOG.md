@@ -46,7 +46,7 @@ Phần lớn field copy thẳng từ file test `wtf-is-this/TestCase-XX/TestCase
 | `source` | | spec **lộ ra** bug (`TestCase-XX`) — KHÔNG phải "của ai", chỉ là nơi soi thấy |
 | `screen` | | màn/chức năng. Cột **Service** tự cắt từ đây (chữ trước ` — ` hoặc ` (`) |
 | `pri` | | `High` / `Medium` / `Low` |
-| `bug_type` | | `Function` / `UI` / `Text` / `Accessibility` / `Visual` |
+| `bug_type` | | `Function` / `UI` / `Text` / `Accessibility` / `Visual` / `Security` / `Performance` / `Compatibility` / `i18n` (load/stress dùng `Performance`) |
 | `result` | | `FAIL` (chấm được, sai spec) hoặc `SPEC-GAP` (spec im lặng → việc BA) |
 | `title` | | mô tả 1 câu — báo **hành vi** (spec X / màn Y), KHÔNG file:line |
 | `fix_note` | | để rỗng lúc mới; điền khi dev fix (xem §2) |
@@ -64,6 +64,14 @@ Phần lớn field copy thẳng từ file test `wtf-is-this/TestCase-XX/TestCase
 > **Bug Security** (do `/testcase-security` sinh): `result` luôn `FAIL` (không bao giờ SPEC-GAP — bất biến an ninh
 > luôn định nghĩa kỳ vọng) · `before=null` + `note` lý do N/A · `after`=ảnh khoanh chỗ · dedup **1 bug/(màn×họ×payload-class)** ·
 > `pri`=High cho XSS-fired/bypass-thành-công/IDOR-leak, Medium cho error-disclosure/500.
+
+> **Bug i18n** (do `/testcase-i18n` sinh): `result` luôn `FAIL` (không bao giờ SPEC-GAP — bất biến ngôn ngữ luôn
+> định nghĩa kỳ vọng) · dedup **1 bug/(màn×probe)** · `pri`=High cho key-leak/mojibake, Medium cho untranslated
+> (parity). `localeFormat` = **WARN-only, KHÔNG vào sổ**. `before=null`.
+
+> **Bug Performance / Compatibility** (do `/testcase-perf` · `/testcase-compat`): `result` luôn `FAIL` · `before=null` ·
+> Perf `note` **bắt buộc** cảnh báo LAB≠FIELD. **load/stress (grey-box) dùng `bug_type:"Performance"`** — chỉ vào sổ
+> khi thật sự FAIL **và** user duyệt (kèm cảnh báo client-side only + DEV≠PROD).
 
 ---
 

@@ -2,11 +2,11 @@
 
 > Bản đồ tầm nhìn (KHÁC `STATE.md` = việc-phiên-này). Mở file này để biết *đang đứng đâu trên bức
 > tranh lớn, còn mở được gì, và vì sao*. Cập nhật khi hướng đổi, không phải mỗi phiên.
-> Cập nhật: **2026-07-17** (sync sau đợt pro+reservation+compat+perf).
+> Cập nhật: **2026-07-21** (sync sau khi build i18n type-7 + load/stress grey-box).
 >
-> 🔔 **Trạng thái 1 dòng:** con black-box **CẠN VIỆC** — 6/6 type xong · admin chốt bỏ · lỗ độ-phủ đáng vá đã đóng.
-> Mở rộng thật sự **chỉ còn whitebox (§4)**, mà nó kẹt ở **quyền sở hữu** (cần sếp/dev đồng ý cho agent viết test
-> vào 5 repo), không phải kẹt kỹ thuật. Việc-làm-được-ngay: **KHÔNG CÓ**. Xem `STATE.md` khối đầu.
+> 🔔 **Trạng thái 1 dòng:** trục type đi tiếp — **i18n = type-7 đã BUILT** (black-box, chưa live-run) + 2 track
+> **grey-box/SRE load·stress đã BUILT, RUN-GATED** (chưa bắn). Việc-làm-được-ngay: **CÓ** — i18n live-run +
+> Visual prove vòng-2. Mở rộng sâu (Unit/Integration) vẫn kẹt **whitebox §4** (quyền sở hữu). Xem `STATE.md` khối đầu.
 
 ---
 
@@ -30,7 +30,8 @@ Chìa khoá phân loại tri thức theo *độ tái dùng*:
 
 Hai trục vuông góc (xem `docs/.../Deep-Guide` hoặc README §"Tầng test"):
 - **Level** = zoom (Unit → Integration → System/E2E). Con hiện tại kịch trần ở **E2E/System** — vì mù code, KHÔNG thể tụt xuống.
-- **Type** = phẩm chất kiểm (Functional / a11y / Visual / Performance / Security / Compatibility).
+- **Type** = phẩm chất kiểm (Functional / a11y / Visual / Performance / Security / Compatibility / **i18n**).
+  Ngoài trục type black-box còn **2 track grey-box/SRE** (load/stress) — không thuộc con đen, xem §4.
 
 ### Đang đứng đâu (2026-07-17)
 
@@ -46,9 +47,15 @@ Type:  Functional      ✅ có
                        ≈67% ổn: 8/12 ô chạy, 8/8 PASS. Safari 未実施 — user CHỐT chấp nhận lỗ (2026-07-17)
        Performance     ✅ DONE + live-verify — oracle=Core Web Vitals (ngưỡng Google công bố)
                        ⚠️ LAB≠FIELD: đo 1 máy/1 mạng/trên dev = CẬN DƯỚI của mức tệ, không phải chứng nhận nhanh
+       i18n (type-7)   ✅ BUILT + unit-verify (13 test) — oracle=bất biến ngôn ngữ (key-leak/mojibake/parity/format)
+                       ⚠️ CHƯA live-run (cần drive dev: reservation /en/2 vs /2, pro, ticket)
 
-⇒ **CẢ 6 TYPE ĐỀU XONG** — hết đường đi ngang. Trục ĐỘ PHỦ APP cũng đóng (**admin: user chốt bỏ hẳn 2026-07-17**).
-⇒ **Mở rộng thật sự CHỈ CÒN trục LEVEL: whitebox (§4)** — mà nó kẹt ở **quyền sở hữu**, không phải kỹ thuật.
+   ── ngoài con đen (grey-box/SRE, RUN-GATED, đã build chưa bắn) ──
+       load / stress   ✅ BUILT (k6 v1.0, load_lib 13 test, template inspect-verified) — oracle=client-side
+                       (error<1% · p95 placeholder cần SLA business). Chỉ bắn khi user ra lệnh + khách gật.
+
+⇒ **7 type black-box** (6 live + i18n build). Trục ĐỘ PHỦ APP: admin **bỏ hẳn** (user chốt 2026-07-17).
+⇒ Việc còn: **i18n live-run** + **Visual prove vòng-2** (làm được ngay). Sâu hơn (Unit/Integration) vẫn kẹt **whitebox §4**.
 ```
 
 **Độ phủ app (2026-07-17)** — type-track ≠ app đã quét. Phủ **3/5** app; admin **bỏ có chủ ý**, backend không có UI:
@@ -150,14 +157,18 @@ phải re-bless. Muốn hết noise phải **mask vùng-data tay** (điều user
 
 | # | Việc | Vì sao đứng đây | Chặn gì |
 |---|---|---|---|
-| **1** | **Whitebox — 1 lát mỏng** (§4) | **Thứ DUY NHẤT còn lại thực sự mở rộng hệ.** Trục ngang (Type) đã 6/6; chỉ còn trục dọc (Level): Unit + Integration — con đen **cấu trúc không thể** với tới | ⛔ **cần sếp/dev đồng ý** cho agent viết test vào 5 repo sản phẩm (§4 cục chặn #3) |
-| **2** | **IDOR** | Họ duy nhất còn `未実施`. Access-control là loại nặng nhất mà đang **mù** | ⛔ cần **account institute #2** (`TESTSEED002`) |
+| **1** | **i18n — live-run** | Track type-7 đã BUILT + unit-verify (13 test); chạy thật trên dev (reservation `/en/2` vs `/2`, pro, ticket) → report + bug | ✅ **làm được ngay** (cần dev sống) |
+| **2** | **Visual — prove vòng-2** | Baseline 3 màn ticket đã bless nhưng **chưa chạy so-sánh ra PASS thật** + vá `visual.results.json` thiếu màn `customer-700006` | ✅ **làm được ngay** |
+| **3** | **Whitebox — 1 lát mỏng** (§4) | Trục ngang (Type): 6 live + i18n build; chỉ còn trục dọc (Level): Unit + Integration — con đen **cấu trúc không thể** với tới | ⛔ **cần sếp/dev đồng ý** cho agent viết test vào 5 repo sản phẩm (§4 cục chặn #3) |
+| **4** | **IDOR** | Họ duy nhất còn `未実施`. Access-control là loại nặng nhất mà đang **mù** | ⛔ cần **account institute #2** (`TESTSEED002`) |
+| **5** | **load/stress — bắn thật** (grey-box) | Track đã BUILT + k6 cài; chạy k6 lên API dev | ⛔ **RUN-GATED**: user ra lệnh + khách/sếp gật cho tạo tải lên AWS khách |
 | ✅ | ~~`ticket` — Perf~~ | **XONG 2026-07-17: 3/3 màn PASS, 0 bug** (TBT 0–4ms). Lỗ độ-phủ đáng vá cuối cùng → đã đóng | — |
 | 🔻 | `ticket` — Compat | Giá trị thấp: app **nội bộ**, nhân viên dùng desktop/Chrome máy công ty. Compat đáng cho app **công khai** (đã làm widget) | không — nhưng đừng ưu tiên |
 | 🚫 | ~~Admin app~~ · ~~`pro` Visual~~ · ~~giao bug~~ · PreToolUse hook · Analyzer | **user đã BÁC** — xem `STATE.md §3 "Đã đề xuất → user BÁC"`. Đừng đề xuất lại | — |
 
-**Con đen coi như XONG.** 6/6 type · admin chốt bỏ · lỗ độ-phủ đáng vá cuối (ticket perf) đã đóng
-⇒ mở rộng thật sự **chỉ còn whitebox**, mà whitebox kẹt ở **quyền sở hữu**, không phải kỹ thuật.
+**Trục type đi tiếp (2026-07-21):** 6 type live + **i18n type-7 BUILT** (chưa live-run) + **load/stress grey-box
+BUILT** (run-gated). Việc làm-được-ngay: **i18n live-run + Visual prove vòng-2**. Mở rộng SÂU (Unit/Integration)
+vẫn **chỉ còn whitebox**, kẹt ở **quyền sở hữu** — không phải kỹ thuật.
 
 **📊 Vấn đề tốc độ KHU TRÚ ở Pro, không phải "hệ chậm"** (quan sát 2026-07-17, không chẩn đoán nguyên nhân —
 đó là việc dev): `ticket` **TBT ≈ 0ms** · `reservation` **TBT 106ms** · `pro` **TBT 1184ms** (đơ ~1.2s).

@@ -377,10 +377,12 @@ def build_report(wb, meta, bugs, last_row):
         _p(ws, r + i, 2, s)
         _p(ws, r + i, 3, f'={_cnt(C_SCREEN, s + "*")}', align=MID, fmt="0")
     svc_r1 = r + len(services) - 1
-    for i, k in enumerate(("Function", "UI", "Text", "Accessibility", "Visual", "Security")):
+    BUG_TYPES = ("Function", "UI", "Text", "Accessibility", "Visual", "Security",
+                 "Performance", "Compatibility", "i18n")
+    for i, k in enumerate(BUG_TYPES):
         _p(ws, r + i, P2, k)
         _p(ws, r + i, P2 + 1, f'={_cnt(C_TYPE, k)}', align=MID, fmt="0")
-    nrows = max(len(services), 6)
+    nrows = max(len(services), len(BUG_TYPES))
     for i in range(nrows):
         ws.row_dimensions[r + i].height = RH["data"]
     ws.conditional_formatting.add(

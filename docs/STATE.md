@@ -10,10 +10,15 @@
 
 # 🔔 MỞ SESSION MỚI → ĐỌC ĐÚNG KHỐI NÀY LÀ ĐỦ
 
-## Con black-box đã **CẠN VIỆC** (2026-07-17). Không còn việc nào tự chạy được.
+## Cập nhật 2026-07-21: build thêm 3 track (i18n type-7 + load/stress grey-box). CÓ việc tự chạy được.
+
+> Trạng thái "cạn việc" của 2026-07-17 KHÔNG còn đúng. Việc tự chạy được ngay (không kẹt ai):
+> ① **i18n live-run** (`/testcase-i18n` — đã build+unit-verified, cần drive dev sống: reservation `/en/2` vs `/2`, pro, ticket).
+> ② **Visual prove vòng-2** (chụp lại 3 màn ticket → so baseline đã commit → ra PASS thật; sửa `visual.results.json` thiếu màn `customer-700006`).
+> load/stress **đã build xong nhưng RUN-GATED** — chỉ bắn khi user ra lệnh + khách/sếp gật (đổ tải lên AWS khách).
 
 ```
-Trục TYPE (ngang):  6/6 XONG   Functional · a11y · Visual · Security · Compat · Perf
+Trục TYPE (ngang):  6/6 live + i18n(type-7) BUILT chưa-live · load/stress (grey-box) BUILT run-gated
 Trục APP  (ngang):  ĐÓNG       phủ 3/5 (ticket·pro·reservation) — admin user CHỐT BỎ HẲN
 Trục LEVEL (dọc):   TRỐNG      Unit + Integration → chỉ WHITEBOX với tới (con đen mù code, cấu trúc không thể)
 ```
@@ -31,9 +36,10 @@ Trục LEVEL (dọc):   TRỐNG      Unit + Integration → chỉ WHITEBOX với
 ## Ảnh chụp nhanh — hệ đang ở đâu
 - **Sổ bug: 39** (Mở 39 · Đã đóng 0) — a11y 21 · Function 11 · Security 4 · Perf 3.
   🚫 **Giao bug = việc của USER** (tự đưa file lên Drive). `wtf-is-this/` giữ gitignore. **Đừng nhắc nữa.**
-- **Test tự động của chính hệ QA: 78 xanh** (71 JS `node --test` + 7 Python).
-- **6 lib oracle**: `security_lib`(25) · `compat_lib`(12) · `perf_lib`(10) · `a11y_lib` · `pw_lib` · `pw_api`
-  + `factcheck_report.py`(7) gate mọi report trước khi build.
+- **Test tự động của chính hệ QA: 97 JS `node --test` + 10 Python xanh** (thêm i18n_lib 13 + load_lib 13).
+- **8 lib oracle**: `security_lib`(25) · `compat_lib`(12) · `perf_lib`(10) · `i18n_lib`(13) · `load_lib`(13, grey-box)
+  · `a11y_lib` · `pw_lib` · `pw_api` + `factcheck_report.py`(7) gate mọi report trước khi build.
+  k6 v1.0 đã cài (brew). Template `k6_load.js`/`k6_stress.js` inspect-verified, **chưa bắn**.
 - **Dev sạch** — không còn data test (`AIOT-TEST-SEC-*` đã dọn, verify 0 preset rác).
 - 📊 **Phát hiện to nhất chưa ai fix:** `pro` **TBT 1184ms** (đơ ~1.2s) vs `ticket` ~0ms vs `reservation` 106ms
   ⇒ **vấn đề tốc độ KHU TRÚ ở Pro**, không phải "hệ chậm". (Quan sát — không chẩn đoán, đó là việc dev.)
@@ -48,15 +54,18 @@ Nó **không** giải thích hệ thống — muốn hiểu hệ thống thì đ
 QA senior **black-box** (skill `qa-brain` + commands `testcase-*`): SPEC → sinh+chạy test trên **dev** →
 evidence PNG/xlsx. Oracle = SPEC + quan sát live. **Mù code.** GitNexus chỉ ở build-time (soạn knowledge).
 
-### 6 lệnh test (mỗi lệnh 1 track riêng, oracle riêng)
+### 9 lệnh test (mỗi lệnh 1 track riêng, oracle riêng)
 | Lệnh | Oracle | Trạng thái |
 |---|---|---|
 | `/testcase-run` (qa-brain) | **SPEC** + quan sát live | ✅ |
 | `/testcase-a11y` | **WCAG** (axe-core) | ✅ ticket·pro·reservation |
-| `/testcase-visual` | baseline người-duyệt | ✅ — ⚠️ **CHỈ màn TĨNH** (màn có ngày/tiền → nhiễu) |
+| `/testcase-visual` | baseline người-duyệt | ✅ — ⚠️ **CHỈ màn TĨNH** (màn có ngày/tiền → nhiễu). ⚠️ **CHƯA prove vòng-2** (baseline bless rồi, chưa chạy so-sánh ra PASS thật) |
 | `/testcase-security` | bất biến an ninh (13 họ, OWASP 2025) | ✅ pro đủ 13/13 |
 | `/testcase-compat` | **WCAG 1.4.10** + parity engine | ✅ ≈67% (Safari bỏ có chủ ý) |
 | `/testcase-perf` | **Core Web Vitals** (ngưỡng Google) | ✅ ticket PASS · pro FAIL |
+| `/testcase-i18n` (**type-7**, black-box) | bất biến ngôn ngữ (key-leak/mojibake/parity/format) | ✅ **BUILT + unit-verified** (13 test) · ⚠️ **CHƯA live-run** (cần dev sống; phủ reservation/pro/ticket) |
+| `/testcase-load` (**grey-box/SRE**) | client-side k6 (error<1% · p95 placeholder) | ✅ **BUILT, RUN-GATED** — k6 cài sẵn, **chưa bắn** (cần user ra lệnh + khách gật) |
+| `/testcase-stress` (**grey-box/SRE**) | knee + giả-thuyết nút-thắt (client-side) | ✅ **BUILT, RUN-GATED** — chưa bắn |
 
 ## 2. ĐÃ XONG (đừng làm lại)
 

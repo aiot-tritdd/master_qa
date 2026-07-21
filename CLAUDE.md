@@ -3,7 +3,9 @@
 Repo này KHÔNG chứa code sản phẩm. Nó chứa **skill `qa-brain`** (`.claude/skills/qa-brain/`) biến
 session Claude này thành **QA senior mù code**: từ 1 file **SPEC** → sinh test → drive app dev bằng
 Playwright → **quan sát live** → chấm PASS/FAIL + evidence. Cộng pipeline `.claude/commands/testcase-*.md`
-(specs-md / write / run / cleanup / retest / upspecschange / systemdoc).
+(specs-md / write / run / cleanup / retest / upspecschange / systemdoc) + **9 lệnh test type-track**:
+functional(qa-brain) · a11y · visual · security · compat · perf · **i18n** (type-7) · **load** · **stress**.
+⚠️ `load`/`stress` là **grey-box/SRE** (không thuộc con đen — xem cuối mục "Cách xài").
 
 > 📘 **Hiểu hệ thống:** `README.md` (cửa vào — 1 file là đủ, có bảng "muốn biết X → mở file Y").
 > **Đang làm gì tiếp:** `docs/STATE.md` (đọc đầu mỗi phiên). Bối cảnh 5 repo: `/Users/tritdd/Work/ThreeSides/CLAUDE.md`.
@@ -46,6 +48,19 @@ Playwright → **quan sát live** → chấm PASS/FAIL + evidence. Cộng pipeli
    ai đặt số. `needs-improvement` **cũng là FAIL** (good LÀ mốc đạt; nới = tự hạ chuẩn).
    ⚠️ **Báo cáo BẮT BUỘC nói: LAB ≠ FIELD + DEV ≠ PROD** — lab "good" không chứng minh user thật thấy nhanh;
    lab "poor" thì chắc chắn tệ. ⛔ **Không báo "INP" ở lab** (field-only) — dùng TBT proxy.
+10. (tuỳ chọn) `/testcase-i18n wtf-is-this/TestCase-XX` → soi **i18n/localization** (**type-7**): key-leak ·
+   mojibake · **parity** giữa locale (`/en/2` vs `/2`) · locale-format (WARN). Track RIÊNG, oracle = **bất biến
+   ngôn ngữ phổ quát**, mù code (chỉ đọc DOM render — KHÔNG mở file locale trong repo).
+   ⚠️ **BẮT BUỘC mask data** trước khi soi (tên viện/khách/mã = chữ Nhật HỢP LỆ trên trang EN → không mask =
+   FAIL giả hàng loạt). App 1 ngôn ngữ (không có bộ chuyển) → `parity` = **`未実施` + lý do**, KHÔNG ép PASS.
+
+## ⚠️ Track GREY-BOX (KHÔNG phải con đen) — `/testcase-load` · `/testcase-stress`
+Load/stress **KHÔNG mù code, KHÔNG thuộc con QA đen** — là track **Performance Engineering / SRE** riêng
+(k6 bắn API, chỉ đo **client-side**; không thấy ruột server vì không đụng AWS khách). **RUN-GATED**: chỉ bắn
+khi **(a) user ra lệnh tường minh VÀ (b) khách/sếp gật cho tạo tải lên dev** (đổ tải THẬT lên AWS của khách).
+Đã build sẵn (k6 v1.0 cài, template `k6_load.js`/`k6_stress.js` inspect-verified, `load_lib` 13 test) nhưng
+**CHƯA BAO GIỜ tự bắn**. Chỉ GET (read-only) · target = API không phải Amplify. Chi tiết + guard 2 lớp:
+`commands/testcase-load.md` · `testcase-stress.md`.
 
 ## Chìa khoá + tri thức (black-box)
 - **HOW vs WHAT:** navigation (bấm gì) tách khỏi đúng/sai (WHAT). Bug ở WHAT (logic), không ở HOW

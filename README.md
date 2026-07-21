@@ -41,7 +41,11 @@ Ba dấu hiệu định nghĩa E2E — threease_qa dính đủ cả ba:
 
 ⇒ Chính vì **nhìn từ ngoài + mù code** mà nó **không thể** là Unit/Integration (hai tầng đó bắt buộc
 đọc/đụng code từ bên trong). "Mù code" ép nó nằm đúng **đỉnh pyramid**. Muốn mở rộng thì đi **ngang**
-(thêm loại kiểm: accessibility, visual, performance…) chứ không tụt xuống tầng thấp.
+(thêm loại kiểm: accessibility, visual, performance, **i18n**…) chứ không tụt xuống tầng thấp.
+
+> ⚠️ **Một ngoại lệ có chủ ý:** `/testcase-load` + `/testcase-stress` là **grey-box/SRE**, KHÔNG thuộc con
+> đen này (chúng đo tải, cần nhìn ruột server để hiểu nguyên nhân). Chúng sống như track riêng, **RUN-GATED**,
+> tách khỏi 2 bức tường thép — đừng lẫn với con QA mù code. Xem §9.
 
 Toàn bộ chạy trong **một session Claude ấm** — không đẻ subprocess, không sinh file phụ. Suy nghĩ là
 việc của model; script chỉ làm phần cơ khí (Playwright, xuất Excel).
@@ -197,11 +201,16 @@ làm hỏng khâu dựng, và ta không phân biệt được *"bug ở feature"
 /testcase-security <folder> quét security 13 họ (phủ black-box OWASP 2025) → report security + sổ bug
 /testcase-compat <folder>   quét compat: 3 engine x 4 viewport → report ma trận + sổ bug
 /testcase-perf <folder>     đo Core Web Vitals (5 lần → trung vị) → report perf + sổ bug
+/testcase-i18n <folder>     soi i18n type-7: key-leak/mojibake/parity(/en vs ja)/format → report + sổ bug
    │
 /testcase-cleanup           dọn dữ liệu test trên dev (prefix AIOT-TEST-*)
    │
 /testcase-upspecschange → (dev fix) → /testcase-retest
 ```
+
+> ⚠️ **Ngoài con đen: 2 track GREY-BOX/SRE** — `/testcase-load` · `/testcase-stress` (k6 bắn API, chỉ đo
+> client-side). **KHÔNG mù code, KHÔNG thuộc con QA đen.** **RUN-GATED**: chỉ bắn khi user ra lệnh + khách/sếp
+> gật cho tạo tải lên AWS khách. Đã build sẵn nhưng **chưa từng tự bắn**. Xem `testcase-load.md`/`testcase-stress.md`.
 
 **Chuẩn giao hàng mỗi task:**
 - `<Folder>.xlsx` — 3 sheet: Cover (summary) · Test Cases (block dọc + ảnh) · Checklist (+ cột Nguồn)
@@ -293,6 +302,8 @@ qua đúng một trong ba cửa:
 | **Test security** một TestCase (13 họ, black-box) | `.claude/commands/testcase-security.md` |
 | **Test compatibility** một TestCase (engine × viewport) | `.claude/commands/testcase-compat.md` |
 | **Test performance** một TestCase (Core Web Vitals) | `.claude/commands/testcase-perf.md` |
+| **Test i18n/localization** một TestCase (type-7, black-box) | `.claude/commands/testcase-i18n.md` |
+| **Load / stress test** (grey-box/SRE, RUN-GATED, k6) | `.claude/commands/testcase-load.md` · `testcase-stress.md` |
 | 5 repo nối nhau ra sao · cách dùng GitNexus | `../CLAUDE.md` (workspace) |
 | Luật cho Claude khi chạy test | `CLAUDE.md` · `.claude/skills/qa-brain/SKILL.md` |
 
