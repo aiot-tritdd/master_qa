@@ -16,7 +16,7 @@ from pathlib import Path
 from PIL import Image
 
 folder = Path(sys.argv[1])
-SK = Path(__file__).parent.parent.parent / "skills" / "backfill"
+SK = Path(__file__).resolve().parent.parent.parent / "skills" / "backfill"
 CELL = 28           # cạnh ô lưới (px)
 THRESH = 14         # lệch sáng trung bình/ô coi là "đã đổi"
 MIN_CELLS = 2       # cụm nhỏ hơn số ô này = nhiễu, bỏ

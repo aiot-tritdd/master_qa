@@ -17,12 +17,12 @@ Verdict: observed-PASS | observed-FAIL | observed-API | traced-only | 未実施 
 import json, subprocess, sys, re
 from pathlib import Path
 
-folder = Path(sys.argv[1])
+folder = Path(sys.argv[1]).resolve()  # ⛔ TUYỆT ĐỐI, không dùng path tương đối — xem run_in() bên dưới
 cfg = json.loads((folder / "config.json").read_text())
 B = int(cfg["branch_id"]); SOT = cfg["sot"]
 ROOT = cfg.get("repo_root", "/Users/TruongDinhDucTri/Work/ThreeSides")
 MARK = f"AIOT-TEST-BF-{B}"
-CASES = json.loads((Path(__file__).parent.parent.parent / "skills" / "backfill" / "FUNC_CASES.json").read_text())["cases"]
+CASES = json.loads((Path(__file__).resolve().parent.parent.parent / "skills" / "backfill" / "FUNC_CASES.json").read_text())["cases"]
 CASE = {c["id"]: c for c in CASES}
 
 before = json.loads((folder / "data_before.json").read_text()) if (folder / "data_before.json").exists() else {"rails": {}, "django": {}}
@@ -41,9 +41,19 @@ def kv(out):
 
 
 def run_in(service, local_name, code, cmd):
+    # ⛔ BẪY ĐÃ MẮC (2026-07-29): nếu gọi confirm_bugs.py bằng <folder> TƯƠNG ĐỐI mà cwd của
+    # subprocess (ROOT, cố định = repo root) khác cwd thật của tiến trình Python, thì
+    # `folder / local_name` trước đây có thể trỏ SAI chỗ khi `docker compose cp` chạy (dù ghi file
+    # LOCAL vẫn đúng vì Python resolve theo os.getcwd() thật). Kết quả: copy LẶNG LẼ THẤT BẠI (lỗi rơi
+    # vào stderr, không ai kiểm tra), container chạy phải file `.rb` CŨ (hoặc không có gì) còn sót từ
+    # lần trước → ra kết quả trông hợp lý nhưng SAI, hoặc rails runner báo cú pháp lỗi khó hiểu.
+    # Sửa 2 lớp: (1) `folder` được `.resolve()` ngay đầu file → luôn tuyệt đối, không còn mơ hồ theo
+    # cwd; (2) ở đây kiểm returncode của bước copy, KHÔNG lặng lẽ đi tiếp nếu copy hỏng.
     (folder / local_name).write_text(code)
-    subprocess.run(f'docker compose cp {json.dumps(str(folder / local_name))} {service}:/tmp/{local_name}',
-                   cwd=ROOT, shell=True, capture_output=True, text=True)
+    cp = subprocess.run(f'docker compose cp {json.dumps(str(folder / local_name))} {service}:/tmp/{local_name}',
+                        cwd=ROOT, shell=True, capture_output=True, text=True)
+    if cp.returncode:
+        raise RuntimeError(f"run_in: COPY THẤT BẠI cho {local_name} → {service} — {cp.stderr.strip()[:300]}")
     r = subprocess.run(cmd, cwd=ROOT, shell=True, capture_output=True, text=True)
     return r.stdout + ("\n" + r.stderr if r.returncode else "")
 
@@ -161,7 +171,12 @@ begin
   # PHÂN BIỆT: 'pending' (chưa ai chạy cron flush — PHASE7 ghi cron CHƯA setup) KHÁC 'error'.
   # Chấm FAIL vì tồn đọng chung của hệ = đổ oan cho lần migrate này. Chỉ cái nào CÓ LỖI, hoặc
   # LIÊN QUAN branch đang làm, mới tính vào verdict.
-  puts "rails_outbox_errors=" + (m.column_names.include?('error') ? m.where.not(error: [nil, '']).count : 0).to_s
+  # ⚠️ Cột `error` KHÔNG được xoá khi event gửi lại thành công — nó là dấu vết của lần hụt CŨ.
+  #    Đếm `error IS NOT NULL` trần là chấm FAIL oan: branch 66 (2026-07-29) có 1.410 event mang
+  #    `error='sync failed'` nhưng CẢ 1.410 đều `status='sent'` (hụt hồi sai host, sau flush đã đi hết),
+  #    thực tế pending=0 failed=0. Chỉ event CHƯA gửi được mới là lỗi thật.
+  puts "rails_outbox_errors=" + (m.column_names.include?('error') ? m.where.not(status: 'sent').where.not(error: [nil, '']).count : 0).to_s
+  puts "rails_outbox_error_da_gui_xong=" + (m.column_names.include?('error') ? m.where(status: 'sent').where.not(error: [nil, '']).count : 0).to_s
   pack_ids = Tickets::Pack.with_branches([{B}]).pluck(:id).to_set
   rel = pend.select do |e|
     p = e.payload.to_s
@@ -199,7 +214,14 @@ if br:
     print("a10_option_inventory_ok=" + str(opts.filter(inventory__gt=0).count()))
 
 # ---- A2/A6/A7: vé THẬT vừa migrate — chỉ ĐỌC predicate ----
-mig = TicketPack.objects.filter(customer__branch_id=B, original_pack__isnull=False).exclude(status="archived").first()
+# ⚠️ "Vé migrate bên Django" có 2 DẤU HIỆU KHÁC NHAU tuỳ chiều — dùng nhầm là mất trắng case:
+#   sot='ticket_app' → Django tự tạo vé mới  ⇒ đánh dấu bằng `original_pack`
+#   sot='pro'        → Rails tạo rồi sync sang ⇒ Django KHÔNG có `original_pack`, chỉ có `pro_pack_id`
+# Branch 66 (chiều pro, 2026-07-29) dính: `original_pack__isnull=False` ra 0 dòng dù có 817 vé migrate
+# ⇒ A2 bị chấm 未実施 oan, A8 tụt xuống chạy trên vé test rồi FAIL oan.
+_mig_qs = TicketPack.objects.filter(customer__branch_id=B).exclude(status="archived")
+mig = (_mig_qs.filter(original_pack__isnull=False).first()
+       or _mig_qs.filter(pro_pack_id__isnull=False).first())
 if mig:
     # MỘT key MỘT dòng (parser kv() chỉ bắt key đầu dòng)
     print("a2_mig_pack_id=" + str(mig.id))
@@ -266,10 +288,13 @@ if cust and opt and br:
             recv = Customer.objects.filter(branch_id=B).exclude(id=cust.id).first()
             target = mig if mig and mig.remaining > 0 else tp
             if recv and target:
+                # ⛔ IN TRƯỚC khi gọi service. In sau thì lúc nổ exception sẽ KHÔNG biết nó chạy trên
+                #    vé migrate thật (⇒ bug sản phẩm) hay vé test tạo tay (⇒ lỗi của test, xem chú
+                #    thích trên). Branch 66 dính đúng chỗ này: A8 FAIL mà không quy trách được cho ai.
+                print("a8_transfer_on=" + ("ve_migrate_that#" + str(target.id) if target is mig else "ve_test#" + str(target.id)))
                 try:
                     tr = TicketTransferService(target).transfer(1, receiver=recv, notes="{MARK}")
                     target.refresh_from_db()
-                    print("a8_transfer_on=" + ("ve_migrate_that#" + str(target.id) if target is mig else "ve_test#" + str(target.id)))
                     print("a8_transfer_result=OK")
                     print("a8_transfer_remaining=" + str(target.remaining))
                     print("a8_transfer_id=" + str(tr.id))
@@ -293,8 +318,13 @@ try:
     # query cũ sai tên cột nên luôn trả NA, làm case D3 bị chấm 未実施 oan).
     from th.models import SyncOutboxEvent
     print("dj_outbox_total=" + str(SyncOutboxEvent.objects.count()))
-    print("dj_outbox_errors=" + str(SyncOutboxEvent.objects.exclude(error="").exclude(error=None).count()))
-    print("dj_outbox_option_errors=" + str(SyncOutboxEvent.objects.filter(error__icontains="option").count()))
+    # Cùng bẫy như phía Rails: `error` là dấu vết lần hụt CŨ, không bị xoá khi gửi lại thành công.
+    # Chỉ đếm event CHƯA gửi được mới là lỗi thật (xem chú thích ở khối Rails).
+    _stuck = SyncOutboxEvent.objects.exclude(status="sent")
+    print("dj_outbox_errors=" + str(_stuck.exclude(error="").exclude(error=None).count()))
+    print("dj_outbox_error_da_gui_xong=" + str(
+        SyncOutboxEvent.objects.filter(status="sent").exclude(error="").exclude(error=None).count()))
+    print("dj_outbox_option_errors=" + str(_stuck.filter(error__icontains="option").count()))
     print("dj_outbox_pending=" + str(SyncOutboxEvent.objects.exclude(status="sent").count()))
 except Exception as e:
     print("dj_outbox_errors=NA:" + type(e).__name__)
@@ -427,6 +457,76 @@ mark("D3", "observed-PASS" if clean else ("observed-FAIL" if (oe.isdigit() and o
      f"(Bối cảnh hạ tầng, KHÔNG do lần migrate này: toàn hệ còn {rp}/{R.get('rails_outbox_total', '?')} event Rails ở trạng thái "
      f"chờ gửi từ {R.get('rails_outbox_oldest', '?')} — loại: {R.get('rails_outbox_pending_kinds', '?')} — vì PHASE7 ghi "
      f"cron `rake threease_ticket:flush_outbox` CHƯA được setup. Cần dev bật cron.)")
+
+# =====================================================================================
+# Nhóm E — VÉ MỚI CÓ DÙNG ĐƯỢC KHÔNG (thêm 2026-07-29 sau BUG-041). Đọc smoke_usable.json (đã chạy
+# ở bước 7b của backfill-run.md, TRƯỚC file này) — KHÔNG tự chạy lại UI ở đây, chỉ diễn giải kết quả.
+# =====================================================================================
+smoke_p = folder / "smoke_usable.json"
+e1_verdict = "未実施"
+e1_detail = "smoke_usable.js chưa chạy (chạy nó ở bước 7b của backfill-run.md, trước confirm_bugs.py)."
+if smoke_p.exists():
+    S = json.loads(smoke_p.read_text())
+    checked, fail = S.get("checked", 0), S.get("fail", 0)
+    if S.get("error"):
+        e1_verdict, e1_detail = "未実施", f"smoke_usable.js lỗi: {S['error']}"
+    elif checked == 0:
+        e1_verdict, e1_detail = "未実施", "0 vé mới quan sát được ở khách mẫu — cần đổi khách mẫu."
+    elif fail > 0:
+        e1_verdict = "observed-FAIL"
+        bad = [d for d in S.get("details", []) if d.get("usable") is False]
+        e1_detail = f"{fail}/{checked} vé mới KHÔNG chọn được product: " + "; ".join(f"pack {d['pack_id']} — {d['why']}" for d in bad)
+    else:
+        e1_verdict = "observed-PASS"
+        e1_detail = f"{checked}/{checked} vé mới chọn được product bình thường (API + logic filter thật, xem smoke_usable.json)."
+mark("E1", e1_verdict, e1_detail)
+
+# B3/B4 là driver:code (gọi thẳng Rails console gán/nhả slip) — CHỈ chứng minh tầng dữ liệu, KHÔNG
+# chứng minh nhân viên bấm được. Nếu E1 chưa PASS thì downgrade để không lẫn vào "PASS(UI)".
+for cc in cases:
+    if cc["id"] in ("B3", "B4") and cc["verdict"] == "observed-PASS" and e1_verdict != "observed-PASS":
+        cc["verdict"] = "observed-PASS(data-only)"
+        cc["observed"] += f" ⚠️ HẠ CẤP: chỉ chứng minh tầng dữ liệu — E1 ({e1_verdict}) cho thấy bước " \
+                           f"chọn product (bước TRƯỚC bước này trong thực tế) có thể đã chặn nhân viên " \
+                           f"từ trước khi tới được đây. {e1_detail}"
+
+b3v = next((c["verdict"] for c in cases if c["id"] == "B3"), "未実施")
+e2_verdict = ("observed-PASS" if (e1_verdict == "observed-PASS" and b3v == "observed-PASS")
+              else ("observed-FAIL" if e1_verdict == "observed-FAIL" else "未実施"))
+mark("E2", e2_verdict,
+     f"Suy từ E1 ({e1_verdict}) + B3 ({b3v}) — xem SKILL.md §LUẬT FIELD-DELTA: dùng buổi chỉ 'chạy "
+     f"bình thường' khi CẢ bước chọn product (E1) VÀ bước trừ buổi (B3) đều ổn.")
+
+a4v = next((c["verdict"] for c in cases if c["id"] == "A4"), "未実施")
+e3_verdict = ("observed-PASS" if (a4v == "observed-PASS" and e1_verdict == "observed-PASS")
+              else ("observed-FAIL" if (a4v == "observed-PASS" and e1_verdict == "observed-FAIL") else "未実施"))
+mark("E3", e3_verdict,
+     f"Đối chiếu A4 (Ticket app, dùng buổi qua UI: {a4v}) với E1 (Pro, chọn product: {e1_verdict}). "
+     + ("A4 PASS mà E1 FAIL ⇒ bug khoanh đúng ở phía Pro (product picker), KHÔNG phải do đồng bộ số buổi."
+        if a4v == "observed-PASS" and e1_verdict == "observed-FAIL" else ""))
+
+mark("E4", "未実施", "Chưa tự động chọn khách/vé ĐỐI CHỨNG (vé thường, không phải vé mới) — cần "
+                     "chỉ định tay hoặc mở rộng smoke_usable.js để tự tìm. Không dựng giả kết quả.")
+
+# E5 — lịch sử X/Y buổi (BUG-042), so vé mới với vé gốc, read-only trên dữ liệu thật (không cần data test)
+e5_rb = f'''
+new_p = Tickets::Pack.with_branches([{B}]).where.not(original_pack_id: nil).limit(500).to_a
+if new_p.any?
+  changed = new_p.count {{ |m| o = Tickets::Pack.find_by(id: m.original_pack_id); o && m.slips.count != o.slips.count }}
+  puts "e5_checked=" + new_p.size.to_s
+  puts "e5_changed=" + changed.to_s
+else
+  puts "e5_checked=0"
+end
+'''
+e5out = run_in('threease_backend', '_e5.rb', e5_rb, f'docker compose exec -T threease_backend bundle exec rails runner /tmp/_e5.rb')
+E5 = kv(e5out)
+e5c, e5ch = int(E5.get("e5_checked", 0) or 0), int(E5.get("e5_changed", 0) or 0)
+mark("E5", "未実施" if e5c == 0 else ("observed-FAIL" if e5ch > 0 else "observed-PASS"),
+     f"{e5ch}/{e5c} vé mới (mẫu, chiều pro) đổi tổng slip_count so với vé gốc (mất lịch sử đã dùng — "
+     f"BUG-042). 0 nghĩa là chiều ticket_app (không có original_pack_id) — case này chỉ đo được chiều pro."
+     if e5c else "0 vé có original_pack_id trên branch này (chiều ticket_app không tạo field này) — "
+                 "chưa đo được lịch sử slip cho chiều đó, cần đo riêng qua ticket_pack_id.")
 
 # =====================================================================================
 # Bug confirmed

@@ -44,6 +44,15 @@ if br.nil?; puts "ERR=branch_not_found"; else
   puts "rails_archived=" + allp.where(status: 'archived').count.to_s
   synced = allp.where(price: 0).where('effective_price > 0').where.not(ticket_pack_id: nil)
   puts "rails_synced_migrated=" + synced.count.to_s
+  # ⛔ "migrate xong" ≠ "sync xong". candidates=0 chỉ nói vé cũ đã được thay; nó KHÔNG nói vé mới
+  #    đã sang Django hay chưa. Branch 66 (2026-07-29): candidates=0, doanh thu bất biến, mọi chỉ số
+  #    xanh — mà 354/817 vé mới vẫn ticket_pack_id NULL ⇒ khách mở app KHÔNG thấy vé.
+  #    Sync là job nền trong RAM Puma: restart backend là mất hàng đợi, không tự chạy lại.
+  newp = allp.where.not(original_pack_id: nil)
+  puts "rails_new_packs=" + newp.count.to_s
+  puts "rails_new_not_synced=" + newp.where(ticket_pack_id: nil).count.to_s
+  # trùng do bấm migrate chồng lô (chiều sot=pro, xem SKILL.md): mỗi vé gốc chỉ được 1 vé mới
+  puts "rails_new_distinct_original=" + newp.distinct.count(:original_pack_id).to_s
   puts "rails_branch_name=" + br.name.to_s
   puts "rails_institute_id=" + br.institute_id.to_s
   # sample customer co ve mo coi (baseline remaining cho bug remaining).
@@ -57,6 +66,13 @@ if br.nil?; puts "ERR=branch_not_found"; else
   if c
     puts "rails_sample_cust_name=" + c.try(:name).to_s
     rem = c.ticket_slips.where(tickets_slips: {{reservation_item_id: nil, used: false}}).distinct.count
+    # ⚠️ `rem` ở trên đếm CẢ slip của vé đã archived (đúng bằng cách app tính → chính là BUG-2).
+    #    Sau migrate vé cũ bị archive nhưng slip vẫn còn ⇒ con số PHỒNG (branch 66: 15 → 30) và ai
+    #    đọc cũng tưởng khách được cộng khống. Muốn so trước/sau cho công bằng phải dùng bản
+    #    CHỈ-VÉ-ACTIVE dưới đây (branch 66: 15 → 15, đúng bằng nhau).
+    rem_act = Tickets::Slip.where(pack_id: c.ticket_packs.where.not(status: 'archived').select(:id),
+                                  used: false, reservation_item_id: nil).distinct.count
+    puts "rails_sample_remaining_active=" + rem_act.to_s
     puts "rails_sample_cust_id=" + c.id.to_s
     puts "rails_sample_cust_code=" + c.try(:customer_code).to_s
     puts "rails_sample_remaining=" + rem.to_s
@@ -135,6 +151,21 @@ lines += [
 if phase == "after":
     lines += ["", f"- Rails archived: **{R.get('rails_archived','?')}** · vé synced migrate: **{R.get('rails_synced_migrated','?')}** · Django vé mới synced Pro: **{D.get('dj_new_synced_pro','?')}**",
               f"- **Σprice all-incl-archived (Rails) = ¥{R.get('rails_all_price','?')}** → phải GIỮ NGUYÊN so với before (doanh thu bất biến)."]
+    # 2 cảnh báo này in RA MẶT, không chôn trong json: cả 2 đều từng lọt qua ở branch 66 vì
+    # mọi chỉ số khác đều xanh.
+    _new = int(R.get("rails_new_packs") or 0)
+    _uns = int(R.get("rails_new_not_synced") or 0)
+    _dis = int(R.get("rails_new_distinct_original") or 0)
+    if _uns:
+        lines += ["", f"> 🔴 **CHƯA XONG: {_uns}/{_new} vé mới CHƯA sang Django** (`ticket_pack_id` NULL)."
+                      " Khách mở app sẽ không thấy vé. Chạy `sync_close.py <folder> --flush` rồi đo lại."
+                      " **KHÔNG được báo 'migrate xong'.**"]
+    elif _new:
+        lines.append(f"- Sync đã đóng: **{_new}/{_new}** vé mới đã sang Django ✅")
+    if _new and _dis and _new != _dis:
+        lines += ["", f"> 🔴 **VÉ TRÙNG: {_new} vé mới nhưng chỉ {_dis} vé gốc** (thừa {_new - _dis})."
+                      " Nguyên nhân: bấm migrate chồng lô ở chiều `sot=pro` (xem SKILL.md)."
+                      " Dọn: giữ `min(id)` mỗi `original_pack_id`, `destroy` phần dư."]
 if R.get("rails_sample_cust_id"):
     lines += ["", f"- Sample customer (Pro): id={R.get('rails_sample_cust_id')} code={R.get('rails_sample_cust_code')} remaining={R.get('rails_sample_remaining')} (baseline bug remaining)"]
 (folder / f"DATA_{phase}.md").write_text("\n".join(lines))

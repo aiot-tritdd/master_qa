@@ -21,7 +21,7 @@ Account lấy từ **`DEV-ACCOUNTS.xlsx`** sheet `Accounts` (C institute_code ·
 | File | Dùng cho | Ép cái gì |
 |---|---|---|
 | `REPORT_REGISTRY.json` | sheet 2_REPORT | **23 báo cáo** = PHASE7 (16 dòng) ∪ route thật. Thiếu ảnh → build_excel in đỏ `未撮影` + banner `N/23 ❌` |
-| `FUNC_CASES.json` | sheet 3_CHUCNANG | **23 flow** đụng vé: A(Ticket) · B(Pro) · C(app khách) · D(sync). Thiếu ảnh → đỏ + banner |
+| `FUNC_CASES.json` | sheet 3_CHUCNANG | **28 flow** đụng vé: A(Ticket) · B(Pro) · C(app khách) · D(sync) · **E(vé mới có DÙNG ĐƯỢC không — thêm 2026-07-29 sau BUG-041)**. Thiếu ảnh → đỏ + banner; banner riêng `LUỒNG END-TO-END: N/28` (xem §LUẬT FIELD-DELTA) |
 | `notes.json` (trong branch folder, người sửa tay) | cột Status/Note + lời SUMMARY | `{func:{A5:{status,note}}, bugs:{BUG-1:{...}}, summary_override:{headline:...}}` — build lại **KHÔNG xoá** ghi chú người review |
 
 ## ⚠️ 4 LUẬT KIỂM CHỨNG (đọc trước khi chấm PASS — rút từ lỗi thật)
@@ -47,6 +47,12 @@ Account lấy từ **`DEV-ACCOUNTS.xlsx`** sheet `Accounts` (C institute_code ·
 | `pro` | Pro→Ticket (vd 212) | Rails → sync Django | Django | + **BUG-5** sync ticket_option_id fail |
 - `FUNC_CASES.json` ghi `app` (ticket/pro/...); nhãn **source/dest lật theo `sot`**, build_excel tự làm.
 - **Branch rỗng** (candidates=0 cả 2 bên, vd 211): `db.py` set `noop=true` → bỏ migrate, Excel ghi "trống".
+- ⛔ **`sot='pro'` KHÔNG idempotent — bấm migrate lại SINH VÉ TRÙNG.** Bên SoT là bên chạy `migrate_pack`
+  (`backfill_tool/views.py:1896-1908`). `ticket_app` → Django làm, **đồng bộ**, bấm lại vô hại. `pro` → **Rails**
+  làm, mà Rails `queue_adapter=async` ⇒ API trả về TRƯỚC khi xong ⇒ cú bấm kế đọc lại đúng danh sách ứng viên cũ.
+  Đo thật 2026-07-29 branch 66 (gerbill): 11 lô → **1.200 vé mới / 354 vé gốc**, có vé **9 bản**, khách +35 buổi khống.
+  `migrate.js` nay **bắt buộc đợi dòng branch đứng yên 3 lần đọc** giữa 2 lô — đừng gỡ chốt đó.
+  Dọn nếu lỡ trùng: giữ `min(id)` theo `original_pack_id`, `destroy` phần dư (`destroy` để slip đi theo, đừng `delete_all`).
 - Modal backfill: radio `input[name=sotChoice][value=<sot>]`.
 
 ## ⛔ TIỀN ĐỀ BẮT BUỘC: sync TICKET MASTER trước, migrate pack sau (đo 2026-07-29)
@@ -110,12 +116,15 @@ $PY gen_exports.py <folder> before        # cần bản BEFORE để chứng min
 node capture.js <folder> before           # loop REPORT_REGISTRY (23 báo cáo)
 node capture_func.js <folder> before      # loop FUNC_CASES (ảnh từng flow, 2 hệ + app khách)
 # ==== DỪNG: đọc DATA_before.md, xác nhận chiều + số với user (migrate phá huỷ) ====
-node migrate.js <folder>
-$PY db.py <folder> after
+node migrate.js <folder>                  # ⛔ sot=pro: KHÔNG idempotent — chốt chờ job nền đã nhúng sẵn
+$PY sync_close.py <folder> [--flush]      # ⛔ BẮT BUỘC: "migrate xong" ≠ "đã sang Django"
+$PY db.py <folder> after                  # DATA_after.md tự in 🔴 nếu còn vé chưa sync / có vé trùng
+node smoke_usable.js <folder>             # ⛔ CỬA CHẶN: vé mới có DÙNG ĐƯỢC không (không phải đúng dữ
+                                           #   liệu không). exit≠0 → DỪNG PIPELINE ngay, đừng chụp tiếp.
 $PY gen_exports.py <folder> after
 node capture.js <folder> after
 node capture_func.js <folder> after
-$PY confirm_bugs.py <folder>              # chạy service THẬT 2 hệ, chấm verdict 23 case
+$PY confirm_bugs.py <folder>              # chạy service THẬT 2 hệ, chấm verdict 28 case (A-D + E1-E5)
 node capture_bugs.js <folder>             # ảnh UI THẬT cho từng bug
 $PY annotate.py <folder> · $PY make_bug_images.py <folder>
 $PY summarize.py <folder>                 # → summary.json (số liệu cho sheet SUMMARY)
@@ -130,7 +139,7 @@ $PY build_excel.py <folder>               # → Backfill_<inst>_branch<X>_Eviden
 | **0_SUMMARY** | **sếp → call khách** | ①kết luận ②đã làm gì ③ảnh hưởng tới khách ④phần vẫn chạy (hyperlink tới ảnh) ⑤điểm cần biết (bug → 4_BUGS; không phải bug → 2_REPORT/3_CHUCNANG + lý do) ⑥đã xử lý gì + caveat |
 | 1_DATA | QA/dev | candidates→0, archive, **Σprice incl archived bất biến** |
 | 2_REPORT | QA/dev | 23 báo cáo, before/after + banner coverage |
-| 3_CHUCNANG | QA/dev | bảng 6 cột (Tính năng·Cơ chế·Quan sát·Kết luận·**Status**·**Note**) + ảnh từng case + banner + dòng cleanup |
+| 3_CHUCNANG | QA/dev | 28 flow (A-E, nhóm E thêm 2026-07-29 sau BUG-041) — bảng 6 cột (Tính năng·Cơ chế·Quan sát·Kết luận·**Status**·**Note**) + ảnh từng case + banner coverage ẢNH + banner riêng **LUỒNG END-TO-END: N/28** (case `verdict_scope=data` không tính vào end-to-end) + dòng cleanup |
 | 4_BUGS | dev | **ảnh UI thật trước** → panel "chi tiết kỹ thuật (cho dev)" sau + Status/Note |
 
 ## Artifacts trong branch folder
@@ -138,7 +147,48 @@ $PY build_excel.py <folder>               # → Backfill_<inst>_branch<X>_Eviden
 `captures.json`(manifest ảnh) · `bugs.json`(bug + 23 verdict + cleanup) · `exports_<phase>.json` ·
 `summary.json` · `before/ after/ shots_raw/` · `Backfill_*_Evidence.xlsx`(out).
 
+## ⛔ LUẬT FIELD-DELTA (đọc trước khi chấm bất kỳ case nào PASS — thêm 2026-07-29 sau BUG-041)
+
+**Nguyên tắc chốt:** *Bất biến dữ liệu xanh (đếm vé, tổng tiền, tổng buổi, đồng bộ 2 hệ) KHÔNG kết
+luận được tính năng còn DÙNG ĐƯỢC hay không.* Mọi thao tác sửa hàng loạt lên vé/đơn/booking phải có
+ít nhất 1 case đi UI THẬT, TRỌN VẸN, kèm đối chứng bằng bản ghi không bị đụng.
+
+**Cách áp dụng — liệt kê mọi cột hàm tạo/sửa vé thay đổi → hỏi "ai đọc cột đó" → cột không có case
+phủ = lỗ:**
+- ⚠️ **2 chiều = 2 HÀM KHÁC NHAU, đọc field-delta CHUNG cho cả 2 chiều là sai** (đã tự mắc lỗi này 1
+  lần — xem case thật bên dưới). Soi riêng `Tickets::PackMigrationService#migrate!`
+  (`pack_migration_service.rb`, chiều `sot=pro`) VÀ `SyncController#handle_pack_issued`
+  (`sync_controller.rb`, chiều `sot=ticket_app`) — đừng suy luận chéo từ chiều này sang chiều kia.
+- Cột bị bỏ/đổi mà **chưa liệt kê được ai đọc nó** ⇒ ghi `chưa kiểm`, **CẤM ghi "cố ý nên không sao"**.
+  Ghi chú thiết kế giải thích *VÌ SAO làm* — nó KHÔNG chứng minh *KHÔNG HẠI*.
+- Case có giá trị là "người dùng làm được X" (dùng buổi, chọn product, transfer...) → **CẤM đóng bằng
+  `driver: code` một mình**. Gọi thẳng hàm ở tầng Rails/Django console chứng minh *dữ liệu đúng*,
+  KHÔNG chứng minh *nhân viên bấm được*. Xem field `verdict_scope` trong `FUNC_CASES.json`: case nào
+  ghi `"data"` thì verdict của nó chỉ là PASS(data), KHÔNG được liệt vào "vẫn chạy bình thường" ở
+  sheet SUMMARY nếu chưa có case UI thật (nhóm E) xác nhận song song.
+
+**Case thật đã xảy ra (đọc để nhớ bẫy, đừng lặp):** Branch 66 migrate xong, 4 bất biến dữ liệu đều
+xanh (13 PASS/2 FAIL, doanh thu bất biến, sync 817/817). Nhân viên thao tác TAY phát hiện: **vé mới
+không chọn được product nào để dùng**. Điều tra qua 3 bước, 2 lần sai trước khi đúng:
+1. ❌ Đoán `update_packs_job.rb` (fill product qua `reservation_ticket`) — đo branch 66 thấy
+   `pack_migration_service.rb#migrate!` copy `products:`/`items:` đúng, giả thuyết sai, tự sửa.
+2. ⚠️ Kết luận tạm "chưa xác định cơ chế, cần dev truy tiếp" — ĐÚNG cho branch 66 (chiều `pro`),
+   nhưng dừng lại ở đây là CHƯA ĐỦ vì bug là quan sát THẬT (đồng nghiệp tái hiện tay), phải truy tới
+   cùng chứ không khoanh tay.
+3. ✅ Được chỉ đúng hướng ("khi đồng bộ từ ticket sang") → tìm ra `sync_controller.rb#handle_pack_issued`
+   (dòng 236-249, chiều `sot=ticket_app`) tạo `Tickets::Pack` **thiếu `products:`/`items:`** — so với
+   `migrate!` (dòng 48-49) có copy đủ. Đo branch 124: **169/176 (96%)** vé `product_option='custom'` →
+   `item_ids` rỗng → không chọn được product. Branch 179: **90/90 (100%)**.
+→ `smoke_usable.js` build ra từ case này, verify: branch 124 FAIL đúng (exit 1), branch 66 PASS đúng
+(exit 0, đối chứng — chiều `pro` không dính).
+
 ## Bug catalog (đã biết — confirm_bugs.py tự kiểm)
+- **BUG-041 (nặng nhất, CONFIRM code+data 2026-07-29):** vé nhận qua sync Ticket App→Pro (chiều
+  `sot=ticket_app`) không chọn được product để dùng. Cơ chế: xem mục LUẬT FIELD-DELTA ở trên.
+  Chỉ áp dụng chiều `ticket_app` — chiều `pro` (`migrate!`) đã verify KHÔNG dính.
+- **BUG-042:** vé mới (cả 2 chiều) mất lịch sử số buổi đã dùng — `migrate!:58` và
+  `handle_pack_issued:250` đều tạo mới đúng `redeemable_count` slip, không copy slip đã dùng của vé
+  gốc. Đo branch 66: 194/400 (48.5%) vé đổi tổng hiển thị `X/Y`.
 - **BUG-1 refund crash (Pro):** vé migrate `reservation_ticket=nil` → `RefundCase` NoMethodError
   (`refund_case.rb:65`). Fix: safe-nav. Đối chứng: bên Ticket `is_refundable()` không crash.
 - **BUG-2 remaining dư (Pro):** `update_view_job.rb remaining_ticket_count` đếm slip ko `.not_archived`.

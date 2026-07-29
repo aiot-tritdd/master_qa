@@ -41,7 +41,7 @@ Mỗi phòng khám có 2 sổ vé (Pro + Ticket), 3 năm lệch nhau. Backfill =
 - [ ] `db.py <folder> before` → Django candidates = **{{DJANGO_CAND}}** · Rails candidates = **{{RAILS_CAND}}** ({{RAILS_CAND_DETAIL}})
 - [ ] `gen_exports.py <folder> before` → 3 xlsx bản BEFORE (cần để chứng minh report bất biến)
 - [ ] `capture.js <folder> before` → **đủ 23 báo cáo** trong `REPORT_REGISTRY.json` (banner coverage phải 23/23)
-- [ ] `capture_func.js <folder> before` → **đủ 23 flow** trong `FUNC_CASES.json` (A Ticket · B Pro · C app khách · D sync)
+- [ ] `capture_func.js <folder> before` → **đủ 28 flow** trong `FUNC_CASES.json` (A Ticket · B Pro · C app khách · D sync · E vé mới có dùng được không)
 
 # 🅱️ A2 · MIGRATE ({{DIRECTION}})
 1. [ ] Backfill `/superuser/backfill/ticket-packs/` → radio branch **{{BRANCH_ID}} {{BRANCH_NAME_JP}}**.
@@ -49,18 +49,25 @@ Mỗi phòng khám có 2 sổ vé (Pro + Ticket), 3 năm lệch nhau. Backfill =
 3. [ ] Loop tới hết (Rails archive lô 100). `migrate.js` tự loop.
 - [ ] Ghi: migrate = ______ vé (mong đợi {{EXPECT_MIGRATE}}).
 
-# A3 · SAU MIGRATE — 4 tầng
+# A3 · SAU MIGRATE — 5 tầng (thêm tầng "DÙNG ĐƯỢC" sau BUG-041, 2026-07-29)
 ### Tầng 1 DATA — `db.py <folder> after`
 - [ ] candidates → **0** · Rails archived = {{EXPECT_ARCHIVE}} · **Σprice incl archived GIỮ NGUYÊN** (doanh thu bất biến).
+- [ ] `DATA_after.md` KHÔNG có dòng 🔴 (còn vé chưa sync / vé trùng) — đọc kỹ, đừng chỉ liếc banner.
+### Tầng "DÙNG ĐƯỢC" — ⛔ `node smoke_usable.js <folder>` — CHẠY NGAY SAU db.py after, TRƯỚC report/case
+- [ ] `exit=0` (PASS) mới đi tiếp. `exit≠0` → **DỪNG PIPELINE**, báo user ngay — đây là cửa chặn BUG-041
+      (4 bất biến dữ liệu xanh mà vé không chọn được product để dùng, chỉ lộ khi thao tác TAY).
 ### Tầng 2 REPORT — `gen_exports.py after` + `capture.js after`
 - [ ] **Đủ 23 báo cáo**, mỗi cái có ảnh before/after. Banner coverage `23/23` — thiếu là đi chụp bù, không báo xong.
 - [ ] Mọi TỔNG **販売金額 GIỮ NGUYÊN**; 3 file xlsx so được tổng before vs after.
 - [ ] ⚠️ Dashboard 販売冊数/発行枚数 có thể **phồng** (vé migrate lọt 30 ngày) — tiền đúng, đếm sai (OBS-1).
 - [ ] ⚠️ `販売記録` từng dòng hiện giá gốc dù thẻ tổng = 0 → **không sai tổng**, cách hiển thị có từ trước.
 ### Tầng 3 CHỨC NĂNG — `capture_func.js after` + `confirm_bugs.py`
-- [ ] **Đủ 23 case có ảnh** (banner `23/23`). Nhóm A bên nguồn · **nhóm B bên ĐÍCH (nơi vé được sync qua)** ·
-      C app khách · D sync 2 chiều.
+- [ ] **Đủ 28 case có ảnh/verdict** (banner ẢNH riêng + banner **LUỒNG END-TO-END** riêng — 2 con số
+      KHÁC NHAU, đừng lẫn: có ảnh ≠ đã xác nhận dùng được). Nhóm A bên nguồn · **nhóm B bên ĐÍCH (nơi vé
+      được sync qua)** · C app khách · D sync 2 chiều · **E vé mới có dùng được không (E1-E5)**.
 - [ ] Chạy service THẬT: dùng buổi · hủy · hoàn · **chuyển vé (譲渡)** — trên data test, Django rollback.
+- [ ] ⚠️ Case `driver:code` (B3/B4) đóng bằng `verdict_scope=data` — nếu E1 FAIL thì tự động hạ cấp
+      thành `PASS(data-only)`, KHÔNG được tính là "vẫn chạy bình thường" dù chữ PASS còn đó.
 - [ ] **Dọn sạch:** `cleanup.rails=done` · `django_rollback=done` · `django_garbage_rows=0`.
 - [ ] ④ **refund vé migrate bên Pro → nghi CRASH** (reservation_ticket nil); đối chứng bên Ticket. {{BUG5_LINE}}
 ### Tầng 0 SUMMARY — `summarize.py` + `build_excel.py`
@@ -72,8 +79,9 @@ Mỗi phòng khám có 2 sổ vé (Pro + Ticket), 3 năm lệch nhau. Backfill =
 | Hạng mục | PASS? |
 |---|---|
 | Data: candidates→0, archive đúng, doanh thu bất biến | ☐ |
+| **Dùng được:** `smoke_usable.js` PASS — vé mới CHỌN ĐƯỢC product để dùng | ☐ |
 | Report: đủ 23/23 + 販売金額 bảo toàn | ☐ |
-| Chức năng: đủ 23/23 có ảnh, bên ĐÍCH chạy tốt, app khách thấy vé | ☐ |
+| Chức năng: đủ ảnh + banner LUỒNG END-TO-END không đỏ, bên ĐÍCH chạy tốt, app khách thấy vé | ☐ |
 | Dọn data test: rác = 0 | ☐ |
 | Bug: refund {{BUG5_CONCL}} | ☐ |
 | SUMMARY: đủ 6 mục, sếp đọc là call khách được | ☐ |
@@ -81,4 +89,12 @@ Mỗi phòng khám có 2 sổ vé (Pro + Ticket), 3 năm lệch nhau. Backfill =
 ## 📎 Ghi nhớ
 - Vé migrate: `price=0` + `effective_price=giá gốc` + `reservation_ticket=nil`.
 - Doanh thu bất biến vì report ko lọc archived (vé cũ vẫn đếm) + vé mới price=0.
-- Idempotent: bấm migrate lại vô hại.
+- ⛔ **Idempotent CHỈ đúng với `sot='ticket_app'`.** Với `sot='pro'` bấm lại **SINH VÉ TRÙNG**
+  (Rails `queue_adapter=async`, API trả về trước khi xong). Branch 66 đã dính: 1.200 vé / 354 gốc.
+  → giữa 2 lô phải đợi job nền cạn; `migrate.js` đã có chốt tự đợi.
+- ⛔ **BUG-041 (nặng nhất, chiều `sot=ticket_app`):** vé nhận qua sync Ticket→Pro không set
+  `products:`/`items:` (`sync_controller.rb#handle_pack_issued`) → phần lớn vé không chọn được
+  product để dùng. Chiều `sot=pro` (`migrate!`) KHÔNG dính — đã verify branch 66. `smoke_usable.js`
+  đo trực tiếp bug này, chạy NGAY sau migrate — xem SKILL.md §LUẬT FIELD-DELTA.
+- **Bất biến dữ liệu xanh KHÔNG kết luận được tính năng dùng được** — mọi thao tác sửa hàng loạt vé
+  phải có case UI thật (nhóm E) đi trọn vẹn, kèm đối chứng. Case `driver:code` chỉ chứng minh dữ liệu.

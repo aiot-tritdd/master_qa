@@ -32,8 +32,11 @@ Chạy pipeline đầy đủ cho branch trong folder (đã có `config.json` t�
 1. `$PY .../backfill/db.py <folder> before`
 2. `$PY .../backfill/gen_exports.py <folder> before` → 3 xlsx vào `before/` (cần để so bất biến)
 3. `node .../backfill/capture.js <folder> before` → loop **REPORT_REGISTRY (23 báo cáo)**
-4. `node .../backfill/capture_func.js <folder> before` → loop **FUNC_CASES (23 flow)**, 2 hệ + app khách
+4. `node .../backfill/capture_func.js <folder> before` → loop **FUNC_CASES (28 flow, A-E)**, 2 hệ + app khách
    → **Read vài ảnh** kiểm render OK (luật kiểm chứng #2). Báo user màn nào 403/404 (đừng tự đổi account).
+   ⚠️ Nhóm **E** (vé mới có dùng được không) hiện chưa có script chụp ảnh riêng — verdict của nó tới từ
+   `smoke_usable.js` + `confirm_bugs.py` (bước 7b/10), KHÔNG phải từ capture_func.js. Đừng báo "thiếu ảnh
+   E1/E3/E4" là lỗi — đó là gap đã biết, xem SKILL.md.
 
 **⛔ DỪNG — XÁC NHẬN MIGRATE:**
 5. Đọc `DATA_before.md` + `config.json`. Báo user: branch, **chiều + SoT**, số vé sẽ tạo/archive, bên nào mất buổi.
@@ -42,12 +45,28 @@ Chạy pipeline đầy đủ cho branch trong folder (đã có `config.json` t�
 
 **PHASE MIGRATE + AFTER:**
 6. `node .../backfill/migrate.js <folder>` (đọc sot từ config, loop tới hết).
+   ⛔ **`sot=pro` KHÔNG idempotent** — bấm chồng lô là sinh vé trùng (branch 66: 1.200 vé/354 gốc, có vé 9 bản).
+   Script đã có chốt tự đợi job nền cạn giữa 2 lô — **đừng gỡ, đừng chạy 2 phiên song song**.
+   Nếu nó in `ABORT: … job nền VẪN chạy` thì cứ đợi rồi chạy lại; nó bỏ qua phần đã xong.
+6b. **`$PY .../backfill/sync_close.py <folder>`** → ĐÓNG SÓNG SYNC. Mặc định chỉ đọc; cần thì
+   `--flush` (báo user trước). **Bắt buộc**: `candidates=0` chỉ nói "đã migrate", KHÔNG nói "đã sang
+   Django". Branch 66 từng: mọi chỉ số xanh mà **354/817 vé chưa sang Django** ⇒ khách không thấy vé.
+   Chưa `CHƯA sync=0` thì **KHÔNG được báo migrate xong**.
 7. `$PY .../backfill/db.py <folder> after` → verify candidates→0, archive đúng,
    **Σprice incl archived bất biến** (đối chiếu before — luật #3).
+   `DATA_after.md` nay tự in 🔴 nếu **còn vé chưa sync** hoặc **vé mới ≠ số vé gốc** (trùng) — đọc kỹ 2 dòng đó.
+7b. ⛔ **`node .../backfill/smoke_usable.js <folder>`** — CỬA CHẶN "vé mới có DÙNG ĐƯỢC không" (không
+   phải "dữ liệu đúng không"). Chạy NGAY, TRƯỚC bước 8. Xem SKILL.md §LUẬT FIELD-DELTA lý do có bước
+   này (BUG-041: 4 bất biến dữ liệu xanh mà vé không chọn được product để dùng, chỉ lộ khi thao tác
+   TAY). `exit≠0` → **DỪNG PIPELINE**, báo user ngay, đừng chụp report/case tiếp — vô nghĩa nếu vé đã
+   chết. `exit=3` → 0 vé mới quan sát được ở khách mẫu, không kết luận được, đổi khách mẫu rồi chạy lại.
 8. `$PY .../backfill/gen_exports.py <folder> after`
 9. `node .../backfill/capture.js <folder> after` · `node .../backfill/capture_func.js <folder> after`
    → **Read ảnh** (tối thiểu: bf_row, 1 report Ticket, mọi ảnh nhóm B bên đích).
-10. `$PY .../backfill/confirm_bugs.py <folder>` → chạy **service THẬT** 2 hệ, chấm verdict 23 case.
+10. `$PY .../backfill/confirm_bugs.py <folder>` → chạy **service THẬT** 2 hệ, chấm verdict **28 case
+    (A-D + E1-E5)**. E1-E5 đọc `smoke_usable.json` (bước 7b) — chạy `confirm_bugs.py` SAU 7b, không
+    trước. Case `driver:code` (B3/B4) tự hạ cấp thành `PASS(data-only)` nếu E1 chưa PASS — đọc verdict
+    thật trong `bugs.json`, đừng tin chữ "PASS" suông.
     Django: atomic + **ROLLBACK**; Rails: reservation test marker `AIOT-TEST-BF-*` + revert.
     **BẮT BUỘC verify `cleanup.rails=done`, `django_rollback=done`, `django_garbage_rows=0`.**
 11. `node .../backfill/capture_bugs.js <folder>` → ảnh **UI thật** cho từng bug (chỉ MỞ, không xác nhận).
@@ -56,10 +75,12 @@ Chạy pipeline đầy đủ cho branch trong folder (đã có `config.json` t�
 12. `$PY .../backfill/annotate.py <folder>` · `$PY .../backfill/make_bug_images.py <folder>`
 13. `$PY .../backfill/summarize.py <folder>` → `summary.json` (số liệu sheet SUMMARY)
 14. `$PY .../backfill/build_excel.py <folder>` → `Backfill_<inst>_branch<X>_Evidence.xlsx`
-15. **Verify:** load Excel — **5 sheet**, **coverage `23/23` cả 2 banner** (thiếu thì đi chụp bù, đừng
-    báo xong), 3_CHUCNANG có ảnh **từng** case, 4_BUGS mỗi bug có ảnh UI (hoặc ghi rõ "không quan sát
-    được trên UI"), 0_SUMMARY hyperlink nhảy đúng ô. Báo user theo 4 luật: observed-PASS / observed-FAIL /
-    未実施 + lý do, bug nào confirmed.
+15. **Verify:** load Excel — **5 sheet**. 3_CHUCNANG có **2 banner KHÁC NHAU, đọc cả 2**:
+    `COVERAGE CHỨC NĂNG: ảnh UI N/M` (có ẢNH chưa) và `LUỒNG END-TO-END: N/28` (đã XÁC NHẬN người dùng
+    thật làm được chưa — case `data-only` KHÔNG tính vào đây). 2_REPORT coverage `23/23`. Thiếu thì đi
+    chụp/chạy bù, đừng báo xong. 4_BUGS mỗi bug có ảnh UI (hoặc ghi rõ "không quan sát được trên UI"),
+    0_SUMMARY hyperlink nhảy đúng ô. Báo user theo 4 luật: observed-PASS / observed-FAIL / 未実施 + lý
+    do, bug nào confirmed — và **PASS(data-only) không phải PASS(UI)**, nói rõ khác biệt khi báo user.
 
 ## Ràng buộc (từ SKILL.md)
 - KHÔNG bước 6 (migrate) khi user chưa xác nhận rõ ràng ở bước 5.

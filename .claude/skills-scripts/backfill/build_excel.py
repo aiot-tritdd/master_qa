@@ -19,7 +19,7 @@ from openpyxl.utils import get_column_letter
 from PIL import Image as PILImage
 
 folder = Path(sys.argv[1])
-SK = Path(__file__).parent.parent.parent / "skills" / "backfill"
+SK = Path(__file__).resolve().parent.parent.parent / "skills" / "backfill"
 
 
 def rj(p, d):
@@ -183,6 +183,29 @@ Rb, Ra = db_b.get("rails", {}), db_a.get("rails", {})
 Db, Da = db_b.get("django", {}), db_a.get("django", {})
 anchors = {}   # key → (sheet_name, row)
 
+
+# ⛔ A-8 (2026-07-29): group text trong FUNC_CASES.json HARDCODE giả định chiều sot=ticket_app
+# (nhóm A app=ticket luôn ghi "NGUỒN", nhóm B app=pro luôn ghi "ĐÍCH"). Với sot=pro thì NGƯỢC LẠI —
+# branch 66 (sot=pro) từng xuất Excel với nhãn nguồn/đích SAI. App vật lý của case (ticket/pro) không
+# đổi (route Django luôn nằm ở Ticket app) — chỉ VAI TRÒ (nguồn tạo vé / đích nhận vé) đổi theo SOT.
+def group_label(c):
+    g = c.get("group", "")
+    # Chỉ nhóm A/B (thuần 1 hệ, do ticket_app hoặc pro tạo vé) mới cần lật vai trò theo SOT.
+    # Nhóm E (VÉ MỚI CÓ DÙNG ĐƯỢC KHÔNG) trộn cả 2 hệ trong 1 nhóm — không có 1 vai trò duy nhất
+    # để lật, giữ nguyên chữ gốc.
+    if not (g.startswith("A ·") or g.startswith("B ·")):
+        return g
+    app = c.get("app")
+    if app == "ticket":
+        role = "NGUỒN (tạo vé)" if SOT == "ticket_app" else "ĐÍCH (được sync qua)"
+        letter = g.split("·", 1)[0].strip() if "·" in g else "A"
+        return f"{letter} · Bên {role} — Ticket app"
+    if app == "pro":
+        role = "ĐÍCH (được sync qua)" if SOT == "ticket_app" else "NGUỒN (tạo vé)"
+        letter = g.split("·", 1)[0].strip() if "·" in g else "B"
+        return f"{letter} · Bên {role} — Pro"
+    return g
+
 # =====================================================================================
 # 1_DATA
 # =====================================================================================
@@ -342,7 +365,7 @@ for c in func_cases:
     screens = sorted({e["screen"] for ph in ("before", "after") for e in caps.get(ph, [])
                       if e.get("sheet") == "3_CHUCNANG" and (e.get("screen") == f"func_{cid}" or e.get("screen", "").startswith(f"func_{cid}_"))})
     if c.get("group") != last_group:
-        r = bar(ws3, r, f"■ {c.get('group', '')}", bg=NAVY, sz=13, h=26)
+        r = bar(ws3, r, f"■ {group_label(c)}", bg=NAVY, sz=13, h=26)
         last_group = c.get("group")
     anchors[f"func_{cid}"] = ("3_CHUCNANG", r)
     sc = scored.get(cid, {})
@@ -404,6 +427,22 @@ cl = bugs.get("cleanup", {})
 r = para(ws3, r, f"🧹 Dọn dữ liệu test: Pro cleanup={cl.get('rails', '?')} · Ticket rollback={cl.get('django_rollback', '?')} · "
                  f"rác còn sót={cl.get('django_garbage_rows', '?')} (phải = 0). Data test mang marker {bugs.get('mark', 'AIOT-TEST-BF-*')}.",
          bg=(PASS_BG if str(cl.get("django_garbage_rows")) == "0" else WARN_BG))
+
+# ⛔ BANNER RIÊNG — "có ẢNH" ≠ "chạy TRỌN VẸN được người dùng thật xác nhận" (bài học BUG-041: branch
+# 66 từng có ảnh UI 17/17 xanh trong khi vé không dùng được — ảnh chỉ chứng minh MÀN MỞ ĐƯỢC, không
+# chứng minh THAO TÁC CHẠY ĐƯỢC). "observed-PASS(data-only)" (xem confirm_bugs.py) KHÔNG được tính vào
+# end-to-end — nó chỉ chứng minh tầng dữ liệu, không chứng minh nhân viên bấm được.
+e2e_total = len(func_cases)
+e2e_pass = sum(1 for c in func_cases if scored.get(c["id"], {}).get("verdict") == "observed-PASS")
+e2e_data_only = sum(1 for c in func_cases if str(scored.get(c["id"], {}).get("verdict", "")).endswith("(data-only)"))
+r = bar(ws3, r, (f"LUỒNG END-TO-END: {e2e_pass}/{e2e_total} case đã XÁC NHẬN người dùng thật làm được "
+                 f"(quan sát trực tiếp qua UI/API thật, KHÔNG suy luận)"
+                 + (f" · {e2e_data_only} case CHỈ xác nhận ở tầng DỮ LIỆU (data-only, xem cột Status) — "
+                    f"KHÔNG được tính là end-to-end" if e2e_data_only else "")
+                 + (f" · {e2e_total - e2e_pass - e2e_data_only} case còn lại: FAIL hoặc chưa kiểm được"
+                    if e2e_total - e2e_pass - e2e_data_only else "")),
+           bg=(PASS_BG if e2e_pass == e2e_total else RED),
+           tx=(PASS_TX if e2e_pass == e2e_total else WHITE), sz=12, h=30)
 
 # =====================================================================================
 # 4_BUGS — ảnh UI thật trước, panel kỹ thuật sau

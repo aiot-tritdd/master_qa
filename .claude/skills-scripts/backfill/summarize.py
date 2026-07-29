@@ -9,7 +9,7 @@ import json, sys
 from pathlib import Path
 
 folder = Path(sys.argv[1])
-SK = Path(__file__).parent.parent.parent / "skills" / "backfill"
+SK = Path(__file__).resolve().parent.parent.parent / "skills" / "backfill"
 
 
 def rj(p, default):
@@ -52,8 +52,13 @@ archived_delta = num(Ra.get("rails_archived")) - num(Rb.get("rails_archived"))
 did = {
     "branch": f"{cfg.get('branch_name_jp', '')} (mã cơ sở {cfg['institute_code']}, branch {cfg['branch_id']})",
     "direction": f"{SRC} → {DST}",
-    "direction_vi": f"Lấy dữ liệu vé bên **{SRC}** làm bản chuẩn, tạo lại vé tương ứng bên **{DST}**, "
-                    f"rồi khoá các vé lẻ cũ bên {DST} lại để không bị đếm 2 lần.",
+    # ⚠️ Vé mới được tạo bên **SoT (SRC)**, KHÔNG phải bên DST. Cơ chế (backfill_tool/views.py:1896-1908):
+    #    bên nào là SoT thì bên đó chạy `migrate_pack` — thay vé cũ của CHÍNH NÓ bằng vé mới rồi đẩy
+    #    sang bên kia; bên còn lại chỉ `archive_only` các vé lẻ của nó.
+    #    Bản cũ viết ngược ("tạo lại vé bên DST, khoá vé cũ bên DST") — sai ở đúng câu sếp đọc đầu tiên.
+    "direction_vi": f"Lấy sổ vé bên **{SRC}** làm bản chuẩn: bên **{SRC}** thay từng vé lẻ cũ bằng 1 vé mới "
+                    f"mang đúng số buổi còn lại, rồi đẩy vé mới đó sang **{DST}**. Song song, bên **{DST}** "
+                    f"khoá các vé lẻ cũ của nó lại để không bị đếm 2 lần.",
     "orphan_before": {"ticket_app": num(Db.get("dj_candidates")), "pro": num(Rb.get("rails_candidates"))},
     "orphan_after": {"ticket_app": num(Da.get("dj_candidates")), "pro": num(Ra.get("rails_candidates"))},
     "packs_created": created,
@@ -87,15 +92,24 @@ impact.append({
     "ok": migrated and num(Da.get("dj_candidates")) == 0 and num(Ra.get("rails_candidates")) == 0,
 })
 # Số liệu CỤ THỂ của 1 khách thật — dễ hiểu hơn mọi con số tổng
-_c1_red = (bugs.get("rails") or {}).get("c1_migrated_redeemable")
+# ⚠️ So TỔNG buổi còn dùng được của khách, KHÔNG so với 1 vé lẻ.
+#    Bản cũ lấy `c1_migrated_redeemable` = số buổi của MỘT vé migrate rồi đem so với TỔNG trước đó
+#    ⇒ branch 66 in ra "15 → 5 ❌", đọc như là khách mất 10 buổi, trong khi thật ra khách có 2 vé mới
+#    (5 + 10 = 15, không mất gì). Sai ở đúng chỗ sếp đọc để gọi cho khách.
+#    Và phải dùng bản CHỈ-VÉ-ACTIVE ở cả 2 đầu — bản gộp archived là BUG-2, không phải số thật.
+_rem_before = Rb.get("rails_sample_remaining_active") or Rb.get("rails_sample_remaining")
+_rem_after = Ra.get("rails_sample_remaining_active")
 if Rb.get("rails_sample_cust_name"):
+    _same = migrated and _rem_after is not None and str(_rem_after) == str(_rem_before)
     impact.append({
         "what": f"Ví dụ 1 khách thật — {Rb.get('rails_sample_cust_name')} (mã {Rb.get('rails_sample_cust_code')})",
-        "before": f"{Rb.get('rails_sample_remaining', '?')} buổi dùng được",
-        "after": f"{_c1_red or '?'} buổi dùng được (trên vé mới)" if migrated else "—",
-        "means": "Số buổi khách thật sự còn dùng được KHÔNG đổi. Vé cũ được khoá lại và thay bằng vé mới "
-                 "mang đúng số buổi còn lại.",
-        "ok": migrated and str(_c1_red) == str(Rb.get("rails_sample_remaining")),
+        "before": f"{_rem_before or '?'} buổi dùng được",
+        "after": (f"{_rem_after if _rem_after is not None else '?'} buổi dùng được "
+                  f"(trên vé mới thay cho vé cũ)") if migrated else "—",
+        "means": ("Số buổi khách thật sự còn dùng được KHÔNG đổi. Vé cũ được khoá lại và thay bằng vé mới "
+                  "mang đúng số buổi còn lại." if _same else
+                  "⚠️ Số buổi TRƯỚC và SAU không khớp — phải kiểm tra tay trước khi báo khách."),
+        "ok": _same,
     })
 c1 = next((c for c in bugs.get("cases", []) if c["id"] == "C1"), None)
 if c1:
@@ -163,6 +177,13 @@ for c in bugs.get("cases", []):
             row["observed"] = (f"Màn mở bình thường (HTTP {http})." if http else "Màn mở bình thường.") \
                               + " Ảnh trước/sau ở 3_CHUCNANG."
             works.append(row)
+    elif v.endswith("(data-only)"):
+        # ⚠️ CHỈ chứng minh tầng dữ liệu (vd gọi thẳng hàm gán slip), KHÔNG chứng minh nhân viên/khách
+        # THẬT SỰ bấm được — bài học BUG-041 (branch 66: mọi case dữ liệu xanh mà vé không dùng được).
+        # KHÔNG được liệt vào "vẫn chạy bình thường" dù chữ 'PASS' có trong tên verdict.
+        row["link_sheet"] = "3_CHUCNANG"
+        row["observed"] = "⚠️ Chỉ xác nhận Ở TẦNG DỮ LIỆU, CHƯA xác nhận qua UI thật. " + row["observed"]
+        deviations.append(row)
     else:  # traced-only / 未実施
         row["link_sheet"] = "3_CHUCNANG"
         deviations.append(row)
@@ -242,8 +263,11 @@ if not migrated:
 elif noop:
     headline = f"Cơ sở {did['branch']} KHÔNG có vé lẻ nào cần đồng bộ — không thao tác gì lên dữ liệu."
 else:
-    headline = (f"Đã đồng bộ {'XONG HẾT' if all_done else 'MỘT PHẦN'} cho {did['branch']}: tạo lại {created} vé bên "
-                f"{DST}, khoá {archived_delta} vé cũ, không còn vé lẻ nào ở cả 2 hệ. "
+    # `created`/`archived_delta` đều đo ở bên SoT (SRC) — xem chú thích ở `direction_vi`. Ghi "bên {DST}"
+    # là gán nhầm việc cho hệ kia.
+    headline = (f"Đã đồng bộ {'XONG HẾT' if all_done else 'MỘT PHẦN'} cho {did['branch']}: bên {SRC} tạo "
+                f"{created} vé mới thay cho {archived_delta} vé lẻ cũ rồi đẩy sang {DST}; "
+                f"không còn vé lẻ nào ở cả 2 hệ. "
                 f"Tổng tiền vé của cơ sở {'KHÔNG đổi' if rev_same else 'CẦN kiểm lại'}. "
                 f"{'Không có lỗi nào chặn nghiệp vụ.' if not (n_fail or bug_rows) else f'Có {len(bug_rows)} điểm cần biết (mục ⑤).'}")
 
