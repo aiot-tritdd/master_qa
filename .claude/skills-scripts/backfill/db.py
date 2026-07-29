@@ -10,6 +10,13 @@ folder = Path(sys.argv[1]); phase = sys.argv[2] if len(sys.argv) > 2 else "befor
 cfg = json.loads((folder / "config.json").read_text())
 B = int(cfg["branch_id"]); ROOT = cfg.get("repo_root", "/Users/TruongDinhDucTri/Work/ThreeSides")
 
+# Khách mẫu: phase after PHẢI dùng lại ĐÚNG khách của phase before, nếu không ảnh/số trước-sau là của
+# 2 người khác nhau ⇒ không so được (và sau migrate thì candidates=0 nên không chọn được khách mới).
+PIN_CUST = None
+_pb = folder / "data_before.json"
+if phase == "after" and _pb.exists():
+    PIN_CUST = (json.loads(_pb.read_text()).get("rails") or {}).get("rails_sample_cust_id")
+
 def sh(cmd):
     return subprocess.run(cmd, cwd=ROOT, shell=True, capture_output=True, text=True).stdout
 
@@ -39,15 +46,23 @@ if br.nil?; puts "ERR=branch_not_found"; else
   puts "rails_synced_migrated=" + synced.count.to_s
   puts "rails_branch_name=" + br.name.to_s
   puts "rails_institute_id=" + br.institute_id.to_s
-  # sample customer co ve mo coi (baseline remaining cho bug remaining)
-  s = cand.first
-  if s
-    c = s.customer
+  # sample customer co ve mo coi (baseline remaining cho bug remaining).
+  # UU TIEN khach CO customer_code — man 顧客管理 ben Pro tim khach bang code, khach khong co code
+  # thi capture_func/capture_bugs khong mo duoc man => mat anh B2/B5/B6.
+  pinned = {PIN_CUST or 'nil'}
+  s = cand.find {{ |p| p.customer&.customer_code.present? }} || cand.first
+  c = pinned ? Therapists::Customer.find_by(id: pinned) : s&.customer
+  # sau migrate ko còn candidate → lấy khách của 1 vé MIGRATE (price=0, effective_price>0)
+  c ||= Tickets::Pack.with_branches([{B}]).where(price: 0).where('effective_price > 0').where.not(status: 'archived').first&.customer
+  if c
+    puts "rails_sample_cust_name=" + c.try(:name).to_s
     rem = c.ticket_slips.where(tickets_slips: {{reservation_item_id: nil, used: false}}).distinct.count
     puts "rails_sample_cust_id=" + c.id.to_s
     puts "rails_sample_cust_code=" + c.try(:customer_code).to_s
     puts "rails_sample_remaining=" + rem.to_s
-    puts "rails_sample_orphan_pack=" + s.id.to_s
+    puts "rails_sample_orphan_pack=" + s.id.to_s if s
+    puts "rails_sample_active_packs=" + c.ticket_packs.where.not(status: 'archived').count.to_s
+    puts "rails_sample_archived_packs=" + c.ticket_packs.where(status: 'archived').count.to_s
   end
 end
 '''
@@ -74,20 +89,43 @@ newp = b.filter(original_pack__isnull=False)
 print("dj_new_migrated=" + str(newp.count()))
 print("dj_new_price0=" + str(newp.filter(price=0).count()))
 print("dj_new_synced_pro=" + str(newp.exclude(pro_pack_id__isnull=True).count()))
+# --- sample id cho FUNC_CASES (capture_func.js dung de mo dung man) ---
+sc = cand[0].customer if cand else (b.first().customer if b.exists() else None)
+if sc:
+    print("dj_sample_customer_id=" + str(sc.id))
+    print("dj_sample_customer_name=" + str(getattr(sc, "name", "") or ""))
+sp = newp.filter(status="active").first() or b.filter(status="active").first() or b.first()
+if sp:
+    print("dj_sample_pack_id=" + str(sp.id))
+    print("dj_sample_pack_remaining=" + str(sp.remaining))
+    print("dj_sample_pack_status=" + str(sp.status))
+# Ticket (master) khong co branch_id — lay qua ticket_option cua pack mau
+if sp and sp.ticket_option_id:
+    print("dj_sample_ticket_id=" + str(sp.ticket_option.ticket_id))
+    print("dj_sample_ticket_option_id=" + str(sp.ticket_option_id))
+print("dj_archived=" + str(b.filter(status="archived").count()))
 '''
 (folder / "_db_django.py").write_text(django_py)
 sh(f'docker compose cp {json.dumps(str(folder / "_db_django.py"))} threease_ticket:/tmp/_db_django.py')
 dout = sh("docker compose exec -T threease_ticket python manage.py shell -c \"exec(open('/tmp/_db_django.py').read())\"")
 D = kv(dout)
 
-noop = (R.get("rails_candidates") in (None, "0")) and (D.get("dj_candidates") in (None, "0"))
-data = {"phase": phase, "branch_id": B, "sot": cfg["sot"], "noop": noop, "rails": R, "django": D}
+# candidates = 0 hai bên có 2 NGHĨA KHÁC NHAU tuỳ phase:
+#   before → branch TRỐNG, không có gì để migrate (noop thật)
+#   after  → ĐÃ MIGRATE XONG HẾT (thành công!) — gọi là noop thì sheet SUMMARY sẽ báo sếp
+#            "branch không có gì để đồng bộ", sai hoàn toàn bản chất. Đo 2026-07-28 branch 124.
+zero_both = (R.get("rails_candidates") in (None, "0")) and (D.get("dj_candidates") in (None, "0"))
+noop = zero_both if phase == "before" else False
+data = {"phase": phase, "branch_id": B, "sot": cfg["sot"], "noop": noop,
+        "all_done": zero_both if phase == "after" else None, "rails": R, "django": D}
 (folder / f"data_{phase}.json").write_text(json.dumps(data, indent=2, ensure_ascii=False))
 
 # ---- DATA_<phase>.md (người đọc) ----
 lines = [f"# DATA — {phase.upper()} (branch {B}, sot={cfg['sot']}, {cfg.get('branch_name_jp','')})", ""]
 if noop:
     lines.append("> ⚠️ **NO-OP: candidates = 0 cả 2 bên** — branch trống, KHÔNG có gì để migrate.")
+elif phase == "after" and zero_both:
+    lines.append("> ✅ **ĐÃ MIGRATE XONG HẾT: candidates = 0 cả 2 bên** — không còn vé mồ côi nào.")
 lines += [
     "| Bên | candidates (vé mồ côi) | Σ price / buổi | active | all(incl archived) |",
     "|---|---|---|---|---|",

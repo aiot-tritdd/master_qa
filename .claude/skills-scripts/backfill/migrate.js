@@ -13,14 +13,22 @@ const path = require('path');
   const { browser, page, BASE } = await L.getPage('ticket_admin', cfg);
   const url = BASE + '/superuser/backfill/ticket-packs/';
 
-  for (let batch = 1; batch <= 10; batch++) {
+  // ⚠️ KHÔNG dùng nhãn 移行済み làm điều kiện dừng: nhãn đó hiện SAU MỖI LÔ, kể cả khi còn vé chưa
+  //    xử lý ⇒ dừng sớm, migrate thiếu (đo 2026-07-28: branch 124 mới chạy 100/307 vé đã báo xong).
+  //    Dòng branch có sẵn 2 số candidates → cứ lặp tới khi NỘI DUNG DÒNG KHÔNG ĐỔI (hết tiến triển).
+  let prevRowTxt = null;
+  for (let batch = 1; batch <= 40; batch++) {
     await page.goto(url, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2500);
     const row = page.locator('tr', { hasText: branch_name_jp }).first();
     if (!(await row.count())) { console.log('ERR: branch row not found:', branch_name_jp); break; }
-    // trạng thái: nếu đã 移行済み thì dừng
     const rowTxt = (await row.innerText().catch(() => '')).replace(/\s+/g, ' ');
-    if (batch > 1 && rowTxt.includes('移行済み')) { console.log('=== migrated (移行済み) ==='); break; }
+    if (prevRowTxt !== null && rowTxt === prevRowTxt) {
+      console.log(`=== hết tiến triển sau ${batch - 1} lô — dừng. Dòng: ${rowTxt.slice(0, 120)}`);
+      break;
+    }
+    prevRowTxt = rowTxt;
+    console.log(`[batch ${batch}] dòng trước khi chạy: ${rowTxt.slice(0, 120)}`);
 
     await page.locator(`input[name=branch-select][value="${branch_id}"]`).check();
     await page.waitForTimeout(300);

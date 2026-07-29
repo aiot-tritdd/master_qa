@@ -1,15 +1,23 @@
 #!/usr/bin/env python3
-"""gen_exports.py <folder> — sinh 3 file xlsx report Pro đã-fix (history/performance/annual)
-cho branch trong config, filter branch_ids. Chạy generator THẲNG qua Rails console (khỏi đánh vật
-async UI). Cần initializer zz_local_dev_storage.rb (ép :local). Lưu vào after/ + đọc tổng vào exports.json.
+"""gen_exports.py <folder> [before|after] — sinh 3 file xlsx report Pro đã-fix
+(history/performance/annual) cho branch trong config, filter branch_ids. Chạy generator THẲNG qua
+Rails console (khỏi đánh vật async UI). Cần initializer zz_local_dev_storage.rb (ép :local).
+
+Phải chạy CẢ 2 phase: muốn chứng minh 3 report này BẤT BIẾN thì cần bản before để đối chiếu.
+Lưu vào <phase>/pro_<name>_<phase>.xlsx + exports_<phase>.json (đọc tổng 販売金額 bằng openpyxl
+ở build_excel.py).
 """
 import json, subprocess, sys, re
 from pathlib import Path
 
 folder = Path(sys.argv[1])
+phase = sys.argv[2] if len(sys.argv) > 2 else "after"
+if phase not in ("before", "after"):
+    sys.exit(f"phase phải là before|after, nhận '{phase}'")
 cfg = json.loads((folder / "config.json").read_text())
 B = int(cfg["branch_id"]); ROOT = cfg.get("repo_root", "/Users/TruongDinhDucTri/Work/ThreeSides")
-after = folder / "after"
+outdir = folder / phase
+outdir.mkdir(parents=True, exist_ok=True)
 
 def sh(cmd):
     return subprocess.run(cmd, cwd=ROOT, shell=True, capture_output=True, text=True).stdout
@@ -19,9 +27,9 @@ inst = Therapists::Institute.find_by(institute_code: {json.dumps(cfg["institute_
 ther = Therapists::Employment.where(institute_id: {cfg["rails_institute_id"]}).map(&:therapist).compact.find {{ |t| t.staff_code == {json.dumps(cfg["pro_staff_code"])} }} || Therapists::Employment.where(institute_id: {cfg["rails_institute_id"]}).first.therapist
 require 'fileutils'; FileUtils.mkdir_p('/tmp/bfexports')
 specs = {{
-  export_history:     [::Therapists::Analytics::Report::TicketsPacksExcelGenerator::RESOUCRE_NAME, 'pro_history_after.xlsx'],
-  export_performance: [::Therapists::Analytics::Report::TicketsPacksPerformanceReportExcelGenerator::RESOUCRE_NAME, 'pro_performance_after.xlsx'],
-  export_annual:      [::Therapists::Analytics::Report::TicketsPacksAnnualReportExcelGenerator::RESOUCRE_NAME, 'pro_annual_after.xlsx'],
+  export_history:     [::Therapists::Analytics::Report::TicketsPacksExcelGenerator::RESOUCRE_NAME, 'pro_history_{phase}.xlsx'],
+  export_performance: [::Therapists::Analytics::Report::TicketsPacksPerformanceReportExcelGenerator::RESOUCRE_NAME, 'pro_performance_{phase}.xlsx'],
+  export_annual:      [::Therapists::Analytics::Report::TicketsPacksAnnualReportExcelGenerator::RESOUCRE_NAME, 'pro_annual_{phase}.xlsx'],
 }}
 filters = {{ branch_ids: [{B}] }}
 specs.each do |action, (resource, fname)|
@@ -49,12 +57,12 @@ for line in out.splitlines():
     m = re.match(r"^EXPORT_(OK|FAIL|ERR)=([^:]+):(.*)$", line.strip())
     if m:
         status, fname, info = m.groups()
-        results[fname] = {"status": status, "info": info}
+        results[fname] = {"status": status, "info": info, "phase": phase, "file": str(outdir / fname)}
         if status == "OK":
-            sh(f'docker compose cp threease_backend:/tmp/bfexports/{fname} {json.dumps(str(after / fname))}')
+            sh(f'docker compose cp threease_backend:/tmp/bfexports/{fname} {json.dumps(str(outdir / fname))}')
 
-(folder / "exports.json").write_text(json.dumps(results, indent=2, ensure_ascii=False))
+(folder / f"exports_{phase}.json").write_text(json.dumps(results, indent=2, ensure_ascii=False))
 ok = sum(1 for v in results.values() if v["status"] == "OK")
-print(f"OK gen_exports.py: {ok}/3 file xlsx → after/")
+print(f"OK gen_exports.py {phase}: {ok}/3 file xlsx → {phase}/")
 for k, v in results.items():
     print(f"  {v['status']} {k} ({v['info']})")
