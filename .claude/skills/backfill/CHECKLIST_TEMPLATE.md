@@ -9,6 +9,21 @@
 
 {{NOOP_BANNER}}
 
+## 0.0 · ⛔ CỔNG CHẶN — MASTER SYNC PHẢI XONG TRƯỚC KHI MIGRATE PACK
+Thứ tự này không đổi được. Làm ngược = pack sinh ra rời khỏi master, **và sync master sau đó KHÔNG vá ngược**
+(branch 124 đã bị: 176/176 pack `ticket_option_id` NULL).
+
+- [ ] **Index đã vá** — `idx_pt_packs_pack_id` + `idx_pt_packs_product_id` trên `therapists_products_tickets_packs`
+      (2.4M dòng, mặc định 0 index). Chưa vá → Rails treo, Django báo `Read timed out`.
+- [ ] **Bước 1** — `/superuser/backfill/tickets/?django_id=…&rails_id=…&code={{INSTITUTE_CODE}}` (theo **CÔNG TY**)
+      → `Select All (ID + 名前一致)` → `Sync Selected`, chiều = **{{DIRECTION}}**.
+- [ ] **Bước 2** — copy 2 chiều phần còn lệch: `node copy_masters.js {{INSTITUTE_CODE}} <dj_id> <ra_id>`
+- [ ] **Bước 2 xong**: `copy_masters.js … --dry` in **`chưa link=0` ở CẢ 2 BÊN**. Ghi số: Rails ___ / Django ___
+- [ ] **Link 1-1 đối xứng** đã verify (không có 2 record trỏ cùng đích). Số cặp: ___
+- [ ] Đã **báo user** các id trùng-id-khác-tên (cùng master bị đổi tên 1 bên) — user quyết, QA không tự đoán
+- [ ] Đã **đo Rails outbox** sau bước 1+2 (sẽ phình). Số: ___ · **chưa flush** (không flush mù)
+- [ ] **Bước 3** — chỉ khi mọi ô trên đã tick: vào `Ticket Pack Migration` → chọn đúng branch **{{BRANCH_ID}}** → migrate
+
 ## 0 · Hiểu cái sắp làm
 Mỗi phòng khám có 2 sổ vé (Pro + Ticket), 3 năm lệch nhau. Backfill = dọn cho khớp: chọn 1 sổ làm **chuẩn (SoT)**, đồng bộ cả chi nhánh 1 lượt.
 - Chiều này = **{{DIRECTION}}** (`sot={{SOT}}`): {{DIRECTION_EXPLAIN}}

@@ -49,8 +49,62 @@ Account lấy từ **`DEV-ACCOUNTS.xlsx`** sheet `Accounts` (C institute_code ·
 - **Branch rỗng** (candidates=0 cả 2 bên, vd 211): `db.py` set `noop=true` → bỏ migrate, Excel ghi "trống".
 - Modal backfill: radio `input[name=sotChoice][value=<sot>]`.
 
+## ⛔ TIỀN ĐỀ BẮT BUỘC: sync TICKET MASTER trước, migrate pack sau (đo 2026-07-29)
+**Đừng chạy `migrate.js` khi master của công ty đó chưa link xong.** 3 bước, đúng thứ tự này:
+
+| # | Làm gì | Ở đâu | Xong khi |
+|---|---|---|---|
+| 1 | `Select All (ID + 名前一致)` → `Sync Selected` (chọn chiều theo cột `Ticket、Option、Packどちらを正とするか` của file review) | `/superuser/backfill/tickets/?django_id=<X>&rails_id=<Y>&code=<institute>` | các dòng khớp **cả id lẫn tên** thành xanh |
+| 2 | Dòng trắng còn lại: tick 1 dòng Ticket → `→ Copy to Rails`; tick 1 dòng Pro → `Copy to Django ←`. **Cả 2 chiều.** | cùng trang | **0 dòng chưa link ở CẢ 2 BÊN** |
+| 3 | `Ticket Pack Migration` → chọn đúng branch → migrate | `/superuser/backfill/ticket-packs/` | — |
+
+Trang mở theo **công ty**, KHÔNG phải branch (`システム構造`: Ticket Master 直属 institute).
+Bước 2 tự động hoá: `node copy_masters.js <institute_code> <django_id> <rails_id> [--dry] [--max N]`
+(`--dry` in danh sách chưa link rồi thoát; script **dừng ngay** khi có alert hoặc khi dòng nguồn
+không chuyển sang đã-link — copy là ghi 2 bên, timeout giữa đường sinh rác không kiểm soát được).
+
+**Vì sao bước 3 phải cuối — không phải quy ước, đây là đường dữ liệu:**
+```
+Django gửi  pro_backend_sync.py:163   'pro_ticket_option_id': ticket_option.pro_ticket_option_id
+Rails nhận  sync_controller.rb:228    option = Tickets::Option.find_by(id: pro_ticket_option_id) if pro_ticket_option_id
+Rails ghi   sync_controller.rb:247    ticket_option_id: option&.id
+```
+Master chưa link ⇒ `pro_ticket_option_id` NULL ⇒ `option` nil ⇒ pack sinh ra với **`ticket_option_id` NULL**,
+rời khỏi master. Branch 124 đã bị đúng lỗi này: **176/176 pack NULL**, và **sync master sau đó KHÔNG vá ngược**.
+Hệ quả: mọi query Pro join `packs → options → tickets` (nhóm theo 回数券, đơn giá master, 税率) không thấy
+số pack đó — `Tickets::Pack.with_ticket_options` (`pack.rb:42`) lọc qua `joins(:reservation_ticket)`.
+
+**Guard giải thích tại sao phải có bước 1:** `TICKET_MASTER_SYNC_START_ID = 10000` ·
+`TICKET_SYNC_START_ID = 200000` (pack). Record id **dưới** ngưỡng bị coi là dữ liệu cũ và **cấm sync**,
+trừ khi có trong allowlist (`threease_ticket_sync_job.rb:226`). Master công ty cũ có id 5–1087 → chặn hết.
+Pack mới sinh id ≥ 200000 nên không cần allowlist (đó là lý do `th_sync_ticket_pack_allowlist` rỗng mà pack
+vẫn sync được — **không phải bug**).
+
+**Bẫy khi copy — id trùng nhưng TÊN khác = CÙNG một master bị đổi tên một bên.** Ở sakainishi có 4 cặp
+(774 `★ﾌﾟﾘﾝｾｽﾌﾟﾛｸﾞﾗﾑ` ↔ `旧★…`, 776, 936, **939**). `Select All` bỏ qua chúng vì so cả tên — **tool làm đúng**.
+Copy sẽ sinh bản trùng. Riêng **939 tên bị lệch 1 nhịp giữa 2 hệ** (Rails 939=`EMS(学割)半額` ↔ Django 939=`猫背矯正(学割)半額`)
+→ link theo id là nối 2 dịch vụ KHÁC nhau. **Nêu ra cho user quyết, đừng tự đoán.**
+User branch 124 đã chọn: cứ copy cả 2 chiều, chấp nhận trùng. Sau khi copy phải verify **link 1-1 đối xứng**
+(không có 2 record trỏ cùng đích) — đã verify 108/108 đối xứng.
+
+**Sau bước 1+2, Rails outbox phình.** Mỗi master bị sửa → `after_commit` → `threease_ticket_outbox_events`.
+Ở sakainishi: 72 event sau sync, **286** sau khi copy xong. `retry_count=0` toàn bộ = **chưa có cron nào chạy**
+`rake threease_ticket:flush_outbox`. **Đừng flush mù** — soi model + `created_at` trước; event cũ nhiều ngày
+mang state lỗi thời, flush là đẩy nó ghi đè bên kia.
+
+**Sync master làm Rails treo — phải vá index TRƯỚC.** Callback `tickets/ticket.rb:20 update_packs_view`
+gom mọi `reservation_ticket` liên quan → `UpdatePacksJob` (adapter **Async = cùng process Puma**).
+Ở sakainishi là **24,900** reservation_ticket. Mà `therapists_products_tickets_packs` có **2.4M dòng và 0 index**
+(Postgres KHÔNG tự tạo index cho FK) → mỗi vòng là 1 seq scan 884–3268 ms → Rails no CPU → Django
+`timeout=30` nổ `Rails API error: HTTPConnectionPool(...) Read timed out`.
+⚠️ **Alert đó KHÔNG có nghĩa là ghi thất bại — dữ liệu đã commit. ĐỪNG bấm lại (ghi đè lần 2).** Verify bằng DB.
+Vá: `CREATE INDEX CONCURRENTLY` trên `(pack_id)` + `(product_id)` → 884ms xuống **20.8ms** (42×), ~13s/index.
+Index này hiện **chỉ có trên DB local** — dev/prod vẫn thiếu, cần migration trong `threease_backend`.
+
 ## Pipeline `/backfill-run`
 ```
+# ==== BƯỚC 0 (BẮT BUỘC, xem mục trên): master sync xong 0 dòng lệch 2 bên ====
+node copy_masters.js <institute> <dj_id> <ra_id> --dry   # phải in "chưa link=0" cả 2 bên mới đi tiếp
 $PY db.py <folder> before
 $PY gen_exports.py <folder> before        # cần bản BEFORE để chứng minh 3 export bất biến
 node capture.js <folder> before           # loop REPORT_REGISTRY (23 báo cáo)

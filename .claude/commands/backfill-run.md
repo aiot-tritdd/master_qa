@@ -13,6 +13,21 @@ Chạy pipeline đầy đủ cho branch trong folder (đã có `config.json` t�
 > (nơi có node_modules), hoặc `NODE_PATH=.../testcase-evidence/node_modules`.
 > Prereq: `docker compose up -d` + `zz_local_dev_storage.rb` tồn tại.
 
+**⛔ PHASE 0 — MASTER SYNC (làm TRƯỚC, không được bỏ; chi tiết + lý do ở SKILL.md §TIỀN ĐỀ):**
+0a. **Vá index trước, nếu chưa có** — nếu không, bước 0b/0c làm Rails treo rồi Django timeout:
+   `CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_pt_packs_pack_id ON therapists_products_tickets_packs (pack_id);`
+   (+ bản `(product_id)`). Bảng 2.4M dòng, 0 index. 884ms → 20.8ms.
+0b. Mở `/superuser/backfill/tickets/?django_id=<X>&rails_id=<Y>&code=<institute>` (theo **CÔNG TY**, không phải
+   branch) → `Select All (ID + 名前一致)` → `Sync Selected`, chiều lấy từ cột
+   `Ticket、Option、Packどちらを正とするか` của file review. Login `/admin/login/` (username thuần `superadmin`).
+0c. `node .../backfill/copy_masters.js <institute> <dj_id> <ra_id>` → copy 2 chiều phần còn lệch.
+   Chạy `--dry` trước để xem danh sách. Script tự **dừng** khi có alert / dòng không chuyển sang đã-link.
+0d. **CỔNG CHẶN:** `--dry` phải in `chưa link=0` ở **CẢ 2 BÊN** mới được đi tiếp. Chưa 0 → **KHÔNG migrate**,
+   vì pack sẽ sinh ra với `ticket_option_id` NULL (branch 124 đã bị: 176/176 NULL, sync sau KHÔNG vá ngược).
+0e. Báo user: id nào trùng-id-khác-tên (cùng master bị đổi tên) → **user quyết** copy hay link tay, đừng tự đoán.
+0f. Sau 0b/0c: đo Rails outbox (`threease_ticket_outbox_events`). Nó sẽ phình (sakainishi: 286 event).
+   **KHÔNG tự flush** — báo user, soi model + `created_at` trước.
+
 **PHASE BEFORE (read + chụp):**
 1. `$PY .../backfill/db.py <folder> before`
 2. `$PY .../backfill/gen_exports.py <folder> before` → 3 xlsx vào `before/` (cần để so bất biến)
