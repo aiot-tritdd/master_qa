@@ -34,10 +34,14 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const out = { opt_name: OPT_NAME, steps: {} };
 
   // đọc tổng "N チケット" ở chân bảng
+  // Chân bảng ghi "1 ~ 10 / 24112 チケット". Lấy số LỚN NHẤT khớp mẫu — vì chuỗi
+  // "1 ~ 10 / N" cũng khớp và có thể trả nhầm số nhỏ; lúc đang tải thì là "0 チケット".
+  let lastRaw = '';
   const readTotal = async () => {
     const t = await page.locator('body').innerText().catch(() => '');
-    const m = t.match(/([0-9,]+)\s*チケット/);
-    return m ? parseInt(m[1].replace(/,/g, ''), 10) : null;
+    const all = [...t.matchAll(/([0-9,]+)\s*チケット/g)].map((m) => parseInt(m[1].replace(/,/g, ''), 10));
+    lastRaw = (t.match(/[^\n]*チケット[^\n]*/) || [''])[0].slice(0, 80);
+    return all.length ? Math.max(...all) : null;
   };
 
   try {
@@ -71,14 +75,45 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
       await sleep(2500);
       await L.shot(page, `${OUT}/B1_menu_loai_ve.png`, null, { screenshot: { fullPage: true } });
 
-      const item = page.locator(`text=${OPT_NAME}`).first();
-      out.steps.tim_thay_loai_ve = await item.count();
-      if (await item.count()) {
-        await item.click();
-        await sleep(1500);
-        // đóng menu để bảng load lại
-        await page.keyboard.press('Escape').catch(() => {});
-        for (let i = 0; i < 20; i++) { await sleep(1500); if ((await readTotal()) !== total) break; }
+      // Menu lọc = ô 検索 riêng + danh sách checkbox + nút 適用.
+      // ⚠️ KHÔNG dùng `text=<tên>` trần: nó khớp luôn ô <td> trong BẢNG phía sau (tên vé cũng
+      //    nằm trong bảng) → click vào bảng, menu không đổi gì. Phải scope trong menu.
+      const menu = page.locator('div:has(> input), [role=menu], [class*=menu], [class*=dropdown]')
+        .filter({ has: page.locator('text=適用') }).last();
+      out.steps.menu_scope_thay = await menu.count();
+
+      const box = menu.locator('input[type=text], input:not([type=checkbox])').first();
+      if (await box.count()) { await box.fill(OPT_NAME); await sleep(2500); }
+      await L.shot(page, `${OUT}/B1b_sau_khi_go_tim.png`, null, { screenshot: { fullPage: true } });
+
+      // Bảng 発行済みチケット一覧 KHÔNG có cột checkbox nào → mọi checkbox đang hiện trên
+      // trang đều thuộc menu lọc. Dùng thẳng, khỏi đoán selector container (đã thử scope
+      // theo div/[role=menu] → bắt hụt, chỉ thấy 1 ô rồi tick nhầm 「すべて」 = chọn cả 194
+      // loại = không lọc gì, tổng vẫn 24112).
+      // Checkbox ở đây là loại tuỳ biến (input thật bị ẩn) → `input[type=checkbox]:visible`
+      // chỉ thấy 1 ô và tick nhầm 「すべて」 (= chọn cả 194 loại = không lọc gì).
+      // Cách ăn chắc: click vào NHÃN CHỮ của mục, khớp CHÍNH XÁC.
+      // Menu hiện tên master 「・プレミアムチケット」, còn ô <td> trong bảng là
+      // 「・プレミアムチケット1万円」 → exact match tự loại bảng ra, không cần scope container.
+      const labels = page.getByText('・プレミアムチケット', { exact: true });
+      let n = await labels.count();
+      out.steps.nhan_khop_chinh_xac = n;
+      if (!n) {   // dự phòng: lấy mục thứ 2 trong menu (bỏ 「すべて」)
+        const alt = page.locator('label, [class*=item]').filter({ hasText: 'プレミアム' });
+        n = await alt.count(); out.steps.fallback_nhan = n;
+        if (n) await alt.first().click({ force: true }).catch(() => {});
+      } else {
+        await labels.first().click({ force: true }).catch(() => {});
+      }
+      {
+        await sleep(1000);
+        await L.shot(page, `${OUT}/B1c_da_tick.png`, null, { screenshot: { fullPage: true } });
+        const apply = page.locator('text=適用').first();
+        out.steps.co_nut_ap_dung = await apply.count();
+        if (await apply.count()) {
+          await apply.click();
+          for (let i = 0; i < 25; i++) { await sleep(1500); if ((await readTotal()) !== total) break; }
+        }
         out.steps.B_co_loc = await readTotal();
         await L.shot(page, `${OUT}/B2_da_loc.png`, null, { screenshot: { fullPage: true } });
       }

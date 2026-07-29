@@ -420,12 +420,35 @@ for bug in blist:
     ov = (notes.get("bugs", {}).get(bug["id"], {}) or {})
     anchors[f"bug_{bug['id']}"] = ("4_BUGS", r)
     r = bar(ws4, r, f"{bug['id']} — {bug.get('title', '')}  [mức độ: {bug.get('severity', '')}]", bg=RED, h=26)
-    r = table(ws4, r, [("Mục", "Nội dung", "", "Status", "Note", ""),
-                       ("👤 AI gặp", bug.get("who", "—"), "", ov.get("status", "Mở"), ov.get("note", ""), ""),
-                       ("🕐 KHI NÀO gặp", bug.get("when", "—"), "", "", "", ""),
-                       ("👀 Nhân viên THẤY gì", bug.get("sees", "—"), "", "", "", ""),
+    # Gộp who+when+sees thành 1 dòng "Triệu chứng" — 5 dòng rời đọc bị loãng (sếp phản hồi 2026-07-29).
+    trieu_chung = " ".join(x for x in [
+        f"{bug.get('who', '')}".rstrip(". ") + "." if bug.get("who") else "",
+        bug.get("when", ""), bug.get("sees", "")] if x)
+    r = table(ws4, r, [("Mục", "Nội dung", "", "Status", "Assignee", "Note"),
+                       ("😣 Triệu chứng", trieu_chung or "—", "",
+                        ov.get("status", "Mở"), ov.get("assignee", ""), ov.get("note", "")),
                        ("🙋 Ảnh hưởng tới KHÁCH", bug.get("impact_customer", "—"), "", "", "", ""),
                        ("🩹 Cách xoay xở tạm", bug.get("workaround", "—"), "", "", "", "")])
+
+    # ── CÁCH TÁI HIỆN — để người khác (sếp/dev) tự làm lại bằng tay, không phải đoán.
+    # Bắt buộc có: URL + account cụ thể (từ DEV-ACCOUNTS.xlsx) + branch + khách/vé mẫu + từng bước.
+    rp = bug.get("repro") or {}
+    if rp:
+        r = bar(ws4, r, "🔁 CÁCH TÁI HIỆN — làm đúng thứ tự dưới đây", bg="1F4E79", h=22)
+        meta = [("Mục", "Nội dung", "", "", "", "")]
+        for lbl, key in [("🌐 Mở ở đâu", "env"), ("🔑 Đăng nhập bằng", "login"),
+                         ("🏥 Chi nhánh", "branch"), ("🧪 Dữ liệu mẫu", "data")]:
+            if rp.get(key):
+                meta.append((lbl, rp[key], "", "", "", ""))
+        r = table(ws4, r, meta)
+        for i, step in enumerate(rp.get("steps", []), start=1):
+            r = para(ws4, r, f"  Bước {i}. {step}", bg="FFFFFF")
+        if rp.get("expect"):
+            r = para(ws4, r, f"✅ KỲ VỌNG (đúng ra phải vậy): {rp['expect']}", bg=PASS_BG, tx=PASS_TX)
+        if rp.get("actual"):
+            r = para(ws4, r, f"❌ THỰC TẾ (quan sát được): {rp['actual']}", bg=WARN_BG, tx=WARN_TX)
+        if rp.get("control"):
+            r = para(ws4, r, f"🔬 ĐỐI CHỨNG (để loại trừ nghi ngờ): {rp['control']}", bg=GREY)
     ui = bug.get("ui_capture") or []
     if ui:
         r = para(ws4, r, f"🖼 BẰNG CHỨNG UI: {bug.get('ui_note', '')}", bg=LBLUE, tx="1F3864")
