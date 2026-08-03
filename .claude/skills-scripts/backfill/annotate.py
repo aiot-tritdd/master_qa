@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """annotate.py <folder> — đọc captures.json → mỗi ảnh thêm:
-  · dải tiêu đề đỏ (màn nào, trước/sau)
   · KHUNG ĐỎ ĐÁNH SỐ ở đúng vùng đã đổi (toạ độ do diff_boxes.py tính, cùng vị trí trên cả 2 ảnh)
   · dải chú thích vàng bên dưới: giải thích khác biệt bằng NGÔN NGỮ NGHIỆP VỤ (không nói code)
 
@@ -28,11 +27,12 @@ def annotate(entry):
     if not p.exists(): return None
     im = Image.open(p).convert("RGB")
     W, H = im.size
-    top = max(64, W // 30)
+    ref = max(64, W // 30)  # kích thước tham chiếu cho font/khung (không còn dải tiêu đề đỏ)
+    top = 0
     boxes = entry.get("boxes") or []
     note = entry.get("diff_note") or ""
     # dải chú thích dưới: cao theo số dòng chữ
-    fs = max(15, int(top * 0.34))
+    fs = max(15, int(ref * 0.34))
     wrap_at = max(40, W // (fs // 2 + 4))
     lines = textwrap.wrap(note, wrap_at) if note else []
     bot = (len(lines) * int(fs * 1.5) + 22) if lines else 0
@@ -40,11 +40,6 @@ def annotate(entry):
     out = Image.new("RGB", (W, H + top + bot), "white")
     out.paste(im, (0, top))
     d = ImageDraw.Draw(out)
-
-    # tiêu đề
-    d.rectangle([0, 0, W, top], fill=(183, 28, 28))
-    cap = f"[{entry['phase'].upper()}] {entry['screen']} — {entry.get('note','')}"
-    d.text((16, top // 2), cap[:190], fill="white", font=font(int(top * 0.42)), anchor="lm")
 
     # khung đỏ + số thứ tự vùng (vẽ ở CÙNG toạ độ trên ảnh trước và sau → mắt so được)
     for i, b in enumerate(boxes, start=1):
