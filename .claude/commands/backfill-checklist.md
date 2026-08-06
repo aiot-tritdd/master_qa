@@ -9,7 +9,7 @@
 Trước đó user đã: tạo folder, để `threease_sync_ticket_review_*.xlsx` (trong folder hoặc repo root), và **báo branch/dòng cần làm**. Nếu chưa rõ branch → hỏi user.
 
 ## Quy trình (theo skill `backfill` — nạp nó trước)
-1. **Tìm review xlsx** (folder → threease_qa root → ThreeSides root). Đọc sheet `Branch_要確認`, tìm dòng branch user chỉ định.
+1. **Tìm review xlsx** (folder → master_qa root → ThreeSides root). Đọc sheet `Branch_要確認`, tìm dòng branch user chỉ định.
    - Cols: `D=branch_id` · `E=会社コード (institute_code)` · `P=Ticket/Option/Pack どちらを正` → `Pro`→`sot=pro`, `Ticket`→`sot=ticket_app`.
    - Tên JP branch: cột `Pro: 店舗名` hoặc `Ticket DB: 店舗名` (lấy tên có thật).
 2. **Lấy staff code** từ **`DEV-ACCOUNTS.xlsx`** sheet `Accounts` (cột C `institute_code` · D `Pro staff_code` ·

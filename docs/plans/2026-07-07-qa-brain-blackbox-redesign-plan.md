@@ -337,10 +337,10 @@ git commit -m "refactor(qa): rewrite qa-brain skill to pure black-box (drop GitN
 
 ---
 
-### Task 6: Reconcile `CLAUDE.md` (repo threease_qa) — phần qa-brain
+### Task 6: Reconcile `CLAUDE.md` (repo master_qa) — phần qa-brain
 
 **Files:**
-- Modify: `/Users/tritdd/Work/ThreeSides/threease_qa/CLAUDE.md`
+- Modify: `/Users/tritdd/Work/ThreeSides/master_qa/CLAUDE.md`
 
 **Interfaces:**
 - Consumes: khái niệm từ Task 5.

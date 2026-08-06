@@ -1,7 +1,7 @@
 # Track Visual (`/testcase-visual`) — Design
 
 > Ngày: 2026-07-16 · Trạng thái: **draft, chờ review** · Branch: `qa-brain`
-> Type test thứ 3 cho threease_qa: Visual regression, black-box, tách khỏi path functional.
+> Type test thứ 3 cho master_qa: Visual regression, black-box, tách khỏi path functional.
 > Đi sau a11y (`2026-07-16-a11y-track-design.md`) — tái dùng khuôn command đó.
 
 ---

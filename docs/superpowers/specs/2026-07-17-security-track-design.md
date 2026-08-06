@@ -1,6 +1,6 @@
 # Security-gom track (`/testcase-security`) — Design
 
-> Type-track thứ 3 cho threease_qa (sau Accessibility, Visual). Gom các phép thử security
+> Type-track thứ 3 cho master_qa (sau Accessibility, Visual). Gom các phép thử security
 > đang nằm rải trong method functional của qa-brain (`SKILL.md` §"USER QUẬY PHÁ") thành **một
 > track riêng, có hệ thống, oracle phổ quát, report riêng**. Cập nhật: 2026-07-17.
 

@@ -15,7 +15,7 @@
 - **Verdict = `PASS` / `FAIL` / `未実施` — KHÔNG BAO GIỜ `SPEC-GAP`** (bất biến an ninh luôn định nghĩa kỳ vọng).
 - **Data test tạo ra prefix `AIOT-TEST-SEC-*`** (để `/testcase-cleanup` quét). XSS marker = `window.__SEC_XSS`.
 - **KHÔNG viết lại helper:** tái dùng `pw_lib`/`pw_api`. KHÔNG viết `.py` phụ trợ ngoài file plan nêu. KHÔNG `claude -p`.
-- **Base dir mọi file:** `.claude/skills-scripts/testcase-evidence/` (gọi tắt `<E>/`). Repo root = `/Users/tritdd/Work/ThreeSides/threease_qa`.
+- **Base dir mọi file:** `.claude/skills-scripts/testcase-evidence/` (gọi tắt `<E>/`). Repo root = `/Users/tritdd/Work/ThreeSides/master_qa`.
 - **security_lib KHÔNG tự gọi HTTP** — probe IDOR/bypass/error nhận `{status, body}` do driver fetch; chỉ `probeInjection` cần `page`.
 - Commit message kết bằng: `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`.
 
@@ -620,7 +620,7 @@ Dùng lại `.claude/skills-scripts/testcase-evidence/`: `pw_lib` (`getPage`,`sh
 
 - `README.md`: mục liệt kê track (chỗ đã ghi `/testcase-a11y`, `/testcase-visual`) → thêm dòng
   `/testcase-security` (oracle=bất biến an ninh, mù code).
-- `CLAUDE.md` (threease_qa): mục "Cách xài" bước 5-6 (a11y/visual) → thêm bước 7:
+- `CLAUDE.md` (master_qa): mục "Cách xài" bước 5-6 (a11y/visual) → thêm bước 7:
   `7. (tuỳ chọn) /testcase-security wtf-is-this/TestCase-XX → quét security (4 họ) → report + sổ bug. Track RIÊNG, oracle = bất biến an ninh, mù code.`
 - `docs/ROADMAP.md`: bảng type-track (§3) đổi Security từ `🟡 rút thành checklist` → `✅ done (live-verify treo)`;
   lưới §2 đổi Security `🟡 làm rải rác` → `✅ /testcase-security`.

@@ -1,6 +1,6 @@
 {
   "_note": "Nguồn sự thật DUY NHẤT cho FORMAT file Test Case Evidence. Đổi màu/layout/nhãn = sửa file này, KHÔNG đụng build_evidence.py và KHÔNG đụng tcs.json cũ. Màu = ARGB hex 6 ký tự.",
-  "_adapted_from": ".claude-tester/scripts/theme.json (cơ chế single-source-of-truth) — layout giữ theo chuẩn threease_qa (3 sheet, Evidence E:J/K:P, ảnh PNG rõ, alt-row Checklist).",
+  "_adapted_from": ".claude-tester/scripts/theme.json (cơ chế single-source-of-truth) — layout giữ theo chuẩn master_qa (3 sheet, Evidence E:J/K:P, ảnh PNG rõ, alt-row Checklist).",
 
   "palette": {
     "navy": "1F3864",

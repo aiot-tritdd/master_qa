@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Type test thứ 3 — Visual regression (black-box) — cho threease_qa: so ảnh màn với baseline người-duyệt, che vùng động, xuất report + đẩy FAIL vào sổ bug. Mask sinh tự động ở build-time authoring.
+**Goal:** Type test thứ 3 — Visual regression (black-box) — cho master_qa: so ảnh màn với baseline người-duyệt, che vùng động, xuất report + đẩy FAIL vào sổ bug. Mask sinh tự động ở build-time authoring.
 
 **Architecture:** `visual_lib.js` (capture-masked + detect-dynamic + compare-pixel qua pixelmatch) → command `/testcase-visual` đọc `specs.md` chọn màn, đọc `mask:` từ `knowledge/`, chụp masked, so với `baselines/<app>/<slug>.png` (commit git) → report xlsx + sổ bug. `/testcase-systemdoc`+`explorer.js` được nâng để auto-detect vùng động → emit `mask:` vào knowledge doc. Bám khuôn track a11y.
 
@@ -18,7 +18,7 @@
 - **Dedup sổ bug:** 1 bug / màn FAIL (không tách theo vùng). NEW-BASELINE / 未実施 KHÔNG vào sổ bug.
 - **Deliverable** ở `wtf-is-this/<Case>/`; script ở `.claude/skills-scripts/testcase-evidence/` (viết tắt `S=` dưới); baseline ở `baselines/`.
 - **KHÔNG file input mới do người dùng viết** — chỉ 1 `specs.md`. **KHÔNG mask tay** — mask do authoring sinh.
-- Lệnh chạy từ **repo root** `threease_qa/`.
+- Lệnh chạy từ **repo root** `master_qa/`.
 
 ---
 

@@ -2,7 +2,7 @@
 // getPage(target) -> { browser, context, page, BASE }. Mặc định đăng nhập Pro.
 // shot(page, path, readySelector) -> chụp AN TOÀN (chờ màn render xong). BẮT BUỘC dùng thay screenshot trần.
 //
-// Creds đọc từ .env (repo root threease_qa/, gitignored) — KHÔNG hardcode trong file này.
+// Creds đọc từ .env (repo root master_qa/, gitignored) — KHÔNG hardcode trong file này.
 //   Xem .env.example cho danh sách biến. Override URL/hành vi: BASE_URL, HEADED=1, LOCALE…
 // Cache session: .state.<target>.json cạnh file này (KHÔNG phải deliverable, không leak ra <folder>).
 //   NO_STATE=1 để tắt cache (khi cần login sạch, vd đổi account giữa chừng).
@@ -38,7 +38,7 @@ function requireEnv(target) {
   if (missing.length) {
     throw new Error(
       `[pw_lib] Thiếu biến môi trường cho target '${target}': ${missing.join(', ')}.\n` +
-      `→ Copy .env.example thành .env (repo root threease_qa/) rồi điền (xin team lead). Xem docs/SETUP.md §A3.`,
+      `→ Copy .env.example thành .env (repo root master_qa/) rồi điền (xin team lead). Xem docs/SETUP.md §A3.`,
     );
   }
 }

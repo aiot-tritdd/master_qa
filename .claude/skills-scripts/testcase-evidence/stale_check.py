@@ -8,7 +8,7 @@ Usage:
   python3 stale_check.py --update    # tính + GHI source_hash vào từng doc (chạy khi grow/duyệt xong)
   python3 stale_check.py             # SO hash lưu ↔ hiện tại → in doc stale (chạy sau refresh-gitnexus.sh)
 
-Repo root: /Users/tritdd/Work/ThreeSides. knowledge/ = <repo threease_qa>/knowledge (đệ quy).
+Repo root: /Users/tritdd/Work/ThreeSides. knowledge/ = <repo master_qa>/knowledge (đệ quy).
 """
 import sys, re, hashlib, os, glob
 

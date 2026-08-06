@@ -1,4 +1,4 @@
-# ROADMAP — threease_qa lớn lên theo hướng nào
+# ROADMAP — master_qa lớn lên theo hướng nào
 
 > Bản đồ tầm nhìn (KHÁC `STATE.md` = việc-phiên-này). Mở file này để biết *đang đứng đâu trên bức
 > tranh lớn, còn mở được gì, và vì sao*. Cập nhật khi hướng đổi, không phải mỗi phiên.
@@ -182,8 +182,8 @@ vẫn **chỉ còn whitebox**, kẹt ở **quyền sở hữu** — không phả
 Con hiện tại mù code ⇒ **cấu trúc không thể** phủ đáy pyramid (Unit/Integration). Muốn phủ ⇒ **con thứ hai**:
 
 ```
-threease_qa (black_box)      Level E2E/System · MÙ code · oracle = SPEC + quan sát live
-threease_qa_whitebox (MỚI)   Level Unit + Integration · ĐỌC code · GitNexus lúc RUNTIME
+master_qa (black_box)      Level E2E/System · MÙ code · oracle = SPEC + quan sát live
+master_qa_whitebox (MỚI)   Level Unit + Integration · ĐỌC code · GitNexus lúc RUNTIME
 ```
 
 Tách đôi = giữ **linh hồn mỗi con sạch**: tường chống-tautology của black-box không bị nhiễm; con whitebox
