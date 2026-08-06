@@ -10,7 +10,7 @@
 
 ## Global Constraints
 
-- Repo: `/Users/tritdd/Work/threease_qa` — **NO git remote, never push**. Chạy trong venv: `source venv/bin/activate`.
+- Repo: `/Users/tritdd/Work/master_qa` — **NO git remote, never push**. Chạy trong venv: `source venv/bin/activate`.
 - **Ranh giới thép #1:** `qa/design.py` **CẤM** import `qa.gitnexus` và **CẤM** đọc file repo — chỉ nhận `spec_md: str`. Kỳ vọng (`expect`) chỉ từ spec.
 - **Ranh giới thép #2:** `qa/bind.py` **CẤM** sửa `title`/`expect`/`steps` của case (assert bằng nhau, lệch → raise).
 - **KHÔNG** sửa file/script của sếp. `tcs.json` giữ đúng schema sếp; truy vết để ở **sidecar `trace.json`**.

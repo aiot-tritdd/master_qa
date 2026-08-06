@@ -23,12 +23,12 @@
 
 ### A1. Vị trí thư mục (bắt buộc đúng)
 
-- Clone `threease_qa` vào workspace `ThreeSides/`. Track A **không cần** 5 repo kia.
+- Clone `master_qa` vào workspace `ThreeSides/`. Track A **không cần** 5 repo kia.
 - `CLAUDE.md` phải nằm đúng 2 chỗ để Claude Code tự nạp context:
   - workspace root `ThreeSides/CLAUDE.md` (bản đồ 5 repo) — *có thể vắng nếu chỉ làm track A, nhưng nên có*
-  - `threease_qa/CLAUDE.md` (2 bức tường thép + cách xài) — **bắt buộc**
-- Mở Claude Code **tại thư mục `threease_qa/`** (hoặc workspace) → skill `qa-brain` tự xuất hiện
-  (nguồn: `threease_qa/.claude/skills/qa-brain/`).
+  - `master_qa/CLAUDE.md` (2 bức tường thép + cách xài) — **bắt buộc**
+- Mở Claude Code **tại thư mục `master_qa/`** (hoặc workspace) → skill `qa-brain` tự xuất hiện
+  (nguồn: `master_qa/.claude/skills/qa-brain/`).
 
 > 🔴 **Bắt buộc có Claude Code.** Cả hệ (`qa-brain`, `/specs-md`, `/testcase-run`) **chỉ chạy trong
 > Claude Code** — đây KHÔNG phải CLI độc lập. Không có Claude Code thì không chạy được gì.
@@ -39,7 +39,7 @@
 
 ```bash
 # Node + Playwright (drive app, chụp evidence)
-cd threease_qa/.claude/skills-scripts/testcase-evidence
+cd master_qa/.claude/skills-scripts/testcase-evidence
 npm install                 # playwright ^1.44 (đã vendor sẵn node_modules, chạy lại cho chắc)
 npx playwright install chromium   # tải browser binary — KHÔNG có bước này là fail câm
 
@@ -53,11 +53,11 @@ Yêu cầu nền: **Node ≥ 16**, **Python 3**, **Claude Code** (skill + harnes
 
 ### A3. Credentials — `.env` (XIN TEAM LEAD)
 
-`pw_lib.js` đọc creds từ **`.env` ở repo root `threease_qa/`** (đã gitignore → clone mới KHÔNG có sẵn).
+`pw_lib.js` đọc creds từ **`.env` ở repo root `master_qa/`** (đã gitignore → clone mới KHÔNG có sẵn).
 Tạo bằng cách copy template rồi điền giá trị thật (xin team lead):
 
 ```bash
-cd threease_qa
+cd master_qa
 cp .env.example .env
 # mở .env điền: BASIC_USER/PASS · INST/THER/PW · TK_INST/TK_STAFF/TK_PW · TK_ADMIN_USER/PASS
 ```
@@ -98,7 +98,7 @@ Chỉ làm khi cần **soạn/cập nhật Living Business Doc** (`/testcase-sys
 ### B1. Clone đủ 5 repo sản phẩm vào workspace
 
 Đúng tên: `threease_backend · threease_ticket · threease_pro · threease_admin · threease_reservation`
-(cạnh `threease_qa`, trong `ThreeSides/`).
+(cạnh `master_qa`, trong `ThreeSides/`).
 
 > ⚠️ `refresh-gitnexus.sh` **hardcode** `ROOT="/Users/tritdd/Work/ThreeSides"`. Máy khác → sửa biến `ROOT`
 > trong script (hoặc đặt workspace đúng path đó).

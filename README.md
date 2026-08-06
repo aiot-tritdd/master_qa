@@ -1,4 +1,4 @@
-# threease_qa — QA senior tự động **E2E**, mù code
+# master_qa — QA senior tự động **E2E**, mù code
 
 > **Đọc file này là đủ hiểu trọn hệ thống** — nó là gì, nghĩ thế nào, vận hành ra sao, và lớn lên
 > ra sao sau mỗi lần chạy. Không cần mở file nào khác. Muốn đào sâu chỗ nào → bảng cuối trang chỉ đường.
@@ -23,7 +23,7 @@ specs.md  ──►  viết test case  ──►  lái app dev  ──►  quan 
 
 ### Tầng test: **E2E (End-to-End) / System** — đỉnh của kim tự tháp test
 
-threease_qa test ở **tầng cao nhất**: nó lái **cả hệ thống thật đang chạy** (dev) từ ngoài như một
+master_qa test ở **tầng cao nhất**: nó lái **cả hệ thống thật đang chạy** (dev) từ ngoài như một
 user. Một test đi xuyên **mọi tầng, không mock tầng nào**:
 
 ```
@@ -31,9 +31,9 @@ màn Pro/Vé (Nuxt)  ──►  API hub (Rails)  ──►  service vé (Django)
      UI thật              API thật               service thật          thật        quan sát thật
 ```
 
-Ba dấu hiệu định nghĩa E2E — threease_qa dính đủ cả ba:
+Ba dấu hiệu định nghĩa E2E — master_qa dính đủ cả ba:
 
-| Dấu hiệu định nghĩa E2E | threease_qa |
+| Dấu hiệu định nghĩa E2E | master_qa |
 |---|---|
 | Lái **cả hệ thật**, không phải mảnh cô lập | Playwright mở app dev thật, bấm nút thật |
 | Đi hết **chuỗi tầng, KHÔNG stub/mock** | Pro → Rails → Django → DB → màn, mọi tầng đều thật |

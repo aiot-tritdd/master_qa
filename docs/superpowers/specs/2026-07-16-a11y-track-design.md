@@ -1,7 +1,7 @@
 # Track Accessibility (`/testcase-a11y`) — Design
 
 > Ngày: 2026-07-16 · Trạng thái: **draft, chờ review** · Branch: `qa-brain`
-> Thêm **Type test thứ 2** cho threease_qa: Accessibility (WCAG), black-box, tách khỏi path functional.
+> Thêm **Type test thứ 2** cho master_qa: Accessibility (WCAG), black-box, tách khỏi path functional.
 
 ---
 

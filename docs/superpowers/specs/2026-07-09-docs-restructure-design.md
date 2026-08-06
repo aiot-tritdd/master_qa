@@ -113,7 +113,7 @@ Ghi cả hai luật vào đầu `docs/README.md`.
 | Vòng maintenance | `KNOWLEDGE-STRATEGY.md` §3 | `CLAUDE.md` 1 dòng |
 | **Harness-stale (`source_hash` mù)** | `KNOWLEDGE-STRATEGY.md` §3 (hoà vào maintenance) | hiện treo rời ở §4b → gỡ |
 | Access dev / creds | `STATE.md` §5 | `CLAUDE.md` link |
-| **5 repo nối nhau + cách dùng GitNexus** | workspace `CLAUDE.md` §2/§3/§6 | `threease_qa` **không chép**, chỉ trỏ — **ngoại lệ 3, xem dưới** |
+| **5 repo nối nhau + cách dùng GitNexus** | workspace `CLAUDE.md` §2/§3/§6 | `master_qa` **không chép**, chỉ trỏ — **ngoại lệ 3, xem dưới** |
 | GitNexus → sản phẩm knowledge | `KNOWLEDGE-STRATEGY.md` §1–2 | link |
 | Ground truth sync backend↔ticket | `knowledge/system/customer-sync.md` | workspace `CLAUDE.md` §8 → 1 dòng trỏ (xem §6) |
 
@@ -157,7 +157,7 @@ Xoá `§3` = mất một mục tra cứu tiện tay cho 4 repo còn lại, mà *
 Cách chặn thật là **cấm gọi tool**, không phải **cấm đọc mô tả tool** → PreToolUse hook (xem §6).
 
 ⇒ Giữ `§3`. Gỡ `§8`. Ghi 1 dòng ngay tại `§3`: *"⛔ QA-runtime không được dùng — xem
-`threease_qa/.claude/skills/qa-brain/SKILL.md` § danh sách cấm."*
+`master_qa/.claude/skills/qa-brain/SKILL.md` § danh sách cấm."*
 
 ---
 
@@ -195,13 +195,13 @@ README phải nói rõ chúng là kho lưu, không phải đường đọc.
 8. **Bảng "muốn biết X → mở file Y"**.
 9. **Hai luật gốc** (§3 của spec này).
 
-### `CLAUDE.md` (threease_qa) — tỉa
+### `CLAUDE.md` (master_qa) — tỉa
 
 Chỉ giữ **luật thi hành cho máy** + trỏ `docs/README.md`. Bỏ phần chép lại triết lý.
 
 ---
 
-## 6. Thay đổi ngoài `threease_qa/` (quyết định B)
+## 6. Thay đổi ngoài `master_qa/` (quyết định B)
 
 **Phát hiện:** workspace `/Users/tritdd/Work/ThreeSides/CLAUDE.md` được Claude Code **nạp tự động
 vào mọi phiên**, kể cả phiên `/testcase-run` đang chạy test mù code. `§8` của nó
@@ -245,7 +245,7 @@ Ba lần cùng một dạng lỗi (guard vé · coupon report · "xoá là kín 
   của §8 — có thêm 9 model serializer, `MAX_RETRIES=5`, cron 5 phút, known gap `handlers.py`.
   ⇒ **không mất mát**, chỉ cần xoá §8 và để lại con trỏ).
 - workspace `CLAUDE.md` §8 → còn **1 dòng**: *"Sync backend↔ticket: xem
-  `threease_qa/knowledge/system/customer-sync.md` (build-time only)."*
+  `master_qa/knowledge/system/customer-sync.md` (build-time only)."*
 - Sửa định nghĩa `L6` trong `SYSTEM-COMPARISON.md` + `STATE.md`: lỗ chính là **file tự nạp**,
   không phải `.claude-tester/`.
 - Thêm 1 câu vào `knowledge/OPEN-QUESTIONS.md`: workspace `CLAUDE.md` §3 vẫn dạy Claude cách gọi
