@@ -37,10 +37,10 @@ quan sát bằng mắt, chấm PASS/FAIL kèm evidence. Oracle = **SPEC + quan s
 chuyên một mảng, đứng dưới một nhạc trưởng (orchestrator) điều phối. Con QA black-box hôm nay là
 **agent đầu tiên** của hệ đó; 9 lệnh type-track hiện tại là **9 chuyên gia phôi thai**.
 
-> Đổi tên: **`threease_qa` → `master_qa`** (thực hiện 2026-08-06). **Đã di dời vật lý local:** thư mục,
-> toàn bộ docs/comment, workspace `CLAUDE.md`, git remote URL, và GitNexus `registry.json`.
-> **Còn chờ owner:** đổi tên repo trên GitHub (`aiot-tritdd/threease_qa` → `master_qa`) rồi `git push`.
-> `group.yaml` không đụng (qa không thuộc group `threease`).
+> Đổi tên: **`threease_qa` → `master_qa`** — **HOÀN TẤT 2026-08-06**. Đã di dời: thư mục, toàn bộ
+> docs/comment, workspace `CLAUDE.md`, git remote URL, GitNexus `registry.json`, **repo GitHub
+> `aiot-tritdd/master_qa`, và đã `git push`** (commit `ed717ee`). `group.yaml` không đụng
+> (qa không thuộc group `threease`).
 
 ---
 
@@ -154,4 +154,4 @@ xong IDOR-hay-auth tùy điều kiện `TESTSEED002`).
 
 | Ngày | Đổi gì |
 |---|---|
-| 2026-08-06 | Lập NORTH-STAR. Chốt tầm nhìn **master_qa = hệ đa-agent** (orchestrator + specialists). Khởi động **pentest agent** (specialist #10) — black-box, standalone, giai đoạn 1. Rename `threease_qa → master_qa` (di dời vật lý local xong: dir/docs/remote/registry; chờ đổi tên GitHub + push). |
+| 2026-08-06 | Lập NORTH-STAR. Chốt tầm nhìn **master_qa = hệ đa-agent** (orchestrator + specialists). Khởi động **pentest agent** (specialist #10) — black-box, standalone, giai đoạn 1. Rename `threease_qa → master_qa` HOÀN TẤT (dir/docs/remote/registry + GitHub repo + push, commit ed717ee). |
