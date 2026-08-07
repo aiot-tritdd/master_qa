@@ -1,7 +1,7 @@
 # STATE — điểm dừng & việc tiếp (đọc ĐẦU TIÊN mỗi phiên)
 
 > File **sống** — cập nhật cuối mỗi phiên. Mục đích: mở phiên mới là biết ngay *đang ở đâu, làm gì tiếp*.
-> Cập nhật: **2026-07-17**. Branch git: `qa-brain` (master_qa) — đã push hết, working tree sạch.
+> Cập nhật: **2026-08-07**. Branch git: `threease` (master_qa).
 >
 > ⚠️ **KHÔNG ghi commit hash vào file này.** Hash luôn SAI: commit ghi doc tạo ra hash mới *sau khi* đã ghi.
 > (Đúng vậy thật — bản 2026-07-17 ghi `ba2018f`, thực tế đã là `ee3c434`.) Muốn biết đang ở đâu: `git log --oneline -1`.
@@ -9,6 +9,29 @@
 ---
 
 # 🔔 MỞ SESSION MỚI → ĐỌC ĐÚNG KHỐI NÀY LÀ ĐỦ
+
+## Cập nhật 2026-08-07: PENTEST agent (specialist #10) — THIẾT KẾ XONG, sẵn sàng build v1.0.
+
+> **Đang đứng ở vạch BUILD, không phải vạch thiết kế nữa.** Design doc đã chốt + có bằng chứng:
+> `docs/superpowers/specs/2026-08-07-pentest-agent-blackbox-design.md`. La bàn dài hạn: `NORTH-STAR.md` §4.
+
+**Đã chốt (5 quyết định xương sống, có bằng chứng — xem spec §1):**
+- Engine = **subagent native** của Claude Code (KHÔNG host PentestGPT). Chứng minh bằng thí nghiệm 2
+  subagent 2026-08-07 (con A confirm-có-proof, con B từ chối bịa IDOR).
+- Slice = **catalog lớp-lỗ CỐ ĐỊNH** (deterministic, không cho LLM tự quyết → không trôi).
+- Ranh giới scanner↔pentest: *"Scanner TÌM nghi phạm · Pentest KẾT ÁN (phải có tang chứng)"*.
+- Catalog v1 = cụm Broken Access Control: **P1 session-replay** ▶ · P2 IDOR ⏸ · P3 priv-esc 🔜.
+- recon-skills (**145 SKILL.md**, MIT) = kho RECIPE; harvest **4-5 file/lớp**, KHÔNG nuốt cả 145.
+
+**Việc tiếp — build v1.0 (chỉ lớp P1 session-replay):** viết implementation plan (writing-plans) →
+code skill `/pentest` (CHA điều phối subagent) → chạy trên `stg-monomana.aiotso.net`. P1 KHÔNG vướng
+data (1 account đủ), spike đã CONFIRMED (F-01). **⚠️ Đây là hệ NHIỀU version** — v1.1 (IDOR) chờ
+`TESTSEED002`; v1.2 priv-esc; v2+ mở lớp mới + harvest thêm recipe (spec §5).
+
+**Hiện vật:** spike findings `~/Work/pentestgpt-spike/FINDINGS-asset-platform.md` · sơ đồ
+`docs/design/pentest-architecture.excalidraw` (+ 5 bộ Excalidraw libraries trong `docs/design/`).
+
+---
 
 ## Cập nhật 2026-07-21: build thêm 3 track (i18n type-7 + load/stress grey-box). CÓ việc tự chạy được.
 
