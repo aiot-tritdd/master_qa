@@ -10,10 +10,27 @@
 
 # 🔔 MỞ SESSION MỚI → ĐỌC ĐÚNG KHỐI NÀY LÀ ĐỦ
 
-## Cập nhật 2026-08-07: PENTEST agent (specialist #10) — THIẾT KẾ XONG, sẵn sàng build v1.0.
+## Cập nhật 2026-08-07 (chiều): PENTEST agent v1.0 P1 — ĐÃ BUILD + LIVE-VERIFIED. ✅
 
-> **Đang đứng ở vạch BUILD, không phải vạch thiết kế nữa.** Design doc đã chốt + có bằng chứng:
+> **v1.0 (lớp P1 session-replay) đã xong trên branch `pentest-v1-p1`** (SDD: 6 task, mỗi task review +
+> fix-loop; final whole-branch review opus = "ready to merge, minor fixes" đã áp). Design doc:
 > `docs/superpowers/specs/2026-08-07-pentest-agent-blackbox-design.md`. La bàn dài hạn: `NORTH-STAR.md` §4.
+>
+> **Hiện vật đã build:**
+> - `.claude/skills-scripts/testcase-evidence/pentest_lib.js` (+`.test.js`, **14/14 node --test**): `parseCurlDump`
+>   (curl thô→{status,etag,body}, đã vá etag-in-body spoof) · `classifyReplay` (verdict P1 + baseline guard) · `gateFinding` (no-evidence-no-finding).
+> - `.claude/skills/pentest/SKILL.md` (CHA điều phối ①→⑥, contract 1-response-per-file) · `recipes/P1-session/` (3 recipe MIT) · `.claude/commands/pentest.md`.
+>
+> **Live-verified** trên `stg-monomana.aiotso.net` (user-authorized): **CONFIRMED F-01** — logout 200 xoá cookie
+> nhưng KHÔNG thu hồi token server-side; replay access-token pre-logout vào `/api/auth/me` vẫn 200 cùng danh tính
+> (etag khớp spike). Verdict do **CHA tự chấm bằng code** trên file thô, negative-check luật thép sống.
+> Report (local-only): `scratchpad/pentest-run-stgmonomana/REPORT.md`.
+>
+> **Việc tiếp:** merge branch `pentest-v1-p1` (đang chờ, quyết định của user). Rồi **v1.1** = P2 IDOR (chờ
+> `TESTSEED002`) + hardening đã ghi nợ: (a) token-continuity code-check trong proof (evidence hiện response-only);
+> (b) `parseCurlDump` neo status-scan vào header block (hiện quét cả body — fail-safe). v1.2 = P3 priv-esc.
+
+### (lịch sử) 2026-08-07 sáng: pentest THIẾT KẾ XONG, sẵn sàng build — design 5 quyết định xương sống
 
 **Đã chốt (5 quyết định xương sống, có bằng chứng — xem spec §1):**
 - Engine = **subagent native** của Claude Code (KHÔNG host PentestGPT). Chứng minh bằng thí nghiệm 2
