@@ -10,7 +10,8 @@
 > - `ROADMAP.md` = **ĐƯỜNG ĐI** chi tiết theo lưới Level × Type.
 > - `README.md` = **hệ nghĩ gì / vận hành sao** (giải thích đầy đủ).
 >
-> Cập nhật: **2026-08-06** (lập file — chốt tầm nhìn master_qa đa-agent + khởi động pentest agent).
+> Cập nhật: **2026-08-10** (pentest lớp P1 đóng trọn — mũi nhọn đầu = auth/session, live 2× CONFIRMED).
+> Lập file: 2026-08-06 (chốt tầm nhìn master_qa đa-agent + khởi động pentest agent).
 
 ---
 
@@ -95,7 +96,10 @@ chuyên một mảng, đứng dưới một nhạc trưởng (orchestrator) đi�
   admin bỏ hẳn; backend không UI).
 - **Orchestrator (nhạc trưởng): CHƯA có.** 9 track vẫn là lệnh rời. Đúng kế hoạch — nhạc trưởng chỉ
   xuất hiện khi đã có ≥2 agent đủ khỏe để điều phối (tránh premature abstraction).
-- **Pentest agent: đang thiết kế** (§4). Đây là specialist #10, cái đầu tiên cố ý thiết kế để "cắm vừa vào hệ".
+- **Pentest agent (specialist #10): ĐÃ BUILD — lớp P1 đóng trọn, live-verified** (§4). Black-box leaf: khung
+  pipeline ~90% + lớp **P1 (auth/session revocation & replay)** xong cả 2 nửa — **P1a access-token + P1b
+  refresh-token + continuity gate** — chạy thật trên `stg-monomana`, **2× CONFIRMED** (verdict do code tự chấm).
+  Độ phủ lỗ hiện ~1 lớp / ~8. Grey/white-box: chưa. Chi tiết + việc tiếp: §4.
 
 ---
 
@@ -117,21 +121,24 @@ của cây pentest. Chưa đụng orchestrator, chưa grey/white.
 | **3 mức tin cậy** | `CONFIRMED` (đã tái hiện, có bằng chứng → mới là finding) · `SUSPECTED` (có tín hiệu, chưa chứng minh → đưa người) · `INFO` (vệ sinh/cấu hình → context, KHÔNG thổi thành lỗ hổng). |
 | **Đánh đổi** | **Nghiêng hẳn PRECISION** — thà báo ÍT finding mà thật, còn hơn nhiều finding hào nhoáng nửa số ảo. "Hiệu quả" = tỉ lệ finding thật / tổng, không phải số lượng. |
 | **Workflow** | `recon → enumerate → test → confirm (tái hiện) → report`. |
-| **Mũi nhọn lớp lỗ đầu tiên** | **Broken Access Control / IDOR** (+ auth/JWT/session phụ). Chứng minh sạch bằng black-box, hợp domain clinic/booking đa-tenant, an toàn cho dev (chủ yếu ĐỌC, không mutate). |
-| **Target thử đầu** | Stack dev ThreeSides của chính mình (`pro :8080` + backend API `:3000`). |
+| **Mũi nhọn lớp lỗ đầu tiên** | **auth/JWT/session (P1)** — ĐÃ CHỐT & ĐÓNG TRỌN. (Ban đầu định IDOR, nhưng thiếu `TESTSEED002` → lấy **phương án B = session/token** làm đường CHÍNH: tái hiện sạch chỉ với 1 tài khoản, an toàn dev.) IDOR lùi thành **P2**. |
+| **Target thử đầu** | `https://stg-monomana.aiotso.net` (owner-authorized staging; account `demo@dx-aiot.com`). Stack dev ThreeSides (`pro :8080` + backend `:3000`) để dành cho các run sau. |
 
 **HOÃN có chủ ý (không phải bỏ):** SSRF (cần callback infra) · SQLi/injection (rủi ro mutate data dev) ·
 XSS (khó auto-confirm tác hại) · business-logic race coupon/points (giá trị cao, khó chuẩn hóa). Thêm dần
 khi mũi nhọn đầu đã chứng minh hiệu quả.
 
-**⚠️ ĐIỀU KIỆN TIÊN QUYẾT cho mũi nhọn IDOR — chưa thỏa:**
-> `STATE.md` ghi: IDOR hiện **kẹt vì thiếu data** — chỉ có `TESTSEED001`, **chưa có institute thứ hai
-> `TESTSEED002`**. Không có 2 tài khoản khác tenant → **không có cặp "token A + ID của B"** để tái hiện →
-> vi phạm luật no-evidence-no-finding. **Phải xin `TESTSEED002` từ dev/sếp.** Nếu chưa xin được →
-> phương án B: đổi mũi nhọn đầu sang **auth/JWT/session** (chứng minh được chỉ với 1 tài khoản).
+**Lộ trình lớp lỗ (catalog — nhiều version, expand dần):**
 
-**Bước kế tiếp:** viết **design doc + implementation plan** cho pentest agent giai đoạn 1 (sau khi chốt
-xong IDOR-hay-auth tùy điều kiện `TESTSEED002`).
+| Lớp | Là gì | Trạng thái |
+|---|---|---|
+| **P1** | auth/session revocation & replay (P1a access + P1b refresh + continuity) | ✅ **ĐÓNG TRỌN** — live 2× CONFIRMED (v1.0 + v1.1) |
+| **P2** | IDOR / horizontal BAC | ⏸ **KẸT DATA** — cần `TESTSEED002` (tenant-2); không có cặp "token A + ID của B" → chưa tái hiện được. **Phải xin `TESTSEED002` từ dev/sếp.** |
+| **P3** | privilege escalation / vertical BAC | 🔜 có thể làm **không cần tenant-2** (1 route admin-only + 1 account user) — ứng viên "việc tiếp" nếu P2 còn kẹt data |
+| deferred | SSRF · SQLi/injection · XSS · business-logic race | ⬜ v2+ (mở dần khi lớp trước chứng minh hiệu quả) |
+
+**Bước kế tiếp (§ "việc tiếp"):** P2 IDOR **ngay khi có `TESTSEED002`**; nếu data còn kẹt → mở **P3
+priv-esc** (không cần tenant-2). Mỗi lớp mới = harvest ~1 recipe + viết 1 oracle, KHÔNG đụng khung.
 
 ---
 
@@ -155,3 +162,4 @@ xong IDOR-hay-auth tùy điều kiện `TESTSEED002`).
 | Ngày | Đổi gì |
 |---|---|
 | 2026-08-06 | Lập NORTH-STAR. Chốt tầm nhìn **master_qa = hệ đa-agent** (orchestrator + specialists). Khởi động **pentest agent** (specialist #10) — black-box, standalone, giai đoạn 1. Rename `threease_qa → master_qa` HOÀN TẤT (dir/docs/remote/registry + GitHub repo + push, commit ed717ee). |
+| 2026-08-10 | **Mũi nhọn lỗ đầu tiên LẬT: IDOR → auth/session (P1).** Phương án B (thiếu `TESTSEED002`) thành đường CHÍNH. Pentest đi **design → build → live**: lớp **P1 đóng trọn** (P1a access + P1b refresh + continuity gate), chạy thật `stg-monomana` **2× CONFIRMED**. IDOR lùi thành P2 (chờ data). Merged vào `qa-brain`. |
