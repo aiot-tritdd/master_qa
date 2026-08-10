@@ -10,7 +10,27 @@
 
 # 🔔 MỞ SESSION MỚI → ĐỌC ĐÚNG KHỐI NÀY LÀ ĐỦ
 
-## Cập nhật 2026-08-07 (chiều): PENTEST agent v1.0 P1 — ĐÃ BUILD + LIVE-VERIFIED. ✅
+## Cập nhật 2026-08-10: PENTEST P1 ĐÓNG TRỌN (v1.1) — access + refresh + continuity, LIVE 2× CONFIRMED. ✅
+
+> Lớp **P1 đóng trọn** trên branch `pentest-v1.1-p1-close` (off qa-brain). Trước đây v1.0 chỉ có P1a access-replay;
+> giờ thêm **P1b refresh-replay** + **continuity gate code-verifiable** + vá 2 bug lộ khi review/live.
+>
+> **Lib mới** (`pentest_lib.js`, **41/41 node --test**): `classifyRefreshReplay`+`issuedToken` (P1b) ·
+> `extractToken`+`sameToken`+`guardContinuity` (continuity: so chìa login vs chìa gửi thật từ `curl -v` request dump) ·
+> `parseCurlDump` viết lại thành **state-machine** (bug body-injection giả header block đã đóng) + trả `setCookies`.
+> **SKILL v1.1**: contract lưu `login.txt` + `replay_me_req.txt` (curl -v) + `refresh_replay.txt`; ④ chạy 2 oracle + continuity.
+>
+> **Live 2026-08-10 trên stg-monomana** (verdict do CHA tự chấm bằng code trên file thô):
+> - **P1a access = CONFIRMED** — logout không thu hồi access-token; replay pre-logout vẫn 200 cùng danh tính; **continuity chứng minh** (chìa gửi ≡ chìa login).
+> - **P1b refresh = CONFIRMED** — logout không thu hồi refresh-token; replay refresh cũ vẫn đẻ access+refresh mới.
+> - Report: `wtf-is-this/pentest-runs/stg-monomana-v1.1-2026-08-10/REPORT.md` (local-only).
+>
+> **Bài học live:** continuity guard bắt được 1 điểm lệch chìa → truy ra là **bug công cụ** (`curl -v` HTTP/2 in `[cookie:…]`,
+> extractToken ngoạm nhầm `]`), KHÔNG phải lỗ target → đã vá (bó charset base64url) + test hồi quy. Unit-test không bắt được, chỉ live mới lộ.
+>
+> **Việc tiếp:** merge `pentest-v1.1-p1-close` → qa-brain. Rồi **P2 IDOR** (cần `TESTSEED002`) — lớp mới, cùng cụm BAC, tái dùng khung.
+
+### (lịch sử) 2026-08-07 (chiều): PENTEST agent v1.0 P1a — ĐÃ BUILD + LIVE-VERIFIED. ✅
 
 > **v1.0 (lớp P1 session-replay) đã xong trên branch `pentest-v1-p1`** (SDD: 6 task, mỗi task review +
 > fix-loop; final whole-branch review opus = "ready to merge, minor fixes" đã áp). Design doc:
