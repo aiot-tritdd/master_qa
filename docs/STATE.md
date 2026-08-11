@@ -10,7 +10,29 @@
 
 # 🔔 MỞ SESSION MỚI → ĐỌC ĐÚNG KHỐI NÀY LÀ ĐỦ
 
-## Cập nhật 2026-08-11: PENTEST P2 IDOR built + live DISPROVED; P3 priv-esc đang khởi động.
+## Cập nhật 2026-08-11 (chiều): PENTEST cụm BAC XONG — P1✅ P2✅ P3✅ (merged qa-brain).
+
+> **Cả cụm Broken Access Control đã build + live-verified**, merged `qa-brain` (`5b43a4f`), **173 test toàn repo xanh**.
+> Mỗi lớp: oracle deterministic (review ≥2 vòng, mỗi lớp bắt + đóng 1 false-CONFIRMED) + SKILL wiring + live trên stg-monomana.
+>
+> | Lớp | Oracle | Live verdict (stg-monomana) |
+> |---|---|---|
+> | **P1a** access-token replay | `classifyReplay`+`guardContinuity` | 🔴 **CONFIRMED** (logout không thu hồi token) |
+> | **P1b** refresh-token replay | `classifyRefreshReplay`+`issuedToken` | 🔴 **CONFIRMED** (refresh cũ vẫn đẻ token mới) |
+> | **P2** IDOR / horizontal BAC | `classifyIdor`+`belongsToVictim` | 🟢 **DISPROVED** (/api/items/{id} có ownership check) |
+> | **P3** priv-esc / vertical BAC | `classifyPrivEsc`+`privilegedMatch` | 🟢 **DISPROVED** (6/6 /api/admin/* → user 403) |
+>
+> Verdict đều **do code chấm trên file thô** (không tin lời khai episode); continuity-gated (P1a, P2, P3);
+> luật thép no-evidence-no-finding sống. Report per-lớp: `wtf-is-this/pentest-runs/*`.
+> Recipe harvest: 5/145 (P1 ×3, P2 ×1, P3 ×1).
+>
+> **Việc tiếp (chưa làm — cần quyết/định data):**
+> - Mở rộng P2/P3 sweep (các resource per-user khác / POST-PATCH admin) — cần data / cho phép mutate.
+> - **v2+ lớp mới** (design §4, "hoãn có chủ ý"): SSRF · SQLi · XSS · business-logic race — mỗi lớp harvest thêm recipe.
+> - Orchestrator + grey/white-box: vẫn theo YAGNI, chưa tới.
+> - Polish đã park (non-blocking): P3 report caveat "vì sao tin route là admin-only"; login_admin evidentiary-comment.
+
+### (lịch sử) 2026-08-11 (sáng): P2 IDOR built + live DISPROVED; P3 khởi động.
 
 > **P2 (IDOR / horizontal BAC) đã build + validate** trên branch merged `qa-brain` (`c658457`).
 > - Oracle `classifyIdor` + `belongsToVictim` (pentest_lib, **156 test toàn repo xanh**); review 2 vòng
