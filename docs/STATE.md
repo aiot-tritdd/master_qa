@@ -10,7 +10,26 @@
 
 # 🔔 MỞ SESSION MỚI → ĐỌC ĐÚNG KHỐI NÀY LÀ ĐỦ
 
-## Cập nhật 2026-08-10: PENTEST P1 ĐÓNG TRỌN (v1.1) — access + refresh + continuity, LIVE 2× CONFIRMED. ✅
+## Cập nhật 2026-08-11: PENTEST P2 IDOR built + live DISPROVED; P3 priv-esc đang khởi động.
+
+> **P2 (IDOR / horizontal BAC) đã build + validate** trên branch merged `qa-brain` (`c658457`).
+> - Oracle `classifyIdor` + `belongsToVictim` (pentest_lib, **156 test toàn repo xanh**); review 2 vòng
+>   (đóng 1 Critical false-CONFIRMED: `actorMarker` phải vắng trong cross-body). Recipe `hunt-idor` harvest.
+> - SKILL v1.2: catalog = [P1, P2]; contract P2 (A=attacker token vs B=victim object, READ-only, 2 account);
+>   proof-gate P2 **có continuity** (tái dùng `guardContinuity`+`extractToken` như P1a — so token gửi ở
+>   `idor_cross_req.txt` với token login A → chặn self-IDOR false-CONFIRMED). Final review đóng lỗ này trước merge.
+> - **Live 2026-08-11** (B=`truongtri123` seed 12 items): baseline A đọc item A = 200; **đòn** token A → item B
+>   = **404** → `classifyIdor` = **DISPROVED**. `/api/items/{id}` KHÔNG dính IDOR (access control OK, có tang chứng).
+>   Giới hạn: mới test /api/items (B chỉ có items); ~5 resource per-user khác chưa quét. Report:
+>   `wtf-is-this/pentest-runs/stg-monomana-P2-idor-2026-08-11-DISPROVED/`.
+>
+> **Account stg-monomana đang có:** A=`demo@dx-aiot.com`(user) · B=`truongtri123@gmail.com`(user, đã có items) ·
+> **admin=`admin@dx-aiot.com`** (role admin — cho P3). *(TESTSEED001/002 là của ThreeSides — KHÔNG liên quan pentest.)*
+>
+> **Việc tiếp — P3 priv-esc (vertical BAC):** token user demo gọi route admin-only mà ăn = lỗ. Unblocked (có admin account).
+> Swagger `/api/docs-json` (READ-only) lộ route map. Đang recon bề mặt admin → build oracle `classifyPrivEsc`.
+
+### (lịch sử) 2026-08-10: PENTEST P1 ĐÓNG TRỌN (v1.1) — access + refresh + continuity, LIVE 2× CONFIRMED. ✅
 
 > Lớp **P1 đóng trọn** trên branch `pentest-v1.1-p1-close` (off qa-brain). Trước đây v1.0 chỉ có P1a access-replay;
 > giờ thêm **P1b refresh-replay** + **continuity gate code-verifiable** + vá 2 bug lộ khi review/live.
